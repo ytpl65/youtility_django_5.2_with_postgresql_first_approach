@@ -14,35 +14,8 @@ import urllib.parse
 logger = logging.getLogger('django')
 Q = models.Q
 
-def safe_json_parse_params(request_get, param_name='params'):
-    """
-    Safely parse JSON parameters from request.GET.
-    Returns dict with default date range if parsing fails or keys missing.
-    """
-    from datetime import date, timedelta
-    logger = logging.getLogger(__name__)
-    
-    params_raw = request_get.get(param_name, '{}')
-    
-    if params_raw in ['null', None, '']:
-        parsed = {}
-    else:
-        try:
-            # URL decode if necessary
-            if params_raw.startswith('%'):
-                params_raw = urllib.parse.unquote(params_raw)
-            parsed = json.loads(params_raw)
-        except (json.JSONDecodeError, TypeError) as e:
-            # Fallback to empty dict if JSON parsing fails
-            logger.warning(f"Failed to parse {param_name} JSON: {params_raw}, error: {e}")
-            parsed = {}
-    
-    # Ensure required keys exist with default values
-    today = date.today()
-    parsed.setdefault('from', (today - timedelta(days=7)).strftime('%Y-%m-%d'))
-    parsed.setdefault('to', today.strftime('%Y-%m-%d'))
-    
-    return parsed
+# Import centralized JSON utility
+from apps.core.json_utils import safe_json_parse_params
 class PELManager(models.Manager):
     use_in_migrations = True
     

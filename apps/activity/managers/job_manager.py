@@ -1,6 +1,5 @@
 import json
 import logging
-import urllib.parse
 from datetime import datetime, timedelta, timezone, date
 
 from django.contrib.gis.db.models.functions import AsGeoJSON
@@ -26,30 +25,7 @@ from django.conf import settings
 
 log = logging.getLogger('django')
 
-def safe_json_parse(request_get, param_name='params'):
-    """
-    Safely parse JSON parameters from request.GET.
-    Returns empty dict with default date range if parsing fails.
-    """
-    logger = logging.getLogger(__name__)
-    
-    try:
-        params_raw = request_get.get(param_name, '{}')
-        # URL decode if necessary
-        if params_raw.startswith('%'):
-            params_raw = urllib.parse.unquote(params_raw)
-        parsed = json.loads(params_raw)
-    except (json.JSONDecodeError, TypeError) as e:
-        # Fallback to empty dict if JSON parsing fails
-        logger.warning(f"Failed to parse {param_name} JSON: {params_raw}, error: {e}")
-        parsed = {}
-    
-    # Ensure required keys exist with default values
-    today = date.today()
-    parsed.setdefault('from', (today - timedelta(days=7)).strftime('%Y-%m-%d'))
-    parsed.setdefault('to', today.strftime('%Y-%m-%d'))
-    
-    return parsed
+from apps.core.json_utils import safe_json_parse_params
 
 class JobManager(models.Manager):
     use_in_migrations: True
@@ -307,7 +283,7 @@ class JobneedManager(models.Manager):
     
     def get_posting_order_listview(self, request):
         R, S = request.GET, request.session
-        P = safe_json_parse(R)
+        P = safe_json_parse_params(R)
         qset = self.filter(
             bu_id__in = S['assignedsites'],
             client_id = S['client_id'],
@@ -399,7 +375,7 @@ class JobneedManager(models.Manager):
             return self.filter(id = id).annotate(**annotations).select_related(*related).values(*fields) or self.none()
         
         R, S = request.GET, request.session
-        P = safe_json_parse(R)
+        P = safe_json_parse_params(R)
         
         qobjs = self.select_related(*related).annotate(
             **annotations
@@ -483,7 +459,7 @@ class JobneedManager(models.Manager):
         from apps.activity.models.attachment_model import Attachment 
         from apps.activity.models.question_model import QuestionSet
         R = request.GET
-        P = safe_json_parse(R)
+        P = safe_json_parse_params(R)
         sites = Pgbelonging.objects.get_assigned_sites_to_people(request.user.id)
         buids = sites
         qset = self.annotate(
@@ -507,7 +483,7 @@ class JobneedManager(models.Manager):
 
     def get_internaltourlist_jobneed(self, request, related, fields):
         R, S = request.GET, request.session
-        P = safe_json_parse(R)
+        P = safe_json_parse_params(R)
         assignedto = {'assignedto' : Case(
                 When(Q(pgroup_id=1) | Q(pgroup_id__isnull =  True), then=Concat(F('people__peoplename'), V(' [PEOPLE]'))),
                 When(Q(people_id=1) | Q(people_id__isnull =  True), then=Concat(F('pgroup__groupname'), V(' [GROUP]'))),
@@ -545,7 +521,7 @@ class JobneedManager(models.Manager):
         fields = ['id', 'plandatetime', 'expirydatetime', 'performedby__peoplename', 'jobstatus','gps',
                   'jobdesc', 'people__peoplename', 'pgroup__groupname', 'gracetime', 'ctzoffset', 'assignedto']
         R, S = request.GET, request.session
-        P = safe_json_parse(R)
+        P = safe_json_parse_params(R)
         assignedto = {
             'assignedto' : Case(
                 When(Q(pgroup_id=1) | Q(pgroup_id__isnull =  True), then=Concat(F('people__peoplename'), V(' [PEOPLE]'))),
@@ -672,7 +648,7 @@ class JobneedManager(models.Manager):
     
     def get_ppm_listview(self, request, fields, related):
         S, R = request.session, request.GET
-        P = safe_json_parse(R)
+        P = safe_json_parse_params(R)
 
         qobjs = self.select_related('people','bu', 'pgroup', 'client').annotate(
             assignedto = Case(

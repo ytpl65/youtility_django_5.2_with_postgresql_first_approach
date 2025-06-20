@@ -1,0 +1,65 @@
+{
+  "immediate_candidates": [
+    {
+      "app": "peoples",
+      "name": "People",
+      "priority_score": 12,
+      "record_count": 21,
+      "reason": "has enable flag, manageable size (21 records)"
+    },
+    {
+      "app": "activity",
+      "name": "Location",
+      "priority_score": 11,
+      "record_count": 1,
+      "reason": "has enable flag, manageable size (1 records)"
+    },
+    {
+      "app": "activity",
+      "name": "Asset",
+      "priority_score": 11,
+      "record_count": 11,
+      "reason": "has enable flag, manageable size (11 records)"
+    }
+  ],
+  "secondary_candidates": [
+    {
+      "app": "onboarding",
+      "name": "TypeAssist",
+      "priority_score": 10
+    },
+    {
+      "app": "work_order_management",
+      "name": "Vendor",
+      "priority_score": 10
+    },
+    {
+      "app": "attendance",
+      "name": "PeopleEventlog",
+      "priority_score": 10
+    },
+    {
+      "app": "work_order_management",
+      "name": "Wom",
+      "priority_score": 8
+    },
+    {
+      "app": "peoples",
+      "name": "Pgroup",
+      "priority_score": 7
+    }
+  ],
+  "implementation_strategy": [
+    "1. Start with top 3 candidates for immediate impact",
+    "2. Create materialized views with automatic refresh triggers",
+    "3. Integrate with existing Select2 cache backend",
+    "4. Implement fallback to dynamic queries for edge cases",
+    "5. Monitor performance improvements and expand to secondary candidates"
+  ],
+  "performance_targets": {
+    "static_dropdown_access": "< 0.5ms",
+    "cache_hit_improvement": "> 95%",
+    "database_load_reduction": "30-50%",
+    "overall_response_improvement": "15-25%"
+  }
+}

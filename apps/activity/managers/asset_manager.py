@@ -1,6 +1,4 @@
-import json
 import logging
-import urllib.parse
 from datetime import datetime, date, timedelta
 from django.contrib.gis.db.models.functions import AsGeoJSON, AsWKT
 from django.db import models
@@ -9,25 +7,7 @@ from django.db.models import Value as V
 from django.db.models.functions import Concat
 from apps.core import utils
 
-def safe_json_parse_simple(params_raw):
-    """
-    Safely parse JSON parameter string.
-    Returns empty dict if parsing fails.
-    """
-    logger = logging.getLogger(__name__)
-    
-    if params_raw in ['null', None, '']:
-        return {}
-    
-    try:
-        # URL decode if necessary
-        if params_raw.startswith('%'):
-            params_raw = urllib.parse.unquote(params_raw)
-        return json.loads(params_raw)
-    except (json.JSONDecodeError, TypeError) as e:
-        # Fallback to empty dict if JSON parsing fails
-        logger.warning(f"Failed to parse JSON: {params_raw}, error: {e}")
-        return {}
+from apps.core.json_utils import safe_json_parse
 
 
 
@@ -107,7 +87,7 @@ class AssetManager(models.Manager):
             qset = qset.filter(identifier='CHECKPOINT', bu_id=S['bu_id'], client_id = S['client_id']).values(*fields)
         
         # Safe JSON parsing
-        P = safe_json_parse_simple(P_raw)
+        P = safe_json_parse(P_raw)
         if P and P.get('status'):
             qset = qset.filter(runningstatus = P['status'])
         
@@ -138,7 +118,7 @@ class AssetManager(models.Manager):
         ).select_related(*related).values(*fields)
         
         # Safe JSON parsing
-        P = safe_json_parse_simple(P_raw)
+        P = safe_json_parse(P_raw)
         if P and P.get('status'):
             qset = qset.filter(runningstatus = P['status'])
         return qset or self.none()
