@@ -287,6 +287,19 @@
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 <input type="hidden" name="timezone" id="timezone">
 
+                {% if rate_limited|default(False) %}
+                <div class="alert alert-warning" style="border-left: 4px solid #ff9800; background: #fff3cd; color: #856404; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center;">
+                        <span class="material-icons" style="margin-right: 10px; color: #ff9800;">warning</span>
+                        <div>
+                            <strong>Account Temporarily Locked</strong><br>
+                            Too many failed login attempts from your location.<br>
+                            <small>Please try again in {{ retry_after_minutes|default(15) }} minutes for security.</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 {% if loginform.non_field_errors() %}
                 {% for error in loginform.non_field_errors() %}
                 <div class="alert alert-danger loginerr">{{error}}</div>
@@ -302,7 +315,7 @@
                 {% endfor %}
                 {% endif %}
 
-                <div class="fields">
+                <div class="fields" {% if rate_limited|default(False) %}style="opacity: 0.6; pointer-events: none;"{% endif %}>
                     {% for field in loginform %}
                     {% for error in field.errors %}
                     <div class="alert alert-danger loginerr">{{error}}</div>
@@ -317,7 +330,9 @@
                     {% endfor %}
 
                     <div class="sign_in">
-                        <button class="signinbtn" type="submit">LOG IN</button>
+                        <button class="signinbtn" type="submit" {% if rate_limited|default(False) %}disabled{% endif %}>
+                            {% if rate_limited|default(False) %}LOCKED{% else %}LOG IN{% endif %}
+                        </button>
                     </div>
                 </div>
             </form>

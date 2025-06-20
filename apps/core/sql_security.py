@@ -82,7 +82,7 @@ class SQLInjectionProtectionMiddleware:
         """
         # Check GET parameters
         for param, value in request.GET.items():
-            if self._check_value_for_sql_injection(value):
+            if self._check_value_for_sql_injection(value, param):
                 logger.warning(
                     f"SQL injection attempt detected in GET parameter '{param}': {value}",
                     extra={
@@ -98,7 +98,7 @@ class SQLInjectionProtectionMiddleware:
         # Check POST parameters
         if hasattr(request, 'POST'):
             for param, value in request.POST.items():
-                if self._check_value_for_sql_injection(value):
+                if self._check_value_for_sql_injection(value, param):
                     logger.warning(
                         f"SQL injection attempt detected in POST parameter '{param}': {value}",
                         extra={
@@ -115,7 +115,7 @@ class SQLInjectionProtectionMiddleware:
         if hasattr(request, 'body') and request.content_type == 'application/json':
             try:
                 body_str = request.body.decode('utf-8')
-                if self._check_value_for_sql_injection(body_str):
+                if self._check_value_for_sql_injection(body_str, 'json_body'):
                     logger.warning(
                         f"SQL injection attempt detected in JSON body",
                         extra={
@@ -133,12 +133,13 @@ class SQLInjectionProtectionMiddleware:
         
         return False
     
-    def _check_value_for_sql_injection(self, value):
+    def _check_value_for_sql_injection(self, value, param_name=''):
         """
         Check a single value for SQL injection patterns.
         
         Args:
             value: String value to check
+            param_name: Name of the parameter (for context-aware checking)
             
         Returns:
             bool: True if SQL injection pattern found, False otherwise
@@ -146,7 +147,32 @@ class SQLInjectionProtectionMiddleware:
         if not isinstance(value, str):
             return False
         
-        # Check against all compiled patterns
+        # Skip aggressive checking for password fields
+        password_fields = ['password', 'passwd', 'pwd', 'pass', 'secret', 'token']
+        is_password_field = any(pwd_field in param_name.lower() for pwd_field in password_fields)
+        
+        # For password fields, only check for the most dangerous patterns
+        if is_password_field:
+            dangerous_patterns = [
+                # Only check for clear SQL injection attempts, not legitimate special chars
+                r"('\s*(or|and)\s*'[^']*'|'\s*(or|and)\s*\d+\s*=\s*\d+)",
+                r"('\s*;\s*(drop|delete|update|insert|create|alter)\s+)",
+                r"('\s*union\s+(all\s+)?select\s+)",
+                r"(exec\s*\(|execute\s*\(|sp_executesql)",
+                r"(xp_cmdshell|sp_makewebtask|sp_oacreate)",
+                r"(union\s+(all\s+)?select\s+null)",
+                r"(information_schema|sys\.tables|sys\.columns)",
+                # Only flag # if it's clearly a SQL comment (starts line or after whitespace + content)
+                r"(^\s*#|--\s+.*|/\*.*\*/)",
+            ]
+            
+            for pattern_str in dangerous_patterns:
+                pattern = re.compile(pattern_str, re.IGNORECASE)
+                if pattern.search(value):
+                    return True
+            return False
+        
+        # For non-password fields, check against all compiled patterns
         for pattern in self.compiled_patterns:
             if pattern.search(value):
                 return True

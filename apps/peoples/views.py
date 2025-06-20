@@ -12,7 +12,8 @@ from django.views import View
 from django.http import response as rp
 import logging
 from apps.onboarding.models import  Bt
-from apps.core.rate_limiting import rate_limit_login, record_failed_login, is_ip_blocked, is_username_blocked
+# Rate limiting now handled by PostgreSQLRateLimitMiddleware
+# from apps.core.rate_limiting import rate_limit_login, record_failed_login, is_ip_blocked, is_username_blocked
 from apps.peoples.filters import CapabilityFilter
 from apps.core import utils
 import apps.peoples.filters as pft
@@ -49,8 +50,7 @@ class SignIn(View):
         form = LoginForm()
         return render(request, self.template_path, context={"loginform": form})
 
-    @rate_limit_login(max_attempts=5, window=300)  # 5 attempts per 5 minutes
-
+    # Rate limiting now handled by PostgreSQLRateLimitMiddleware automatically
     def post(self, request, *args, **kwargs):
         from .utils import display_user_session_info
 
@@ -67,60 +67,50 @@ class SignIn(View):
                 loginid = form.cleaned_data.get("username")
                 password = form.cleaned_data.get("password")
                 
-                # Check if IP or username is blocked due to previous failed attempts
-                if is_ip_blocked(request):
-                    logger.warning(f"Blocked login attempt from IP: {request.META.get('REMOTE_ADDR')}")
-                    form.add_error(None, "Too many failed attempts. Please try again later.")
-                    cxt = {"loginform": form}
-                    response = render(request, self.template_path, context=cxt)
-                elif is_username_blocked(loginid):
-                    logger.warning(f"Blocked login attempt for username: {loginid}")
-                    form.add_error(None, "Account temporarily locked. Please try again later.")
-                    cxt = {"loginform": form}
-                    response = render(request, self.template_path, context=cxt)
-                else:
-                    user = pm.People.objects.filter(loginid=loginid).values('people_extras__userfor')
-                    people = authenticate(request, username=loginid, password=password)
-                    logger.debug("People: %s", people)
-                    if user.exists():
-                        logger.debug("User for %s", user[0]['people_extras__userfor'] in ['Web', 'Both'])
-                    if people and user.exists() and (user[0]['people_extras__userfor'] in ['Web', 'Both']):
-                        login(request, people)
-                        request.session["ctzoffset"] = request.POST.get("timezone")
-                        logger.info(
-                            'Login Successful for people "%s" with loginid "%s" client "%s" site "%s"',
-                            people.peoplename,
-                            people.loginid,
-                            people.client.buname if people.client else "None",
-                            people.bu.buname if people.bu else "None",
-                        )
-                        utils.save_user_session(request, request.user)
-                        display_user_session_info(request.session)
-                        logger.info(f"User logged in {request.user.peoplecode}")
-                        if request.session.get('bu_id') in [1, None]: 
-                            response = redirect('peoples:no_site')
-                        elif request.session.get('sitecode') not in ["SPSESIC", "SPSPAYROLL", "SPSOPS", "SPSOPERATION", "SPSHR"]:
-                            response = redirect('onboarding:wizard_delete') if request.session.get('wizard_data') else redirect('onboarding:rp_dashboard')
-                        elif request.session.get('sitecode') in ["SPSOPS"]:
-                            response = redirect('reports:generateattendance')
-                        elif request.session.get('sitecode') in ["SPSHR"]:
-                            response = redirect('employee_creation:employee_creation')
-                        elif request.session.get('sitecode') in ["SPSOPERATION"]:
-                            response = redirect('reports:generate_declaration_form')
-                        else:
-                            response = redirect("reports:generatepdf")
+                # Rate limiting is now handled by PostgreSQLRateLimitMiddleware
+                # The middleware will block requests before they reach this view if rate limited
+                # So we can proceed directly with authentication
+                user = pm.People.objects.filter(loginid=loginid).values('people_extras__userfor')
+                people = authenticate(request, username=loginid, password=password)
+                logger.debug("People: %s", people)
+                
+                if people and user.exists() and (user[0]['people_extras__userfor'] in ['Web', 'Both']):
+                    # Successful login
+                    login(request, people)
+                    request.session["ctzoffset"] = request.POST.get("timezone")
+                    logger.info(
+                        'Login Successful for people "%s" with loginid "%s" client "%s" site "%s"',
+                        people.peoplename,
+                        people.loginid,
+                        people.client.buname if people.client else "None",
+                        people.bu.buname if people.bu else "None",
+                    )
+                    utils.save_user_session(request, request.user)
+                    display_user_session_info(request.session)
+                    logger.info(f"User logged in {request.user.peoplecode}")
+                    if request.session.get('bu_id') in [1, None]: 
+                        response = redirect('peoples:no_site')
+                    elif request.session.get('sitecode') not in ["SPSESIC", "SPSPAYROLL", "SPSOPS", "SPSOPERATION", "SPSHR"]:
+                        response = redirect('onboarding:wizard_delete') if request.session.get('wizard_data') else redirect('onboarding:rp_dashboard')
+                    elif request.session.get('sitecode') in ["SPSOPS"]:
+                        response = redirect('reports:generateattendance')
+                    elif request.session.get('sitecode') in ["SPSHR"]:
+                        response = redirect('employee_creation:employee_creation')
+                    elif request.session.get('sitecode') in ["SPSOPERATION"]:
+                        response = redirect('reports:generate_declaration_form')
                     else:
-                        # Record failed login attempt for rate limiting
-                        record_failed_login(request, loginid)
-                        logger.warning(self.error_msgs["auth-error"], loginid, "********")
-                        
-                        if user.exists() and user[0]['people_extras__userfor'] == 'Mobile':
-                            form.add_error(None, self.error_msgs["unauthorized-User"])
-                        else:
-                            form.add_error(None, self.error_msgs["invalid-details"])
-                        
-                        cxt = {"loginform": form}
-                        response = render(request, self.template_path, context=cxt)
+                        response = redirect("reports:generatepdf")
+                else:
+                    # Failed login attempt - will be logged automatically by PostgreSQLRateLimitMiddleware
+                    logger.warning(self.error_msgs["auth-error"], loginid, "********")
+                    
+                    if user.exists() and user[0]['people_extras__userfor'] == 'Mobile':
+                        form.add_error(None, self.error_msgs["unauthorized-User"])
+                    else:
+                        form.add_error(None, self.error_msgs["invalid-details"])
+                    
+                    cxt = {"loginform": form}
+                    response = render(request, self.template_path, context=cxt)
             else:
                 logger.warning(self.error_msgs["invalid-form"])
                 cxt = {"loginform": form}
