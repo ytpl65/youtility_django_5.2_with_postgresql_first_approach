@@ -1,0 +1,83 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Client Lists
+{% endblock card_title %}
+<!---- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Client Lists
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!----------- BEGIN PAGE BREADCUMBS ----------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Client List</a></li>
+{% endblock pagebreadcumb %}
+<!----------- END PAGE BREADCUMBS ------------->
+
+
+
+<!------------------ BEGIN CLIENT TABLE ------------------------->
+{% block table %}
+<table id="client_table" class="display compact cell-border stripe hover" style="width:100%">
+</table>
+{% endblock table %}
+<!------------------ END CLIENT TABLE --------------------------->
+
+<!--------- BEGIN EXTRA SCRIPTS ------>
+{% block extra_scripts %}
+<script>
+	var table;
+	$(document).ready(function () {
+		//BEGIN DATATABLE INITIALIZATION
+		table = $("#client_table").DataTable({
+            ajax:{
+                url: "{{ url('onboarding:client') }}?action=list",
+            },
+            pageLength:20,
+            deferRender: true,
+			responsive:true,
+            lengthMenu:[20,50,100],
+            dom       : `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			             <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns   : [
+                { data: "id", visible:false, searchable:false, orderable:false },
+                { 
+                    data: "bucode",
+                    render:function(data, type, row, meta){
+						let formUrl = "{{ url('onboarding:client') }}"
+                        return `<a href=${formUrl}?id=${row['id']}>${data}</a>`
+                    },
+                    title: "Code" 
+                },
+                {data: 'buname', title: 'Name', orderable:false},
+                {data:'enable', title:'Enable',orderable:false,render: function(data,type,row,meta){
+                    if(data === true){return '<i class="bi bi-check-circle-fill text-success"></i> Active'}
+                    else if(data === false){return '<i class= "bi bi-x-circle-fill text-danger"></i> Inactive'}
+                    else{return data.toString()}
+                    }
+                }
+            ],
+            createdRow:function(row, data, dataIndex){
+				if(data['enable'] === false){
+					$(row).addClass('disabled-record text-white')
+				}
+			},
+            buttons:[
+                {
+                    text: 'Add New',
+                    action:function(e, dt, node, config){
+                        location.href = '{{ url("onboarding:client") }}?action=form'
+                    }
+                }
+            ]
+        })
+		//END DATATABLE INITIALIZATION
+	});
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS --------->

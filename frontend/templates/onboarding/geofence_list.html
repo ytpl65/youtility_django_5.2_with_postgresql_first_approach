@@ -1,0 +1,90 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+GeoFence List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+GeoFence List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">GeoFence List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+
+{% block table %}
+    <!------------------ BEGIN TABLE --------------------->
+    <table id="geofence_table" class="display cell-border compact hover" style="width:100%">
+    </table>
+    <!------------------ END TABLE --------------------->
+
+{% endblock table %}
+<!------------------ --------------------------END BU TABLE -------------------------------------------------->
+
+
+{% block extra_scripts %}
+<script>
+
+const table_id        = "#geofence_table"
+var table             = null;
+
+$(document).ready(function(){
+    table = $(table_id).DataTable({
+			ajax:{
+				url: '{{ url("onboarding:geofence") }}?action=list',
+			},
+			pageLength:50,
+			columns     : [
+                { data: "id" },
+                { data: "gfcode", title: 'Code' },
+                { data: "gfname", title: 'Name' },
+                { data: "alerttogroup__groupname", title: 'Group' },
+                { data: "alerttopeople__peoplename", title: 'People' },
+                { data: "geofence_address", title: 'GeoFence' }
+            ],
+			deferRender: true,
+			{# scrollY: 300,
+            scrollCollapse: true,
+            scrollX:true, #}
+			columnDefs:[
+				{targets:0, visible:false, searchable:false, orderable:false},
+				{
+					targets: 1,
+					data   : 'gfcode',
+					render : function ( data, type, row, meta ) {
+						var url= "{{ url('onboarding:geofence') }}?id=" + row['id'];
+                    	return `<a href=${url}>${data}</a>`
+					}
+				},
+				{
+					targets:5,
+					data: 'geofence_address',
+					defaultContent: ""
+				}
+			],
+			order:[[0, 'desc']],
+			dom       : `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			buttons:[
+				{
+                    text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_geofence",
+                    action:function(e, dt, node, config){   
+                        location.href = '{{ url("onboarding:geofence") }}?action=form'
+                    }
+                }
+			]
+		})
+		
+
+})
+</script>
+{% endblock extra_scripts %}

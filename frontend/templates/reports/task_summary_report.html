@@ -1,0 +1,48 @@
+{% extends "report_base.html" %}
+
+{% block clientlogo %}
+<img src="https://redmine.youtility.in/youtility4_media/master/client04_Apr_2023_053053.jpg" alt="Client Logo" style="float: left; height:55px; width:255px;">
+{% endblock clientlogo %}
+
+
+{% block applogo %}
+<img src="https://redmine.youtility.in/youtility4_media/master/client28_Mar_2023_072408.png" alt="Client Logo" style="float: right; height:55px; width:255px;">
+{% endblock applogo %}
+
+
+
+{% block report_details %}
+<div>
+    <h2>Task Summary</h2>
+    <h4 class="pt-0">From: {{ fromdate }}  To: {{ uptodate }}</h4>
+</div>
+{% endblock report_details %}
+
+
+{% block table %}
+<table style="width:100%">
+<thead>
+{% set cols =  ['Site', 'Planned date', 'Total Tasks', 'Scheduled', 'Adhoc', 'Pending', 'Closed', 'Completed', 'Percentage'] %}
+<tr>
+    {% for col in cols %}
+    <th>{{ col }}</th>
+    {% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for item in data %}
+<tr>
+    <td>{{ item['site'] }}</td>
+    <td>{{ item['planneddate'] }}</td>
+    <td>{{ item['tot_task'] }}</td>
+    <td>{{ item['tot_scheduled'] }}</td>
+    <td>{{ item['tot_adhoc'] }}</td>
+    <td>{{ item['tot_pending'] }}</td>
+    <td>{{ item['tot_closed'] }}</td>
+    <td>{{ item['tot_completed'] }}</td>
+    <td>{{ item['perc'] }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock table %}

@@ -1,0 +1,224 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+TypeAssist List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+TypeAssist List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">TypeAssist List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+{% block table %}
+    <!------------------ BEGIN TABLE --------------------->
+    <table id="ta_table" class="display compact cell-border row-border" style="width:100%">
+    </table>
+    <!------------------ END TABLE --------------------->
+
+{% endblock table %}
+<!------------------ --------------------------END BU TABLE ------------------------------------------------->
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal animate__animated animate__zoomIn" tabindex="-1" aria-hidden="true"  aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-ta">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content" id="ta_content">
+		</div>
+	</div>
+</div>
+{% endblock popup_alerts %}
+
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script>
+	var table             = null;
+	const modal_id        = "#modal-ta"
+	const modalcontent_id = "#ta_content"
+	const table_id        = "#ta_table"
+	const formid          = "#id_taform"
+	const urlname         = "{{ url('onboarding:typeassist') }}"
+	const viewname        = "Typeassist"
+	const rowlink         = "a.ta-link"
+	
+	$(document).ready(function () {
+
+        //beforeSend of capability ajax request 
+        function TaBeforeSend(){
+            $(modal_id).modal("show");
+        }
+		
+		
+		table = $(table_id).DataTable({
+			ajax:{
+				url: '{{ url("onboarding:typeassist") }}?action=list',
+			},
+			columns     : [
+                { "data": "id", title:"ID", className:'noVis' },
+                { "data": "tacode", title: "Code" },
+                { "data": "taname", title: 'Name' },
+                { "data": "tatype__tacode", title: 'Type' },
+                { "data": "cuser__peoplecode", title: 'Created by' },
+            ],
+			deferRender: true,
+			responsive : true,
+			lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+			order:[[1, 'asc']],
+			columnDefs:[
+				{targets:0, data: "id", visible:false, searchable:false, orderable:false},
+				{
+					targets: 1,
+					data   : 'tacode',
+					render : function ( data, type, row, meta ) {
+						return `<a href="#" class="ta-link" data-id=${row['id']} data-rowid=${meta.row}>${data}</a>`
+					}
+				},
+				{targets:4, data:"cuser__peoplecode", render:function(data, type, row, meta){
+					return data === 'NONE' ? "System" : data
+				}},
+			],
+			dom       :`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			buttons:[
+				{
+					extend: 'searchBuilder',
+					config: {
+					columns: [1, 2, 3, 4]
+					}
+				},
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n TypeAssist List`,
+                    columns = [1,2,3,4],
+                    filename="typeassist_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n TypeAssist List`,
+                    columns = [1,2,3,4],
+                    filename="typeassist_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+					text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_type",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+                        const params = {
+                            'modal_id'  : modal_id,
+                            'url'       : `${urlname}?action=form`,
+                            'beforeSend': TaBeforeSend }
+						fire_ajax_get(params)
+						.done((data, status, xhr) => {
+                            $(`${modal_id} .modal-content`).html(data.html_form)
+                        })
+						.fail((xhr, status, error) => {
+							show_error_alert("Something went wrong!")
+						})
+					}
+				}
+			]
+		})
+		
+
+		//END STYLING DATATABLE
+
+		
+		//submit form
+		$(modal_id).on('submit', formid, function(e) {
+			var form = $(this);
+			e.preventDefault()
+			const params = { url:urlname, modal:true } //capability view
+			const id = $("#pk").val() //form instance id
+			var payLoad = {formData:form.serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'}//payload for post request
+			if(id != 'None'){
+				var newPayLoad = {...payLoad, 'pk':id}
+				payLoad = newPayLoad
+			}
+			fire_ajax_form_post(params, payLoad)
+			.done((data, status, xhr) => { //function to submit post request
+				$(modal_id).modal("hide");
+				if(id!=='None'){
+					table.row('.selected').data(data.row).draw()
+				}else{
+					table.row.add(data.row).draw()
+				}
+				show_successful_save_alert(update= id != 'None' ? true : false)
+			})
+		})
+
+		//update row (form-view)
+		$("#ta_table tbody").on('click', 'tr', function (e) {
+			if ($(this).hasClass('selected')) {
+				$(this).removeClass('selected');
+			} else {
+				table.$('tr.selected').removeClass('selected');
+				$(this).addClass('selected');
+			}
+			var d = table.row( this ).data();
+			e.preventDefault();
+			var id = d.id
+			if (!(id)){ return }
+			const params = {
+				'modal_id'    : modal_id,
+				'url'         : `${urlname}?id=${id}`,
+				'beforeSend'  : TaBeforeSend }
+			fire_ajax_get(params)
+			.done((data, status, xhr) => {
+				$(modalcontent_id).attr('data-form', 'update')
+				$(`${modal_id} .modal-content`).html(data.html_form)
+			})
+			.fail((xhr, status, error) => {
+				show_error_alert('Something went wrong!') //defined in custom.js
+			})
+		})
+	}); //END document.ready()
+
+	//delete ajax request 
+	function isTaDeleted(id){
+		console.log("id ", id)
+		const params = {url:`${urlname}?action=delete&id=${id}`, 'beforeSend':function () {}}
+		fire_ajax_get(params)
+		.done((data, status, xhr) => {
+			if(!xhr.status === 200){
+				return false
+			}
+			return true
+		})
+		.fail((xhr, status, error) => {
+			show_error_alert('Something went wrong!') //defined in custom.js
+			return false
+		})
+	}
+
+	//delete typeassist 
+	function deleteTa(elemt){
+		var id = $(elemt).attr("data-id");
+		show_alert_before_delete(viewname)
+		.then((result) => {
+			if(result.isConfirmed){ //delete requested by user
+				status = isTaDeleted(id) //fire's request
+				console.log("status ", status)
+				if(status){
+					show_successful_delete_alert() //defined in customjs
+					$(modal_id).modal("hide")
+					//delete row from table
+					table.row('.selected').remove().draw()
+				}else{
+					show_error_alert('Something went wrong!');
+				}
+			}
+		})
+	}
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS ------------------------------->

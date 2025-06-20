@@ -1,0 +1,89 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Mobile User Details
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Mobile User Details
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{# <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"> #}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Mobile User Details</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN Schedhuled Tour TABLE ------------------------------------------->
+{% block table %}
+
+<table id="adhoc_tasks" class="display compact cell-border" style="width:100%" >
+
+</table>
+{% endblock table %}
+
+{% block extra_scripts %}
+<script>
+var table = null;
+$(document).ready(function(){
+table = $("#adhoc_tasks").DataTable({
+    ajax:{
+        url: '{{ url("activity:mobileuserdetails") }}?action=list',
+        data:function(d){
+                    d.fields = ['id', 'cdtz', 'bu__buname',  'people__peoplename',
+                  'applicationversion', 'androidversion', 'modelname','ctzoffset',
+                  'installedapps', 'gpslocation']
+                }
+    },
+    pageLength:50,
+    columns     : [
+        { "data": "id", visible:false },
+        { "data": "cdtz" , title: "Date"},
+        { "data": "people__peoplename" , title: 'People'},
+        { "data": "bu__buname" , title: 'Site'},
+        { "data": "applicationversion" , title: 'App. Version'},
+        { "data": "androidversion", title: 'Android Version'},
+        { "data": "modelname", title: 'Model'},
+        { "data": "installedapps", title: 'Installed Apps'},
+        { "data": "gpslocation", title: 'GPS'},
+    ],
+    serverSide:true,
+    fixedHeader:true,
+    search    : {return: true},
+    lengthMenu: [[10, 20, 30], [10, 20, 30]],
+    columnDefs:[
+        {targets:2, data: 'people__peoplename',
+        render:function(data, type, row, meta){
+            var url= "{{ url('activity:mobileuserdetails') }}?template=true&id=" + row['id'];
+            return `<a href=${url}>${data}</a>`
+        }},
+        {targets:1, render:function(data, type, row, meta){
+            return  convert_to_local(type, data, row)
+        }}
+    ],
+    dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+    responsive : true,
+    buttons:[
+        {
+            text:`Add New &nbsp;<i class='fas text-dark fa-plus'></i></a>`,
+            action: function(e, dt, node, config){
+                window.location.href = "{{ url('activity:mobileuserdetails') }}?action=form";
+            }
+        }
+    ]
+})
+
+
+})
+</script>
+{% endblock extra_scripts %}

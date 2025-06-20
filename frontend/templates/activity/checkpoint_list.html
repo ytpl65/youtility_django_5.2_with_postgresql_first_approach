@@ -1,0 +1,429 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+{{ label }} List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+{{ label }} List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">{{ label }} List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN BU TABLE ------------------------------------------->
+{% block table %}
+    <!------------------ BEGIN TABLE --------------------->
+    <table id="checkpoint_table" class="display compact cell-border" style="width:100%">
+    </table>
+    <!------------------ END TABLE --------------------->
+
+
+{% endblock table %}
+<!------------------ --------------------------END BU TABLE ------------------------------------------------->
+
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal animate__animated animate__zoomIn" tabindex="-1" aria-hidden="true"  aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-checkpoint">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="checkpoint_content">
+		</div>
+	</div>
+</div>
+
+	<!-- Moda for setting GPS coordianates-->
+	{% call general_popup(title="Set GPS Location", popup_id="open_map", modal_size="modal-lg") %}
+	<div class="modal-body card">
+		<div class="card-body p-0">
+			<div id="map" style="width:750px; height:350px"></div>
+		</div>
+	</div>
+	<div class="modal-footer d-flex justify-content-between">
+		<div><p>Tip: Zoom in for accurate coordinates of address, place the marker and then set the coords.</p></div>
+		<div></div>
+		<div><a href="#" class="btn" id="close_setgps" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-primary2" id="set_the_coords">Set the coordinates</a></div>
+		
+	</div>
+	{% endcall %}
+{% endblock popup_alerts %}
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3PUZCB7u2PiV8whHeAshweOPIK_d690o&libraries=places&v=weekly&loading=async"
+      defer
+    ></script>
+
+<script>
+	//global var
+	var map;
+	var userMarker;
+
+	    function clearAllMarkers(markers){
+		// Clear out the old markers.
+		markers.forEach((marker) => {
+			marker.setMap(null);
+		});
+	}
+
+	function placeMarker(location) {
+		if ( userMarker ) {
+			userMarker.setPosition(location);
+		} else {
+			userMarker = new google.maps.Marker({
+			position: location,
+			map: map,
+			icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+			});
+		}
+	}
+
+    function initMap() {
+		map = new google.maps.Map(document.getElementById("map"), {
+			center: { lat: -34.397, lng: 150.644 },
+			zoom: 8,
+		});
+		//search-radius-form controls
+		const controlDiv = document.createElement('DIV');
+		controlDiv.id = "search_rad_controls";
+
+		// Create the search box and link it to the UI element.
+		const controlInput = document.createElement('input');
+		controlInput.id = "pac-input";
+		controlInput.className = "controls mt-2 form-control";
+		controlInput.placeholder = 'Search any keyword..'
+		controlInput.style = 'width: 170% !important;'
+
+		controlDiv.appendChild(controlInput);
+		map.controls[google.maps.ControlPosition.TOP_LEFT].push(controlDiv);
+
+		const searchBox = new google.maps.places.SearchBox(controlInput);
+
+		// Bias the SearchBox results towards current map's viewport.
+		map.addListener("bounds_changed", () => {
+			searchBox.setBounds(map.getBounds());
+		});
+
+		let markers = [];
+
+		// Listen for the event fired when the user selects a prediction and retrieve
+		// more details for that place.
+		searchBox.addListener("places_changed", () => {
+			const places = searchBox.getPlaces();
+
+			if (places.length == 0) {
+			return;
+			}
+
+			// Clear out the old markers.
+			clearAllMarkers(markers)
+			markers = [];
+
+			// For each place, get the icon, name and location.
+			const bounds = new google.maps.LatLngBounds();
+
+			places.forEach((place) => {
+			if (!place.geometry || !place.geometry.location) {
+				console.log("Returned place contains no geometry");
+				return;
+			}
+
+			const icon = {
+				url: place.icon,
+				size: new google.maps.Size(71, 71),
+				origin: new google.maps.Point(0, 0),
+				anchor: new google.maps.Point(17, 34),
+				scaledSize: new google.maps.Size(25, 25),
+			};
+			
+			let marker = new google.maps.Marker({
+				map,
+				icon,
+				title: place.name,
+				position: place.geometry.location,
+				animation:google.maps.Animation.DROP
+				})
+			
+			// Create a marker for each place.
+			markers.push(
+				marker
+			);
+
+			//on click marker zoom in
+			marker.addListener("click", () => {
+				map.setZoom(17);
+				map.setCenter(marker.getPosition());
+			});
+
+			if (place.geometry.viewport) {
+				// Only geocodes have viewport.
+				bounds.union(place.geometry.viewport);
+			} else {
+				bounds.extend(place.geometry.location);
+			}
+			});
+			map.fitBounds(bounds);
+		}); // searchBox.addListener
+
+		//place marker when user clicks on map
+		google.maps.event.addListener(map, 'click', function(event) {
+			clearAllMarkers(markers)
+			placeMarker(event.latLng);
+		});
+	}// initMap end
+
+	var table           = null;
+	const modal_id        = "#modal-checkpoint"
+	const modalcontent_id = "#checkpoint_content"
+	const formFilter      = "#master_asset_filter"
+	const table_id        = "#checkpoint_table"
+	const formid          = "#id_checkpointform"
+	const urlname         = "{{ url('activity:checkpoint') }}"
+	const viewname        = "{{ label }}"
+	const rowlink         = "a.cp-link"
+	var params = null;
+	
+let filters = localStorage.getItem('assetFilters') ? JSON.parse(localStorage.getItem('assetFilters')) : null
+if(filters && filters.AssetType === 1){
+	switch(filters.AssetStatus){
+		case 0:
+		params = {status:'WORKING'}
+		break;
+		case 1:
+		params = {status:'MAINTENANCE'}
+		break;
+		case 2:
+		params = {status:'STANDBY'}
+		break;
+		case 3:
+		params = {status:'SCRAPPED'}
+		break;
+	}
+	localStorage.clear()
+}
+	
+	$(document).ready(function () {
+
+		new ClipboardJS('.btn-copy');
+		$("input").keypress(function(event) {
+			if (event.which == 13) {
+				event.preventDefault();
+				$(formFilter).submit();
+			}
+		});
+        
+		//beforeSend of capability ajax request 
+        function checkpointBeforeSend(){
+            $(modal_id).modal("show");
+        }
+		
+		//datatable initialization
+        table = $(table_id).DataTable({
+			ajax:{
+				url: `${urlname}?action=list`,
+				data:function(d){
+					d.params = JSON.stringify(params)
+				}
+			},
+			deferRender:true,
+			lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+			columns:[
+				{data:'id', title:"ID", visible:false, searchable:false, className:'noVis'},
+				{data:'assetcode', title:'Code'},
+				{data:'assetname', title:'Name'},
+				{data:'parent__assetname', title:'Belongs to', visible:false, className:'noVis'},
+				{data:'location__locname', title:'Location'},
+				{data:'runningstatus', title:'Status'},
+				{data:'enable', title:'Enable', render:function(data, type, row, meta){
+					return data === true ? '<i class="bi bi-check-circle-fill text-success"></i> Active': '<i class="bi bi-x-circle-fill text-danger"></i> Inactive'				
+				}
+				},
+				{data: 'gps', visible: false, title: "GPS", render: function (data, type, row, meta) {
+                    if (typeof data === 'string' && data.length > 0) {
+                        let coords = data.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+                        if (coords) {
+                            let lng = coords[1];
+                            let lat = coords[2];
+                            return `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank">${lat},${lng}</a>`;
+                        }
+                    }
+                    return 'NONE';
+                }
+           		},
+				{data:'identifier', title:"Identifier", visible:false, className:'noVis'},
+				{data:'bu__buname', title:"Site", visible:false},
+				{data:'bu__bucode', title:'Site Code', visible:false},
+				{data:null,title:'QR Code', defaultContent: "Print",render: function(data, type, row, meta) {
+                    let downloadUrl = `{{ url('activity:checkpoint') }}?action=qrdownload&code=${encodeURIComponent(row['assetcode'])}&name=${encodeURIComponent(row['assetname'])}`
+                    return `<a href="${downloadUrl}" class="qr-download-link" onclick="event.stopPropagation()" >QR Download</a>`;
+                },
+				selectRow: true
+				},
+				
+
+			],
+			responsive: true,
+			columnDefs:[
+				{targets:0, data: "id", visible:false, searchable:false, orderable:false},
+				{
+					targets: [1,2],
+					data   : 'assetcode',
+					render : function ( data, type, row, meta ) {
+						return `<a href="#" class="cp-link" data-id=${row['id']} data-rowid=${meta.row}>${data}</a>`
+					}
+				},
+				{targets:5, data: 'runningstatus',  render:function(data, type, row, meta){
+					if(data === 'MAINTENANCE'){return `<span class="badge badge-danger">${data}</span>`}
+					if(data === 'SCRAPPED'){return `<span class="badge badge-secondary">${data}</span>`}
+					if(data === 'STANDBY'){return `<span class="badge badge-orange">${data}</span>`}
+					if(data === 'WORKING'){return `<span class="badge badge-success">${data}</span>`}
+				}
+				},
+				{targets:[4,5], render:function(data, type, row, meta){
+					return data || 'NONE'
+				}
+				}
+			],
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            ordering:false,
+			createdRow:function(row, data, dataIndex){
+				if(data['enable'] === false){
+					$(row).addClass('disabled-record text-white')
+				}
+			},
+			buttons:[
+				{
+					extend: 'searchBuilder',
+					config: {
+					columns: [1, 2, 4, 5, 6, 7, 9, 10 ,11]
+					}
+				},
+				dataTablesColumnVisibilityConfig(),
+                    dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Checkpoint List`,
+                    columns = ':visible',
+					filename = "checkpoint_list"
+                ),
+                   dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Checkpoint List`,
+                    columns = ':visible',
+					filename = "checkpoint_list"
+                ),
+
+				{
+					text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_checkpoint",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+                        const params = {
+                            'modal_id'    : modal_id,
+                            'url'         : `${urlname}?action=form`,
+                            'beforeSend'  : checkpointBeforeSend }
+						fire_ajax_get(params)
+						.done((data, status, xhr) => {
+                            $(`${modal_id} .modal-content`).html(data.html_form)
+                        })
+						.fail((xhr, status, error) => {
+							show_error_alert("Something went wrong!")
+						})
+					}
+				},
+			],
+			select: {
+                    style: 'single'
+                }
+		})
+
+
+		//submit form
+		$(modal_id).on('submit', formid, function(e) {
+			var form = $(this);
+			e.preventDefault()
+			const params = { url:urlname, modal:true } //capability view
+			const id = $("#pk").val()
+			var payLoad = {formData:form.serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'}//payload for post request
+			if(id != 'None'){
+				var newPayLoad = {...payLoad, 'pk':id}
+				payLoad = newPayLoad
+			}
+			fire_ajax_form_post(params, payLoad)
+			.done((data, status, xhr) => { //function to submit post request
+				console.log("data ", data)
+				$(modal_id).modal("hide");
+				if(id!=='None'){
+					table.row('.selected').data(data.row).draw()
+				}else{
+					table.row.add(data.row).draw()
+				}
+				show_successful_save_alert(update= id != 'None' ? true : false)
+			})
+		})
+
+		table.on('select', function(){
+            var id = table.row({selected:true}).data().id
+            if (!(id)){ return }
+            const params = {
+				modal_id    : modal_id,
+				url         : `${urlname}?id=${id}`,
+				beforeSend  : checkpointBeforeSend }
+			fire_ajax_get(params)
+			.done((data, status, xhr) => {
+				$(modalcontent_id).attr('data-form', 'update')
+				$(`${modal_id} .modal-content`).html(data.html_form)
+			})
+			.fail((xhr, status, error) => {
+				show_error_alert('Something went wrong!') //defined in custom.js
+			})
+        })
+	}); //END document.ready()
+
+	//delete ajax request 
+	function isCheckpointDeleted(id){ 
+		console.log("id ", id)
+		const params = {url:`${urlname}?action=delete&id=${id}`}
+		fire_ajax_get(params)
+		.done((data, status, xhr) => {
+			if(!xhr.status === 200){
+				return false
+			}
+			return true
+		})
+		.fail((xhr, status, error) => {
+			show_error_alert('Something went wrong!') //defined in custom.js
+			return false
+		})
+	}
+
+	//delete capability 
+	function deleteCheckpoint(elemt){
+		var id = $(elemt).attr("data-id");
+		show_alert_before_delete(viewname)
+		.then((result) => {
+			if(result.isConfirmed){ //delete requested by user
+				status = isCheckpointDeleted(id) //fire's request
+				console.log("status ", status)
+				if(status){
+					show_successful_delete_alert() //defined in customjs
+					$(modal_id).modal("hide")
+					//delete row from table
+					table.row('.selected').remove().draw()
+				}else{
+					show_error_alert('Something went wrong!');
+				}
+			}
+		})
+	}
+</script>
+{% endblock extra_scripts %}

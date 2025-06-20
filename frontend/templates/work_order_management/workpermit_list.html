@@ -1,0 +1,202 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+WorkPermit List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+WorkPermit List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Work Permit List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+
+{% block table %}
+<table id="wp_list" class="display compact cell-border" style="width:100%">
+</table>
+{% endblock table %}
+
+{% block extra_scripts %}
+<script>
+//if you want to modifiy here, then modify in custom.js initDateRange also
+    var params = null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+
+    var table_filters = localStorage.getItem('wpstats_filter') ? localStorage.getItem('wpstats_filter') : localStorage.getItem('alertsFilters')
+
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+
+
+$(document).ready(function(){
+    urlname = "{{ url('work_order_management:work_permit') }}"
+
+    table = $("#wp_list").DataTable({
+        ajax:{
+            url:'{{ url("work_order_management:work_permit") }}?action=list',
+            data:function(d){
+                d.params = JSON.stringify(params)
+            }
+        },
+        pageLength:500,
+        ordering:false,
+        deferRender:true,
+        responsive:true,
+        //scrollY: 300,
+        //scrollCollapse:true,
+        lengthMenu:[250,500,750,1000],
+        dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        columns:[
+            { data:'id', visible:false, searchable:false, className:'noVis'},
+            {title:'Plandatetime', data:'cdtz'},
+            {title:'Permit No', data:'other_data__wp_seqno', width:"10%"},
+            {title:'Permit Name', data:'qset__qsetname'},
+            {title:'Verifer Status',data:'verifiers_status'},
+            {title:'Approval Status', data:'workpermit'},
+            {title:'Work Status', data:'workstatus'},
+            {title:'Vendor Name',data:'vendor__name'},
+            {title:'Site', data:'bu__buname',visible:false},
+            {title:'Action', data:null, defaultContent:'<a href="#" class="edit-link">View&nbsp;<i class="bi text-danger fs-5 bi-file-earmark-pdf-fill"></i></a>'},
+            {title:'Site Code', data:'bu__bucode', visible:false},
+            {visible:false, data:"ctzoffset", className:'noVis'}
+        ],
+        columnDefs:[
+            {targets:1, render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+            }
+            },
+            {targets:3, render:function(data, type, row, meta){
+                return  `<a href="${urlname}?id=${row['id']}">${data}</a>`
+            }
+            },
+            {targets:4, render:function(data, type, row, meta){
+                if(data === 'APPROVED'){
+                    return `<span class="badge fs-9 badge-success">${data}</span>`
+                }else if (data === 'REJECTED'){
+                    return `<span class="badge fs-9 badge-danger">${data}</span>`
+                }else{
+                    return `<span class="badge fs-9 badge-warning">${data}</span>`
+                }
+            }
+            
+            },
+
+            {targets:5, render:function(data, type, row, meta){
+                if(data === 'APPROVED'){
+                    return `<span class="badge fs-9 badge-success">${data}</span>`
+                }else if (data === 'REJECTED'){
+                    return `<span class="badge fs-9 badge-danger">${data}</span>`
+                }else{
+                    return `<span class="badge fs-9 badge-warning">${data}</span>`
+                }
+            }
+        },
+            {targets:6, render:function(data, type, row, meta){
+                if(data === 'ASSIGNED'){return `<span class="badge fs-9 badge-primary">${data}</span>`}
+                else if (data === 'INPROGRESS'){return `<span class="badge fs-9 badge-warning">${data}</span>`}
+                else if (data === 'COMPLETED'){return `<span class="badge fs-9 badge-success">${data}</span>`}
+                else if (data === 'CANCELLED'){return `<span class="badge fs-9 badge-danger">${data}</span>`}
+            }
+            },
+        ],
+        buttons:[
+            "searchBuilder",
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Work Permit List`,
+                    columns = ':visible',    
+                    filename = "workpermit_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Work Permit List`,
+                    columns = ':visible',
+                    filename = "workpermit_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+            {
+                text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_wp",
+                action:function(e, dt, node, config){
+                    location.href = '{{ url("work_order_management:work_permit") }}?action=form'
+                }
+            }
+        ]
+    })
+    //add input field to the datatables dom
+    initDateRangeHtml()
+    initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+        from_pd = picker.startDate.format('YYYY-MM-DD');
+        to_pd = picker.endDate.format('YYYY-MM-DD');
+        let filters = {from:from_pd, to:to_pd}
+        reloadTable(table, filters)
+    })
+    //hide add new wp button if user is not wp approver
+    if(session['is_wp_approver'] === true){
+        $(".add_new_wp").addClass('d-none')
+    }
+
+    if(session['is_workpermit_approver'] === true){
+        $(".add_new").hide()
+    }
+    $('#wp_list tbody').on('click', '.edit-link', function () {
+    var data = table.row($(this).parents('tr')).data();
+    data['submit_button_flow'] = false
+    console.log("Data: ",data);
+    $.ajax({
+        url: '{{ url("work_order_management:work_permit") }}?action=printReport',
+        type: 'GET',
+        data: data,
+        xhrFields: {
+          responseType: 'blob'
+        },
+        success: function (response) {
+            var permitname = data['qset__qsetname']
+            var seqno    = data['other_data__wp_seqno']
+            var filename = permitname + "_" + seqno
+            var blob = new Blob([response], { type: 'application/pdf' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename; // You can set a default name or get it from the server
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            
+            /*// Open a new tab
+            var newTab = window.open();
+
+            // Write the HTML content to the new tab
+            newTab.document.open();
+            newTab.document.write(response);
+            newTab.document.close();*/
+        },
+        error:function(xhr, status, error){
+          show_error_alert("Something went wrong!", "Server Error")
+        }
+    });
+});
+})
+
+</script>
+
+{% endblock extra_scripts %}

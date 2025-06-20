@@ -1,0 +1,368 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Bulk Import Data
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+<link href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css" />
+{{ importform.media.css }}
+
+<style>
+    .vl {
+        border-right: 1px solid grey;
+    }
+
+    table.dataTable tbody tr.error_row td, .dataTables_scrollBody table thead tr th{
+        background-color: rgb(246, 218, 220)!important;
+    }
+    table.dataTable tbody tr.valid_row td,  .dataTables_scrollBody table thead tr th{
+        background-color: rgb(219, 248, 219)!important;
+    }
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#loading-spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+</style>
+
+<div class="vl"></div>
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+{# <li class="breadcrumb-item pe-3"><a href="{{ url('home') }}?template=true" class="pe-3">Home</a></li> #}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Import Export</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Import Data
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+{% block form %}
+<div id="loading-overlay">
+  <div id="loading-spinner"></div>
+</div>
+
+<div class="row gx-8">
+    <div class="col-md-6">
+        <p class="ch4 y-primary mb-2">Please follow the instructions before uploading any data:</p>
+        <ol class="list-group ps-2 list-group-numbered" id="instructions">
+            {# <li class="list-group-item">File format of .xlsx should be used for seamless operation</li> #}
+        </ol>
+    </div>
+    
+    <div class="col-md-6">
+        <form action="" method="post" id="id_import_form" enctype="multipart/form-data">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <input type="hidden" name="ctzoffset" id="id_ctzoffset" value=-1>
+
+            <div class="row mb-3">
+                
+                <div class="col-md-3 mb-3 mainlabel">
+                    {{ importform.table.label_tag() }}
+                </div>
+                <div class="col-md-9 mb-3 input_type">
+                    {{ importform.table }}
+                </div>
+                <div class="col-md-3 mb-3 label">
+                    <label for="">Download Template:</label>
+                </div> 
+                <div class="col-md-9 mb-3 download-template">
+                    <button type="button"  class="btn btn-sm btn-secondary" id="btn_download">Download</button>
+                </div>
+                <div class="col-md-3 mb-3 label">
+                    {{ importform.importfile.label_tag() }}
+                </div>
+                <div class="col-md-9 mb-3 fv-row file_uplod">
+                    {{ importform.importfile }}
+                    <div class="text-muted">Max file size is 700kb</div>
+                </div>
+
+                <!-- Bulk Import html -->
+                <div class="col-md-3 mb-3 import-image-label d-none">
+                    <label for="google_drive_link">Upload Google Drive Link:</label>
+                </div>
+               <div class="col-md-9 mb-3 f import-text-input d-none">
+                    <input type="text" name="google_drive_link" id="google_drive_link" class="form-control" placeholder="Enter Google Drive Link">
+                </div>
+
+            </div>
+            <button type="button" class="btn btn-sm btn-primary2" id="btn_importdata">Import Data</button>
+        </form>
+    </div>
+</div>
+{% endblock form %}
+
+
+
+{% block extras %}
+<hr>
+<table id="import_datatable" class="display compact"></table>
+{% endblock extras %}
+
+
+{% block extra_scripts %}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script>
+    var _columns = {{columns |default ("[]") | tojson }}
+    const DATA = {{ data |default ("[]") | tojson }}
+    var table = null;
+    var instructions = null;
+    const urlname = '{{ url("onboarding:import") }}'
+
+    function getFormData(){
+        var fd = new FormData();
+        console.log('called function',fd)
+        fd.append('table', $("#id_table").val())
+        const input = $('#id_importfile')[0].files[0] //document.querySelector('#id_importfile');
+        fd.append('importfile', input);
+        fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        return fd
+    }
+
+    //change  table from dropdown updates instruction accroding to table
+    function showInstructionsList(instructions){
+        //This line clears any existing content inside the HTML element with id "instructions"
+        $("#instructions").html("")
+        for (var key in instructions){
+            //append values of instructions in html according to table
+            if(instructions.hasOwnProperty(key)){
+                if(typeof instructions[key] === "string"){
+                    let value = instructions[key]
+                    value = value.replace("$", `<div class="text-primary2 bg-light">`)
+                    value = value.replace("&", "<div>")
+                    $("#instructions").append(`<li class="list-group-item">${value}</li>`)
+                }
+                //appends lables of the instructions in html
+                else if(typeof instructions[key] ==="object" && instructions[key].length > 0){
+                    instructions[key].forEach((str) => {
+                        str = str.replace("$", `<div class="text-primary2 bg-light">`)
+                        str = str.replace("&", "<div>")
+                        $("#instructions").append(`<li class="list-group-item">${str}</li>`)
+                    })
+                }                
+            }
+        }
+    }
+
+    function ConfirmImport(fd){
+        fd.append('action', 'confirmImport') 
+        $.ajax({
+            url:urlname,
+            data: fd,
+            contentType: false,
+            processData: false,
+            type: 'POST',
+            success:function(res){
+                Swal.fire({
+                    icon: "success",
+                    title: `Total ${res.totalrows} inserted successfully!`,
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+            },
+            error:function(xhr, status, error){
+                show_error_alert("Somthing went wrong!")
+            }
+        })
+    }
+
+    // Function to handle AJAX request
+    const makeAjaxRequest = (url, fd) => {
+        return $.ajax({
+            url: url,
+            data: fd,
+            contentType: false,
+            processData: false,
+            type: 'POST',
+        });
+    }
+    // Function to create DataTable
+    const createDataTable = (id, data, columns, no_of_cols, rowClass, buttons = null, errors=false) => {
+        // If table exists, destroy it before creating a new one
+        if ($.fn.dataTable.isDataTable(id)) {
+            $(id).DataTable().destroy();
+        }
+
+        let config = {targets:0, data:'Row#', width:"9%", defaultContent:null}
+        let error_config = errors ?  config : {}
+
+        let options = {
+            data: data,
+            columns: columns,
+            dom: buttons ? 'Brtip' : 'rtip',
+            deferRender: true,
+            responsive:true,
+            pageLength:10,
+            columnDefs: [
+                error_config,
+                {
+                    targets: Array(no_of_cols).fill(null).map((_, i) => i),
+                    render: function (data, type, row, meta) {
+                        return data || '--';
+                    }
+                },
+            ],
+            rowCallback: function(row, data, index) {
+                $(row).addClass(rowClass);
+            }
+        };
+
+        // Add buttons if provided
+        if(buttons) options.buttons = buttons;
+
+        return $(id).DataTable(options);
+    }
+
+    var loadingOverlay = document.getElementById('loading-overlay');
+
+    window.addEventListener('load', function() {
+    // Hide the loading overlay when the tab has finished loading
+    loadingOverlay.style.display = 'none';
+    });
+
+
+    $(document).ready(function () {
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        $('#id_table').on('change', function() {
+            let type_of_data = $('#id_table').val();
+            if (type_of_data === 'BULKIMPORTIMAGE') {
+                $('.download-template, .file_uplod, .label').hide();
+                $('.import-image-label, .import-text-input').removeClass('d-none');
+            } else {
+                $('.download-template, .file_uplod, .label').show();
+                $('.import-image-label, .import-text-input').addClass('d-none');
+            }
+            });
+
+        /*Clicking the "Download Template" button triggers an 
+        AJAX request to download a template file for the selected table.*/
+        $('#btn_download').click(() => {
+            let table = $("#id_table").val();
+            console.log('download table',table)
+            let url = `${urlname}?action=downloadTemplate&template=${table}`;
+            console.log('download url',url)
+
+            fetch(url, {
+                method: 'GET'
+            })
+            .then(response => {
+                // extract filename from Content-Disposition header
+                let filename = response.headers.get('Content-Disposition').split('=')[1];
+                filename = filename.replace(/"/g, '');  // Remove quotes if they exist
+
+                return response.blob().then(data => {
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(data);
+                    link.download = filename;
+                    link.click();
+                });
+            })
+            .catch(error => console.log(error));
+        });
+
+
+        /*Clicking the "Import Data" button prompts the user for 
+        confirmation before submitting the form with the selected file.*/
+        // Function to handle button click, submit form with data-file
+        $("#btn_importdata").click((e) => {
+            var fd = getFormData();
+            const params = {
+                url: urlname,
+                modal: false
+            }
+
+            Swal.fire({
+                title: "Submit",
+                text: 'Are you sure the file you are uploading has correct data?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes Upload it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.setItem('table', $('#id_table').val())
+                    $("#id_import_form").submit()
+                }
+            });
+        });
+
+
+        /////////////////// form validations ///////////////////
+        FormValidation.formValidation(
+            document.getElementById('id_import_form'),{
+                fields:{
+                    importfile:{
+                        validators:{
+                            notEmpty:{
+                                message:'This field cannot be empty'
+                            },
+                            file:{
+                                extension:'xls,xlsx',
+                                type:'application/vnd.ms-excel',
+                                message:'Uploaded file is not valid!',
+                                maxSize:700000,
+                                maxFiles:1,
+                                type:'application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                            }
+                        }
+                    }
+                },
+                plugins:{
+                    ...pluginsForFormValidations()
+                }
+            }
+        )
+        //show instruction dynamically
+        if(isValidJSON(`{{ instructions }}`)){
+            instructions = JSON.parse(`{{ instructions }}`)
+            showInstructionsList(instructions)
+        }
+
+
+        /* As the table selection changes, an AJAX request fetches instructions
+         specific to the chosen table and dynamically updates the instruction list.*/
+        $("#id_table").on('change', (e) => {
+            fire_ajax_get({
+                url:"{{ url('onboarding:import') }}",
+                data:{action:"getInstructions", tablename: $("#id_table").val()}
+            }).done((data, xhr, status) => {
+                showInstructionsList(data.instructions)
+            })
+        })
+
+
+
+    })
+</script>
+{% endblock extra_scripts %}

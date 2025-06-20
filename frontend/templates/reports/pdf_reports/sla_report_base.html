@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ static('assets/css/local/reports.css') }}?v=2" rel="stylesheet" type="text/css" />
+    <title>Service level Agreement</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+
+        @page{
+                    @bottom-center{
+                        content:"\A"
+                        "*** This is a computer-generated Report. Signature not required. ***";
+                        margin-right: 20px;
+                        white-space:pre;
+                        font-size: 10px;
+                        line-height: 2.5;
+                        color: #333;
+                    }
+                }
+    </style>
+    {% block inline_css %}
+    {% endblock %}
+</head>
+<body>
+    <div>
+        {% block static_content %}
+        
+        {% endblock %}
+    </div>
+</body>
+</html>

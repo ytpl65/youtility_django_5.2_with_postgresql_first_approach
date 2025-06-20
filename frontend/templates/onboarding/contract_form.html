@@ -1,0 +1,607 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Contract Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% from "onboarding/partials/partial_ta_form.html" import typeassist_form with context %}
+
+{% block extra_css %}
+{{ buform.media.css }}
+<style>
+.pac-container {
+	background-color: #FFF;
+	z-index: 20;
+	position: fixed;
+	display: inline-block;
+	float: left;
+}
+
+
+</style>
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('onboarding:contract') }}?template=true" class="pe-3">Contract List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Contract Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!-------------  BEGIN POP-UPS CODE -------------->
+{% block popup_alerts %}
+	{{ super() }}
+	{% if edit is defined %}
+	<!-- to delete an instance with popup_alert pass the delete_url_name, instance_	id, popup_title, popup_id -->
+		{% call general_popup(title="Delete",popup_id="delete_alert") %}
+		<div class="modal-body">
+			<h4>Are you sure, you want to delete this?</h4>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No Go back</button>
+			<a href="{{ url('onboarding:bu_delete', args=[buform.instance.id]) }}"
+				class="btn btn-sm  btn-danger rounded-1">Yes I'm Sure</a>
+		</div>
+		{% endcall %}
+	{% endif %}
+
+	<!------------- typeassist popup for onclick + icon ---------------------->
+	{% call general_popup(title='Create TypeAssist', popup_id = "butype_ta_popup") %}
+	<form action="" method="post" id="butype_ta_form">
+		<div class="modal-body">
+			<input type="hidden" name="form_name" , value="ta_form">
+			{% if ta_form is defined %}
+			{{ typeassist_form() }}
+			{% endif %}
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-sm  btn-secondary rounded-1" onclick="document.getElementById('butype_ta_form').reset()" data-bs-dismiss="modal">Close</button>
+			<input type="submit" class="btn btn-sm  btn-primary2 rounded-1"  value="Sumbit" form="butype_ta_form" />
+		</div>
+	</form>
+	{% endcall %}
+
+	<!-- Moda for setting GPS coordianates-->
+	{% call general_popup(title="Set GPS Location", popup_id="open_map", modal_size="modal-lg") %}
+	<div class="modal-body card">
+		<div class="card-body p-0">
+			<div id="map" style="width:750px; height:350px"></div>
+		</div>
+	</div>
+	<div class="modal-footer d-flex justify-content-between">
+		<div><p>Tip: Zoom in for accurate coordinates of address, place the marker and then set the coords.</p></div>
+		<div></div>
+		<div><a href="#" class="btn" id="close_setgps" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-primary2" id="set_the_coords">Set the coordinates</a></div>
+		
+	</div>
+	{% endcall %}
+{% endblock popup_alerts %}
+<!------------------------  END POP-UPS CODE ----------------------------->
+
+<!-- calling the macro form which is imported above -->
+
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Contract Details
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+<!-------------- BEGIN FORM ------------------->
+{% block form %}
+<form action="" method="post" id="id_buform">
+    <!-- CSRF and hidden inputs remain the same -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" id="pk" name="pk" value="{{ buform.instance.id }}">
+    <input type="hidden" name="{{ buform.ctzoffset.name }}" id="{{ buform.ctzoffset.auto_id }}" value="-1">
+
+    <!-- Main container for the two-column layout -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Column - All regular fields -->
+            <div class="col-md-6">
+                <!-- BUCODE -->
+                <div class="mb-3 row">
+                    <label class="required col-form-label col-md-4 text-md-right" for="id_bucode">
+                        Code:
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+                            data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+                            title="Code is a unique name which is associated to all operations related to business unit">
+                            info
+                        </span>
+                    </label>
+                    <div class="col-md-8">
+                        {{ buform.bucode }}
+                        {{ buform.bucode.errors }}
+                    </div>
+                </div>
+
+                <!-- BUNAME -->
+                <div class="mb-3 row">
+                    <label class="required col-form-label col-md-4 text-md-right" for="id_buname">
+                        Name:
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+                            data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+                            title="'Name' should be more readable compared to 'Code', spaces are allowed in this field">
+                            info
+                        </span>
+                    </label>
+                    <div class="col-md-8">
+                        {{ buform.buname }}
+                        {{ buform.buname.errors }}
+                    </div>
+                </div>
+
+                <!-- SOLID -->
+                <div class="mb-3 row">
+                    <label class="col-form-label col-md-4 text-md-right" for="id_solid">Sol Id:</label>
+                    <div class="col-md-8">
+                        {{ buform.solid }}
+                        {{ buform.solid.errors }}
+                    </div>
+                </div>
+
+                <!-- PARENT -->
+                <div class="mb-3 row">
+                    <label class="required col-form-label col-md-4 text-md-right" for="id_parent">
+                        Belongs to:
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+                            data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+                            title="As the name suggest it specifies, to which buisness unit it belongs to.">
+                            info
+                        </span>
+                    </label>
+                    <div class="col-md-8">
+                        {{ buform.parent }}
+                        {{ buform.parent.errors }}
+                    </div>
+                </div>
+
+                <!-- SITE TYPE (hidden by default) -->
+                <div class="mb-3 row site_type" style="display:none;">
+                    <label for="id_butype" class="col-form-label col-md-4 text-md-right">
+                        Site Type:
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+                            data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+                            title="Butype specfies the type of this business unit">
+                            info
+                        </span>
+                    </label>
+                    <div class="col-md-8">
+                        <div class="d-flex flex-row">
+                            {{ buform.butype }}
+                            <a href="" type="button" data-bs-toggle="modal" data-bs-target="#butype_ta_popup">
+                                <span style="font-size: 24px;" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="If you haven't found an option in selection menu, then create one from here"
+                                    class="material-icons-outlined mt-3 ps-2 primary-col">
+                                    add_circle
+                                </span>
+                            </a>
+                        </div>
+                        {{ buform.butype.errors }}
+                    </div>
+                </div>
+
+                <!-- TOTAL PEOPLE COUNT -->
+                <div class="mb-3 row">
+                    <label for="id_total_people_count" class="col-form-label col-md-4 text-md-right">Total People Count:</label>
+                    <div class="col-md-8">
+                        {{ buform.total_people_count }}
+                    </div>
+                </div>
+
+				<!-- Posted People -->
+				<div class="mb-3 row">
+					<label for="id_posted_people" class="col-form-label col-md-4 text-md-right">Posted People:</label>
+					<div class="col-md-8">
+						{{ buform.posted_people}}
+					</div>
+					{{ buform.posted_people.errors }}
+				</div>
+            </div>
+
+            <!-- Right Column - Only Designation field -->
+            <div class="col-md-6">
+                <!-- DESIGNATION -->
+                <div class="mb-3">
+                    <label for="id_designation" class="col-form-label mb-2">Designation:</label>
+                    <div id="field-container">
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-md-7">
+                                {{ buform.designation }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ buform.designation_count }}
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-success add-field">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Error Modal (keep this unchanged) -->
+    <div class="modal fade" id="validationErrorModal" tabindex="-1" aria-labelledby="validationErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="validationErrorModalLabel">Validation Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="validationErrorMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock form %}
+<!------------- END FORM ---------------------->
+
+<!-------------- BEGIN FORM PAGE ACTIONS --------->
+{% block formpage_actions %}
+{% if request.session['wizard_data'] is defined %}
+<!--- BEGIN wizard Controls --->
+{{ super() }}
+<!-- END wizard Controls ------>
+{% else %}
+<!--- BEGIN Normal Form Controls -->
+{% if edit is defined %}
+{{ form_update('id_buform', popup_id="delete_alert") }}
+{% else %}
+{{ form_create('id_buform') }}
+{% endif %}
+<!----- END Normal Form Controls --->
+
+{% endif %}
+{% endblock formpage_actions %}
+<!---------------- END FORM PAGE ACTIONS ----------->
+
+<!--------------- BEGIN PAGE-LEVEL EXTRA SCRIPTS ---------------->
+
+{% block extra_scripts %}
+{{ buform.media.js }}
+
+<script>
+	function showHideBuType(){
+		//on load check butype is site
+		var data = $("#id_identifier option:selected").text();
+		var list = ['SITE', 'Site (SITE)', 'Site']
+		if(list.includes(data)){
+				$(".site_type").show();
+				toggleRequiredAttribute('id_siteincharge')
+		}else{
+			$(".site_type").hide();
+			toggleRequiredAttribute('id_siteincharge', set = false)
+		}
+	}
+
+
+	//delete ajax request 
+	function isBuDeleted(id){
+		const params = {
+			'url':`{{ url('onboarding:bu') }}?action=delete&id=${id}`,
+		 	'beforeSend':function () {}
+		}
+		fire_ajax_get(params)
+		.done((data, status, xhr) => {
+			if(!xhr.status === 200){
+				return false
+			}
+			return true
+		})
+		.fail((xhr, status, error) => {
+			show_error_alert('Something went wrong!') //defined in custom.js
+			return false
+		})
+	}
+	
+
+
+	$(document).ready(function () {
+
+		$("#id_parent").attr('readonly', true);
+		$('#id_buname').attr('readonly', true);
+		$('#id_bucode').attr('readonly', true);
+		$('#id_solid').attr('readonly', true);
+
+		var $postedPeople = $('#id_posted_people');
+    
+		function updateSelectionCount() {
+			var count = $postedPeople.select2('data').length;
+			var countBadge = $('.posted-people-count');
+			
+			if (countBadge.length === 0) {
+				countBadge = $('<span class="posted-people-count ms-2 badge badge-light-primary"></span>');
+				$postedPeople.next('.select2-container').find('.select2-selection').append(countBadge);
+			}
+			
+			countBadge.text(count + ' People Posted');
+			countBadge.toggle(count > 0);
+		}
+
+		$postedPeople.select2()
+			.on('select2:select select2:unselect', function(e) {
+				updateSelectionCount();
+			});
+
+		// Initial count update
+		updateSelectionCount();
+
+		function initializeDesignationFields(savedData) {
+			if (!savedData || Object.keys(savedData).length === 0) return;
+			
+			// Remove all existing rows except the first one
+			$('#field-container .row:not(:first)').remove();
+			
+			// Counter to keep track of how many rows we've added
+			let rowCounter = 0;
+			
+			// Iterate through the saved designation data
+			Object.entries(savedData).forEach(([designationId, count]) => {
+				if (rowCounter === 0) {
+					// For the first row, just set the values
+					const firstRow = $('#field-container .row:first');
+					firstRow.find('select').val(designationId).trigger('change');
+					firstRow.find('input').val(count);
+				} else {
+					// For subsequent rows, create new rows
+					const firstRow = $('#field-container .row').first();
+					const newRow = $('<div>', { class: 'row mb-2 align-items-center' });
+					newRow.html(firstRow.html());
+
+					// Update IDs and names
+					const select = newRow.find('select');
+					const input = newRow.find('input');
+					
+					select
+						.attr('id', `id_designation_${rowCounter}`)
+						.attr('name', `designation_${rowCounter}`)
+						.val(designationId)
+						.next('.select2-container').remove();
+					
+					input
+						.attr('id', `id_designation_count_${rowCounter}`)
+						.attr('name', `designation_count_${rowCounter}`)
+						.val(count);
+
+					// Replace + with - button
+					const addButton = newRow.find('.add-field');
+					addButton
+						.removeClass('btn-success add-field')
+						.addClass('btn-danger remove-field')
+						.text('-');
+
+					$('#field-container').append(newRow);
+
+					if ($.fn.select2) {
+						newRow.find('select').select2({
+							placeholder: 'Select an option',
+							allowClear: true,
+						});
+					}
+
+				}
+				rowCounter++;
+			});
+		}
+
+		const fieldContainer = $('#field-container');
+
+		// Add new field row
+		fieldContainer.on('click', '.add-field', function () {
+			const firstRow = fieldContainer.find('.row').first();
+			const newRow = $('<div>', { class: 'row mb-2 align-items-center' });
+			const index = fieldContainer.find('.row').length; // Get current number of rows
+
+			// Clone the first row
+			newRow.html(firstRow.html());
+
+			// Update IDs and names for the new row
+			newRow.find('select')
+				.attr('id', `id_designation_${index}`)
+				.attr('name', `designation_${index}`)
+				.val('') // Reset value
+				.next('.select2-container').remove(); // Remove any existing Select2 DOM structure
+
+			newRow.find('input')
+				.attr('id', `id_designation_count_${index}`)
+				.attr('name', `designation_count_${index}`)
+				.val(''); // Clear input value
+
+			// Replace "+" with "-" for add/remove button
+			const addButton = newRow.find('.add-field');
+			addButton
+				.removeClass('btn-success add-field')
+				.addClass('btn-danger remove-field')
+				.text('-');
+
+			fieldContainer.append(newRow);
+
+			// Re-initialize Select2 on the new dropdown
+			if ($.fn.select2) {
+				newRow.find('select').select2({
+					placeholder: 'Select an option',
+					allowClear: true,
+				});
+			}
+		});
+
+		// Remove field row
+		fieldContainer.on('click', '.remove-field', function () {
+			$(this).closest('.row').remove();
+		});
+
+		// Ensure Select2 is initialized on the first dropdown
+		if ($.fn.select2) {
+			fieldContainer.find('select').select2({
+				placeholder: 'Select an option',
+				allowClear: true,
+			});
+		}
+
+		if ('{{buform.instance.id}}' != 'None') {
+			try {
+				const savedDesignationData = {{ buform.instance.bupreferences.get('contract_designcount', '{}')|safe }};
+				initializeDesignationFields(savedDesignationData);
+			} catch (e) {
+				console.error('Error initializing designation fields:', e);
+			}
+		}
+
+		$("#btn_clear").click(() => {
+			location.href = "{{ url('onboarding:bu') }}?action=form"
+		})
+
+		//set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+		
+		//hide the delete button when instance is not saved yet.
+		if ('{{buform.instance.id}}' == 'None') {
+			$("#btn_del").hide()
+			$(".dt-button buttons-create").addClass("disabled")
+			//on load check
+			showHideBuType();
+		}else{
+			showHideBuType();
+			//$("#id_gpslocation").val("{{ buform.instance.gpslocation.coords[::-1] if buform.instance.gpslocation is not none else 'NONE' }}")
+			//$("#id_address").val("{{ buform.instance.bupreferences.get('address', "") }}")
+			//$("#id_permissibledistance").val("{{ buform.instance.bupreferences.get('permissibledistance', "") }}")
+			$("#id_total_people_count").val("{{ buform.instance.bupreferences.get('total_people_count', 0) }}")
+		}
+
+		// submit the popup-taform for validation and saving in db.
+		$('#butype_ta_form').on('submit', sumit_popup_form({
+			'url': "{{ url('onboarding:ta_popup') }}",
+			'form': "#butype_ta_form",
+			'field': "#id_butype",
+			'modal': "#butype_ta_popup",
+			'default':$("#butype_ta_popup select option:contains('Site Type')").val()
+
+		}))
+		
+		//for select2 search work in bootstrap modals
+		$("#typeassist_popup").find("select[name = tatype]").select2({
+            dropdownParent: $('#typeassist_popup')
+        })
+		
+		$("#butype_ta_popup").find("select[name = tatype]").select2({
+            dropdownParent: $('#butype_ta_popup')
+        })
+		
+		//closeOnSelect set true 
+		$('#id_parent, #id_butype').select2({
+			closeOnSelect: true
+		})
+		
+		//hide next btn if instance is not saved yet
+		if (session['wizard_data'] && session['wizard_data']['bus'].length == 0) {
+			$('#next_btn').hide()
+		}
+		//show butype when user opts to site
+		$('#id_identifier').on('change', function() {
+			showHideBuType()
+		})
+		
+		//pre-select options for pop-up ta forms
+		$("#butype_ta_popup select[name='tatype']").val($("#butype_ta_popup select option:contains('Site Type')").val()).change()
+		$("#butype_ta_popup select[name='tatype']").select2({disabled: 'readonly'})
+		
+
+		//on form submit
+        $("#id_buform").on('submit', function(e){
+            //var form = $(this)
+            e.preventDefault()
+
+			const totalPeopleCount = parseInt($("#id_total_people_count").val(), 10);
+			let designationCountSum = 0;
+
+			// Calculate the sum of all designation counts
+			fieldContainer.find('.row').each(function () {
+				const input = $(this).find('input');
+				const count = parseInt(input.val(), 10);
+				if (!isNaN(count)) {
+					designationCountSum += count;
+				}
+			});
+
+			// Validate the sum of designation counts against total_people_count
+			if (designationCountSum !== totalPeopleCount) {
+				const errorMessage = `The sum of all designation counts (${designationCountSum}) must equal the total people count (${totalPeopleCount}).`;
+				$("#validationErrorMessage").text(errorMessage);
+				$("#validationErrorModal").modal('show');
+				return; // Prevent form submission
+			}
+
+			var form = $(this)
+			const jsonData = {};
+			fieldContainer.find('.row').each(function (index, row) {
+				const dropdown = $(row).find('select');
+				const input = $(row).find('input');
+
+				// Check if both values exist
+				if (dropdown.val() && input.val()) {
+					jsonData[dropdown.val()] = input.val();
+				}
+			});
+
+            const params = {url: "{{ url('onboarding:contract') }}", modal:false}
+            const id = "{{ buform.instance.pk }}"
+            var payLoad = {formData:form.serialize(), 
+							csrfmiddlewaretoken: '{{ csrf_token }}', 
+							address:localStorage.getItem("address"), 
+							jsonData: JSON.stringify(jsonData)}//payload for post request
+		
+            if(id != 'None'){
+				var newPayLoad = {...payLoad, 'pk':id}
+				payLoad = newPayLoad
+			}
+			fire_ajax_form_post(params, payLoad)
+			.done((data, status, xhr) => { //function to submit post request
+                show_successful_save_alert(update= id != 'None' ? true : false)
+                window.setTimeout(function() {
+                    window.location.href = `{{ url('onboarding:contract') }}?id=${data.pk}`;
+                }, 2000);
+			})
+        })
+
+		//on delete form
+		$("#btn_del").on('click', function(e){
+			e.preventDefault()
+			var id = "{{ buform.instance.id }}"
+            show_alert_before_delete('Business Unit')
+            .then((result) => {
+                if(result.isConfirmed){ //delete requested by user
+                    status = isBuDeleted(id) //fire's request
+                    if(status){
+                        show_successful_delete_alert() //defined in customjs
+                    }else{
+                        show_error_alert('Something went wrong!');
+                    }
+                }
+            })
+		})
+	})
+</script>
+{% endblock extra_scripts %}
+<!--------------- END PAGE-LEVEL EXTRA SCRIPTS --------------->

@@ -1,0 +1,680 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Shift Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ shift_form.media.css }}
+<link  href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css"/>
+<link  href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet" type="text/css"/>
+{% endblock extra_css %}
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Shift Form
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('onboarding:shift') }}?template=true" class="pe-3">Shift List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Shift Form</a></li>
+{% endblock pagebreadcumb %}
+
+
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors" role="alert" style="display:none">
+    <strong>Error: </strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+
+
+{% block form %}
+<form action="" method="post" id="shiftform">
+    <input type="hidden" name="pk" id="pk" value="{{ shift_form.instance.pk }}">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="{{ shift_form.ctzoffset.name }}" id="{{ shift_form.ctzoffset.auto_id }}" value="-1">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ shift_form.shiftname.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ shift_form.shiftname }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ shift_form.starttime.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ shift_form.starttime }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ shift_form.endtime.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ shift_form.endtime }}
+                </div>
+            </div>
+            <div class="d-flex">
+                <div class="input-group form-check form-switch form-check-solid mb-6">
+                    <label for="{{ shift_form.nightshiftappicable.id_for_label }}" 
+                    class="form-check-label bool text-sm-right">{{ shift_form.nightshiftappicable }}&nbsp;&nbsp;{{ shift_form.nightshiftappicable.label }}</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ shift_form.shiftduration.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ shift_form.shiftduration }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ shift_form.captchafreq.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ shift_form.captchafreq }}
+                    <div id="error_captchafreq" class="mt-3 d-none"></div>
+                </div>
+            </div>
+            <div class="input-group mb-3 d-none">
+                <div class="col-md-4">
+                        {{ shift_form.designation.label_tag() }}
+                    </div>
+                    <div class="col-md-8">
+                        {{ shift_form.designation }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ shift_form.peoplecount.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ shift_form.peoplecount }}
+                    <div id="error_peoplecount" class="mt-3 d-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Validation Error Modal -->
+    <div class="modal fade" id="validationErrorModal" tabindex="-1" aria-labelledby="validationErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered"> <!-- Added modal-dialog-centered class -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="validationErrorModalLabel">Validation Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="validationErrorMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock form %}
+
+{% block extras %}
+{% if shift_form.instance.id %}
+<div class="row">
+  <div class="card">
+    <div class="ps-0 mt-5 mb-2">
+      <h5 class="ch4">Designation Count&nbsp;<i class="fas text-white fa-layer-group ch4"></i></h5>
+    </div>
+    <table id="People_count_details" class="display cell-border compact hover nowrap"></table>
+  </div>
+</div>
+{% endif%}
+{% endblock extras %}
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    <button type="submit" form="shiftform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        {% if shift_form.instance.id %}
+        Update
+        {% else %}
+        Save
+        {% endif %}
+        &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    
+    <button type="button" id="btn_clear"
+        class="btn btn-sm btn-secondary btn-hover-scale">
+        Clear&nbsp;<i class="fas fa-times"></i>
+    </button>
+    {% if shift_form.instance.id %}
+    <button type="button" onclick="deleteShift(this)" data-id="{{ shift_form.instance.id }}" id="id_deleteShift"
+        class="btn btn-sm btn-danger btn-hover-scale">
+        Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+    </button>
+    {% endif %}
+</div>
+{% endblock ajax_page_actions %}
+
+{% block extra_scripts %}
+{{ shift_form.media.js }}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/editor.select2.js') }}" type="text/javascript"></script>
+<script>
+
+    //format mins to readable format
+    var val = $("#id_shiftduration").val()
+    var nightshiftWarn = false;
+    var editor;
+    var table;
+
+    function convertToUTC(timeStr) {
+        // Convert local time string to UTC
+        const now = new Date();
+        const [hours, minutes] = timeStr.split(':');
+        const localDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+        const utcHours = localDate.getUTCHours().toString().padStart(2, '0');
+        const utcMinutes = localDate.getUTCMinutes().toString().padStart(2, '0');
+        return `${utcHours}:${utcMinutes}`;
+    }
+    
+    function convertToIST(utcTimeStr) {
+        // Convert UTC time string to IST (UTC+5:30)
+        const [hours, minutes] = utcTimeStr.split(':');
+        const utcDate = new Date();
+        utcDate.setUTCHours(parseInt(hours), parseInt(minutes));
+        
+        // Add 5 hours and 30 minutes for IST
+        utcDate.setTime(utcDate.getTime() + (5.5 * 60 * 60 * 1000));
+        
+        const istHours = utcDate.getUTCHours().toString().padStart(2, '0');
+        const istMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
+        return `${istHours}:${istMinutes}`;
+    }
+
+    function getCurrentEditingRow(editor, table) {
+        var rowModifier = editor.modifier();
+        return rowModifier ? table.row(rowModifier).data() : 'None'
+    }   
+
+    function formatMins(duration){
+        return Math.floor(duration / 60) + 'Hrs, ' + duration % 60 + "min";
+    }
+
+    if (val != "") {
+        let mins = parseInt(val, 10);
+        $("#id_shiftduration").val(formatMins(mins))
+    }
+
+    function isValidPositiveNumber(value) {
+        if (value === '') {
+            return true;
+        }
+        // Check if the value is a string that matches the pattern for a positive number
+        // with no 'e', no special characters, and no alphabets.
+        const regex = /^[0-9]*[.,]?[0-9]+$/;
+    
+        // Check if the value is a string, then match against the regex
+        if (typeof value === 'string' && regex.test(value)) {
+            // Convert string to number
+            const number = parseFloat(value);
+            // Check if the number is greater than 0
+            return number >= 0 && !isNaN(number);
+        }
+    
+        // Return false for non-string values
+        return false;
+    }
+    
+    function handleChange(inputId, errorId) {
+        $(inputId).change(function() {
+            var inputValue = $(this).val();
+            var errorDiv = document.getElementById(errorId);
+            
+            if (!isValidPositiveNumber(inputValue)) {
+                errorDiv.innerHTML = '';
+                var newChild = document.createElement('div');
+                newChild.className = 'text-danger';
+                newChild.textContent = "Enter Positive Integer Number Only";
+                errorDiv.appendChild(newChild);
+                errorDiv.classList.remove('d-none');
+            } else {
+                errorDiv.classList.add('d-none');
+                errorDiv.innerHTML = '';
+            }
+        });
+    }
+    
+    // Call the function for each ID pair
+    handleChange('#id_captchafreq', 'error_captchafreq');
+    handleChange('#id_peoplecount', 'error_peoplecount');
+
+    function deleteShift(elem) {
+        var id = $(elem).attr("data-id");
+        var viewname = 'Shift Form';
+        show_alert_before_delete(viewname)
+        .then((result) => {
+            if (result.isConfirmed) {
+                let urlname = "{{ url('onboarding:shift') }}";
+                const params = {url: urlname + '?action=delete&id=' + id}
+                fire_ajax_get(params)
+                .done((data, status, xhr) => {
+                    show_successful_delete_alert();
+                    window.setTimeout(function() {
+                        window.location.href = "{{ url('onboarding:shift') }}?template=true";
+                    }, 2000);
+                })
+                .fail((xhr, status, error) => {
+                    let err = typeof xhr.responseJSON.errors == 'string' ? xhr.responseJSON.errors : 'Something went wrong!';
+                    show_error_alert(err);
+                });
+            }
+        });
+    }
+
+
+    $(document).ready(function() {
+
+        // Convert times from UTC to IST on form load
+        const startTime = $("#id_starttime").val();
+        const endTime = $("#id_endtime").val();
+
+        const shift_designwise_counts = {{ designation_wise_count }}
+        const contract_designwise_counts = {{ count_as_per_design }}
+        const ppl_count_on_shift = {{ total_shifts_ppl_count }}
+        const ppl_count_on_contract = {{ total_ppl_count_on_site }}
+
+        if (startTime) {
+            $("#id_starttime").val(convertToIST(startTime));
+        }
+        if (endTime) {
+            $("#id_endtime").val(convertToIST(endTime));
+        }
+
+        // Set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset());
+
+        //hide the delete button when instance is not saved yet.
+        if ('{{shift_form.instance.id}}' == 'None') {
+            $("#btn_del").hide()
+        }
+
+        //adding time widget to starttime and endtime
+        $('#id_starttime, #id_endtime').flatpickr({
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            //llowInput = true
+        })
+
+        //hide next btn if instance is not saved yet
+        if (session['wizard_data'] && session['wizard_data']['shiftids'].length == 0) {
+            $('#next_btn').hide()
+        }
+
+        //alert user about night shift
+        const nightShiftAlert = {  
+            title: "Night shift alert",
+            text: `According to Start time & End Time do you want to create a 'Night Shift',
+                then the checkbox 'Night Shift Applicable will be enabled by default'`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: 'Go for it!',
+            allowOutsideClick: false
+        }
+
+        const alertUser = () => {
+            Swal.fire(nightShiftAlert).then((res) => {
+                if (res.isConfirmed) {
+                    $("#id_nightshiftappicable").prop('checked', true)
+                } else {
+                    $("#id_starttime, #id_endtime, #id_shiftduration").val("")
+                    $("#id_nightshiftappicable").prop('checked', false)
+                }
+            })
+            nightshiftWarn=true;
+        }
+
+        //total shift duration
+        $("#id_starttime, #id_endtime").change(() => {
+            var st = moment($("#id_starttime").val(), "HH:mm")
+            var et = moment($("#id_endtime").val(), "HH:mm")
+            var duration = moment.duration(et.diff(st)).asMinutes()
+            if (duration < 0) {
+                duration = 1440 + duration
+                nightshiftWarn === false ? alertUser() : {}
+            } else {
+                $("#id_nightshiftappicable").prop('checked', false)
+            }
+            var totalhrs = formatMins(duration)
+            if (totalhrs !== 'NaNHrs, NaNmin') {
+                $("#id_shiftduration").val(totalhrs)
+            }
+        })
+
+        // Hide delete button when instance is not saved yet
+        if ('{{shift_form.instance.id}}' == 'None') {
+            $("#id_deleteShift").hide();
+        }
+
+        // Clear form
+        $("#btn_clear").click(() => {
+            location.href = "{{ url('onboarding:shift') }}?action=form";
+        });
+
+        var current_shift_ppl_count = {{ current_shift_ppl_count }};
+
+        $("#shiftform").on('submit', function(e) {
+            var form = $(this);
+            e.preventDefault();
+            var total_ppl_count = parseInt($("#id_peoplecount").val() || 0);
+            //var current_shift_ppl_count = {{ current_shift_ppl_count }};
+    
+            if(total_ppl_count + ppl_count_on_shift - current_shift_ppl_count > ppl_count_on_contract){
+            const balance_ppl = ppl_count_on_contract - ppl_count_on_shift;
+            show_error_alert(`Total Allowed People count on site is ${ppl_count_on_contract}. 
+                                You have already assigned ${ppl_count_on_shift - current_shift_ppl_count} people to other shifts. 
+                                You can only assign ${balance_ppl + current_shift_ppl_count} people to this shift.`);
+            return;}
+            
+            if (isValidPositiveNumber($('#id_captchafreq').val()) && isValidPositiveNumber($('#id_peoplecount').val())){
+                const params = {url: "{{ url('onboarding:shift') }}", modal: false};
+                const id = "{{ shift_form.instance.pk }}";
+        
+                // Get form data as an object instead of serialized string
+                var formData = new FormData(form[0]);
+                var formObject = {};
+                formData.forEach((value, key) => {
+                    formObject[key] = value;
+                });
+        
+                // Convert times to UTC
+                if (formObject['starttime']) {
+                    formObject['starttime'] = convertToUTC(formObject['starttime']);
+                }
+                if (formObject['endtime']) {
+                    formObject['endtime'] = convertToUTC(formObject['endtime']);
+                }
+                if (formObject['designation']){
+                    formObject['designation'] = ""
+                }
+
+                var payLoad = {
+                    formData: $.param(formObject), // Convert back to serialized string
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                };
+        
+                if (id != 'None') {
+                    payLoad.pk = id;
+                }
+        
+                return $.ajax({
+                    url: params.url,
+                    type: 'POST',
+                    data: payLoad,
+                    dataType: 'json'
+                })
+                .done(function(data, status, xhr) {
+                    show_successful_save_alert(update = id != 'None' ? true : false);
+                    window.setTimeout(function() {
+                        var url = "{{ url('onboarding:shift') }}";
+                        url += "?id=" + data.row.id;
+                        window.location.href = url;
+                    }, 2000);
+                })
+                .fail(function(xhr, status, error) {
+                    let errorMessage = xhr.responseJSON ? xhr.responseJSON.errors.shiftduration[0] : 'An error occurred while saving the form.';
+                    show_error_alert(errorMessage,title= "  ");
+                });
+            }
+        });
+
+        // Desingation count table editor
+        var editor = new $.fn.dataTable.Editor({
+                ajax: {
+                    url:"{{ url('onboarding:shift') }}",
+                    data: function(d) {
+                        d.actiond = 'edit_shift_data';
+                        d.shift_id = "{{shift_form.instance.id}}";
+                        d.csrfmiddlewaretoken = '{{ csrf_token }}';}
+                },
+                table: "#People_count_details",
+                fields: [
+                    {label: "id",name : "id",type: "hidden"},
+                    { label: "Designation", name: "designation" , type: "select"},
+                    {label: "People count", name: "count", type: "text", attr: {
+                        type: 'number',
+                        min: '1'
+                    } },
+                    {label: "Overtime (hours)", name: "overtime", type: "text", attr: {
+                        type: 'number',
+                        min: '0',
+                        step: '0.5'  
+                    } },
+                    {
+                        label: "Grace Time (minutes)", 
+                        name: "gracetime", 
+                        type: "text",
+                        attr: {
+                            type: 'number',
+                            min: '0',
+                            max: '60'
+                        }
+                    }
+                ],
+                idSrc : 'id'
+            });
+
+        editor.on('open', function(e, mode, action) {
+            
+            $("#DTE_Field_designation").addClass("form-control form-select");
+            $("#DTE_Field_count").addClass("form-control");
+            $("#DTE_Field_overtime").addClass("form-control");
+            var designation_choices_from_server = {{ designation_choices }};
+
+            if (action === 'edit') {
+                // Get the current row data
+                var currentRow = table.row({ selected: true }).data();
+                if (currentRow) {
+                    // Find the corresponding value for the label from designation_choices_from_server
+                    var selectedValue = Object.keys(designation_choices_from_server).find(key => designation_choices_from_server[key] === currentRow.designation);
+                    // Clear all options and add only the selected row's designation
+                    editor.field('designation').update([{ label: currentRow.designation + ' (' + selectedValue + ')' , value: selectedValue }]);
+                    // Set the value to the selected row's designation
+                    editor.field('designation').val(selectedValue);
+                }
+            } else if (action === 'create') {
+                // Populate the designation choices array from server data
+                var designation_choices = [{ label: "-------", value: "" }];
+                $.each(designation_choices_from_server, function(key, value) {
+                    designation_choices.push({ label: value + ' (' + key + ')', value: key });
+                });
+                // Updating the editor field with designation choices
+                editor.field('designation').update(designation_choices);
+                editor.field('designation').val("");
+            }
+
+        });
+
+        editor.on('preSubmit', function(e, data, action) {
+
+            const designation = data.data[Object.keys(data.data)[0]].designation;
+            if (!designation) {
+                this.error('designation', 'Please select a valid designation.');
+                return false;
+            }
+
+            let totalCount = calculateTotalPeopleCount();
+            const rowData = data.data[Object.keys(data.data)[0]];
+            const rowCount = parseInt(rowData.count || 0);
+            const overtime = parseFloat(rowData.overtime || 0);
+            const gracetime = parseInt(rowData.gracetime || 0);
+            // Add or subtract the count value from the new/edited row
+            //const rowCount = parseInt(data.data[Object.keys(data.data)[0]].count || 0);
+            if (action === 'create' || action === 'edit') {
+
+                if (!rowCount || rowCount <= 0) {
+                    this.error('count', 'People count must be greater than 0.');
+                    return false;
+                }
+                                
+                var current_shift_design_count = {{ current_shift_designation_counts }};
+                if (shift_designwise_counts[rowData.designation] + rowCount - current_shift_design_count[rowData.designation] > contract_designwise_counts[rowData.designation]){
+                    this.error('count', `Total Allowed People count for ${rowData.designation} is 
+                                        ${contract_designwise_counts[rowData.designation]}, You have already assigned ${shift_designwise_counts[rowData.designation] - current_shift_design_count[rowData.designation]},
+                                        You can only assign ${contract_designwise_counts[rowData.designation] - shift_designwise_counts[rowData.designation] + current_shift_design_count[rowData.designation]} people to this shift.`);
+                    return false;
+                }
+
+
+                
+
+                if (action === 'edit') {
+                    // If editing, subtract the old value first
+                    const currentRowData = getCurrentEditingRow(editor, table);
+                    totalCount -= parseInt(currentRowData.count || 0);
+                }
+                totalCount += rowCount;
+
+                /*if (current_shift_ppl_count !== totalCount) {
+                    this.error('count', 'The total people count on this shift should be equal to the total people count on the form.');
+                    return false;
+                }*/
+
+            };
+
+            if (action === 'remove') {
+
+            }
+
+            if (!validatePeopleCount(totalCount)) {
+                this.error('count', 'The total people count exceeds the allowed number of people for this shift.');
+                return false;
+            }
+
+
+            if (!isValidPositiveNumber(rowCount.toString())) {
+                this.error('count', 'Enter Positive Integer Number Only.');
+                return false;
+            }
+
+            // Validate overtime
+            if (overtime < 0) {
+                this.error('overtime', 'Overtime hours cannot be negative.');
+                return false;
+            }
+
+            // Get shift duration from the form (convert "XHrs, Ymin" to hours)
+            const durationText = $("#id_shiftduration").val();
+            const hours = parseInt(durationText.split('Hrs,')[0]);
+            if (overtime > hours) {
+                this.error('overtime', 'Overtime hours cannot exceed regular shift duration.');
+                return false;}
+
+            // Validate gracetime
+            if (gracetime < 0 || gracetime > 60) {
+                this.error('gracetime', 'Grace time must be between 0 and 60 minutes.');
+                return false;
+            }
+            
+        });
+
+        editor.on('postSubmit', function(e, json, data, action) {
+            if (json.status === 'success') {
+                // Refresh the table data
+                table.ajax.reload();
+                
+                // Show success message based on action
+                if (action === 'create') {
+                    show_successful_save_alert(false);
+                } else if (action === 'edit') {
+                    show_successful_save_alert(true);
+                }
+            }
+        });
+
+        editor.on('opened', function(e, moed, action){
+            $('.DTED_Lightbox_Content').draggable()
+        })
+        
+        //Designation count table
+        var table = $('#People_count_details').DataTable({
+            ajax:{
+                url:"{{ url('onboarding:shift') }}",
+                data: function(d){
+                    d.action = 'get_shift_data';
+                    d.shift_id = "{{shift_form.instance.id}}";  
+                }
+            },
+            columns:[
+                {data:'designation',title:'Designation', render: function(data, type, row) {
+                    return data + ' ' + (row.code ? '(' + row.code + ')' : '');
+                } },
+                {data:'count',title:'People Count'},
+                {data:'overtime', title:'Overtime (hours)', render: function(data) {
+                    return data === null ? '0' : data;
+                } },
+                {
+                    data: 'gracetime', 
+                    title: 'Grace Time (min)',
+                    defaultContent: '0',
+                    render: function(data) {
+                        return data === null || data === undefined ? '0' : data;
+                    }
+                }
+            ],  
+            deferRender:true,
+			responsive:true,
+            select:true,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columnDefs:[ ],
+            select: true,
+            buttons: [
+                    {text:'<i class="fas text-white fa-sync-alt text-dark"></i>', titleAttr:'Refresh Data', className:'refreshBtn'},
+                    { extend: "create", editor: editor },
+                    { extend: "edit", editor: editor },
+                    { extend: "remove", editor: editor }
+                ],
+            select:{
+                style: 'single',
+            }
+
+        });
+
+        $('.refreshBtn').click(() => {
+                table.ajax.reload();
+            })
+
+
+    function calculateTotalPeopleCount() {
+        let total = 0;
+        table.rows().every(function() {
+            let data = this.data();
+            total += parseInt(data.count || 0);
+        });
+        return total;
+    }
+
+    function validatePeopleCount(totalCount) {
+        const formPeopleCount = ppl_count_on_shift
+        return totalCount <= formPeopleCount;
+    }
+
+    });
+        
+</script>
+{% endblock extra_scripts %}

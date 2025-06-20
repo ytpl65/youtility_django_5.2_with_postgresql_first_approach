@@ -1,0 +1,106 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+People Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+{% block extra_css %}
+{{ master_report_form.media.css }}
+<link rel="stylesheet" href="{{ static('assets/css/jqCron.css') }}" type="text/css">
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">{{ template_report }}</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Incident Report Template Form
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+{% if master_report_form.non_field_errors() %}
+<div id="non_field_error" class="alert alert-danger" style="width: 73%;">
+    {% for error in master_report_form.non_field_errors() %}
+    {{ error }}
+    {% endfor %}
+    <button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+<!-------------- BEGIN FORM ------------------->
+{% block form %}
+<form action="" id="master_report" method="post">
+<div class="mb-3 row g-3">
+    {% for field in master_report_form %}
+        {% if fiels.widget_type != 'checkbox' %}
+            <div class="col-md-2">
+                {{ field.label_tag() }}
+            </div>
+            <div class="col-md-4">
+                {{ field }}
+            </div>
+        {% endif %}
+    {% endfor %}
+    <div class="booleans col-md-6 d-flex justify-content-sm-start mt-5">
+        <label for={{ master_report_form.showto_allsites.id_for_label }} class="form-check-label bool col-form-label me-5 text-sm-right">Enable
+            &nbsp;{{ master_report_form.enable }}</label>
+            <!--BLACKLIST CHECKBOX -->
+        <label for={{ master_report_form.enable.id_for_label }} class="form-check-label bool col-form-label me-5 text-sm-right">Blacklist
+            &nbsp;{{ master_report_form.enable }}</label>
+    </div>
+</div>
+</form>
+{% endblock form %}
+<!-------------- END FORM ------------------->
+
+{% block extras %}
+<div class="row">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">List of Report Section</h3>
+        </div>
+        <div class="portlet-body">
+            <table id="jqGridSiteReport"></table>
+            <div tabindex="-1" id="jqGridSiteReportPager"></div>
+        </div>
+    </div>
+</div>
+{% endblock extras %}
+
+{% block ajax_page_actions %}
+    <div class="form-actions">
+        {% if master_report_form.instance.id %}
+        <button type="submit" id="submitTour" form="master_report" class="btn btn-sm btn-primary2 btn-hover-scale">
+            Update Tour&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+        </button>
+
+        <button type="button" onclick="deleteMainJob(this)" data-id="{{ master_report_form.instance.id }}" id="deleteAttd"
+            class="btn btn-sm btn-danger btn-hover-scale">
+            Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+        </button>
+        {% else %}
+        <button type="submit" form="master_report" class="btn btn-sm btn-primary2 btn-hover-scale">
+            Save&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+        </button>
+        {% endif %}
+    </div>
+{% endblock ajax_page_actions %}
+
+{% block extra_scripts %}
+{{ master_report_form.media.js }}
+<script src="{{ static('assets/js/jquery.jqgrid.min.js') }}"></script>
+<script>
+
+</script>
+{% endblock extra_scripts %}

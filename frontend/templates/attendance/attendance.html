@@ -1,0 +1,783 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Attendance
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Attendance
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+
+{% block extra_css %}
+<style>
+td.selected { background-color: yellow; }
+td:not(:last-child) { cursor: pointer; }
+td { padding: 6px; border: 1px solid #CCC; }
+tr{
+    font-size: 10px;
+}
+</style>
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Attendance</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+{% block table %}
+<!--------------------------BEGIN TABLE------------------------------>
+<table id="attd_table" class="display nowrap" style="width:100%">
+</table>
+<!--------------------------END TABLE------------------------------>
+
+
+{% endblock table %}
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal animate__animated animate__zoomIn" aria-hidden="true" tabindex="-1"
+    aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-attd">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content" id="attd_content">
+        </div>
+    </div>
+</div>
+
+{% call general_popup(popup_id = 'modal_fr_status', title = 'Face Recognition & Location Details', modal_size='modal-lg') %}
+<div class="modal-body py-0">
+    <div class="row">
+        <div class="card-group">
+            <div class="card" style="width: 18rem;">
+                <img src="" class="card-img-top" alt="" id="attd_in_img" style="width: 252px;height: 300px;object-fit:cover">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item" id="fr_in"></li>
+                    <li class="list-group-item"id="fr_metric"></li>
+                    <li class="list-group-item"id="fr_ppl"></li>
+                    <li class="list-group-item"id="fr_date"></li>
+                    <li class="list-group-item"id="in_address"></li>
+                </ul>
+            </div>
+            <div class="card" style="width: 18rem;">
+                <img src="" class="card-img-top" alt="" id="default_people_img" style="width: 252px;height: 300px;object-fit:cover">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Default Profile Image</li>
+                    <li class="list-group-item"id='taken_on'></li>
+                    <li class="list-group-item"id="cuser"></li>
+                    <li class="list-group-item pe-0"id="modified_on"></li>
+                    <li class="list-group-item"id="base_address"></li>
+                    <li class="list-group-item"id="muser"></li>
+                </ul>
+            </div>
+            <div class="card" style="width: 18rem;">
+                <img src="" class="card-img-top" alt="" id="attd_out_img" style="width: 252px;height: 300px;object-fit:cover">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item" id="fr_in2"></li>
+                    <li class="list-group-item"id="fr_metric2"></li>
+                    <li class="list-group-item"id="fr_ppl2"></li>
+                    <li class="list-group-item"id="fr_date2"></li>
+                    <li class="list-group-item"id="out_address"></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-primary2" data-bs-dismiss="modal">OK</button>
+</div>
+{% endcall %}
+
+
+{% call general_popup(popup_id = 'modal_adv_search',modal_size="modal-lg", title="Search with criteria &nbsp;<i class='fas text-white text-primary fa-search ch4'></i>") %}
+<div class="modal-body">
+<div id="myFilter" style="height: 100%;" class="d-block"></div>
+</div>
+{% endcall %}
+<div class="modal fade" id="modal_location_status" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-heading ch4" id="staticBackdropLabel">Attendance Location Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-0">
+                <!-- Loading Spinner (Hidden by default) -->
+                <div id="loading-spinner" class="text-center d-none" style="padding-top: 2rem;">
+                    <div class="spinner-border text-primary" style="width: 2rem; height: 2rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Fetching location details...</p>
+                </div>
+
+                <!-- No Data Available Card (Hidden by default) -->
+                <br>
+                <div id="no-data-card" class="card text-center d-none">
+                    <div class="card-body">
+                        <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="card-title">No Data Available</h5>
+                        <p class="card-text text-muted">There is no geofence details available for this record.</p>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Existing Data Container (Hidden by default) -->
+                <div id="location-details-container" class="row d-none">
+                    <div class="p-5">
+                        <table border="0" style="width: 100%;">
+                            <tr>
+                                <td style="width: 50%; vertical-align: top;" id="site_name"></td>
+                                <td style="width: 50%; vertical-align: top;" id="siteincharge_peoplename"></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%; vertical-align: top;" id="peoplename"></td>
+                                <td style="width: 50%; vertical-align: top;" id="siteincharge_mobno"></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%; vertical-align: top;" id="people_mobno"></td>
+                                <td style="width: 50%; vertical-align: top;" id="siteincharge_email"></td>
+                            </tr>
+                        </table><br>
+                        <div style="height: 400px; width: 742px;" id="map"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock popup_alerts %}
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyACeVI4lSa34BKqfTHGJyxyZkJ6w0yyW7A&libraries=geometry"></script>
+<script>
+
+    function getLocationStatus(buName, peopleId, peoplename, people_mobno, siteincharge_peoplename, siteincharge_mobno, siteincharge_email, startLocationStr, endLocationStr) {
+        // Reset modal state
+        clearModalElementsLocation()
+        $("#no-data-card").addClass('d-none');
+        $("#location-details-container").addClass('d-none');
+        $("#loading-spinner").removeClass('d-none');
+    
+        // Check if critical data is available
+        const requiredFields = [
+            buName, peopleId, peoplename, 
+            people_mobno, siteincharge_peoplename, 
+            siteincharge_mobno, siteincharge_email, 
+            startLocationStr, endLocationStr
+        ];
+    
+        // If any required field is empty or undefined, show no data card
+        if (requiredFields.some(field => !field)) {
+            setTimeout(() => {
+                $("#loading-spinner").addClass('d-none');
+                $("#no-data-card").removeClass('d-none');
+            }, 1000);
+            $("#modal_location_status").modal("show");
+            return;
+        }
+    
+        $("#modal_location_status").modal("show");
+        const previewGeofenceUrl = '{{ url("attendance:attendance_view") }}';
+        
+        // Set a timeout to show no data card if request takes too long
+        const loadingTimeout = setTimeout(() => {
+            $("#loading-spinner").addClass('d-none');
+            $("#no-data-card").removeClass('d-none');
+        }, 50000); // 10 seconds timeout
+    
+        $.ajax({
+            url: `${previewGeofenceUrl}?action=getLocationStatus&peopleid=${peopleId}`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                // Clear the timeout
+                clearTimeout(loadingTimeout);
+    
+                // Hide loading spinner
+                $("#loading-spinner").addClass('d-none');
+    
+                // Check if response has necessary data
+                if (!response || !response.geofence_coords || response.geofence_coords.length === 0) {
+                    $("#no-data-card").removeClass('d-none');
+                    return;
+                }
+    
+                // Show location details container
+                $("#location-details-container").removeClass('d-none');
+    
+                const geofenceCoords = response.geofence_coords;
+                
+                // Populate text content
+                $('#site_name').html(`<b>Site Name:</b> ${buName}`);
+                $('#peoplename').html(`<b>People Name:</b> ${peoplename}`);
+                $('#people_mobno').html(`<b>People Mobile Number:</b> ${people_mobno}`);
+                $('#siteincharge_peoplename').html(`<b>Site Incharge Name:</b> ${siteincharge_peoplename}`);
+                $('#siteincharge_mobno').html(`<b>Site Incharge Mobile Number:</b> ${siteincharge_mobno}`);
+                $('#siteincharge_email').html(`<b>Site Incharge Email ID:</b> ${siteincharge_email}`);
+    
+                // Calculate map center
+                const centerLat = geofenceCoords.reduce((sum, coord) => sum + coord[1], 0) / geofenceCoords.length;
+                const centerLng = geofenceCoords.reduce((sum, coord) => sum + coord[0], 0) / geofenceCoords.length;
+                const center = { lat: centerLat, lng: centerLng };
+    
+                // Initialize map
+                initMap(buName, geofenceCoords, center, 
+                    JSON.parse(startLocationStr), 
+                    JSON.parse(endLocationStr)
+                );
+            },
+            error: function (xhr, status, error) {
+                // Clear the timeout
+                clearTimeout(loadingTimeout);
+    
+                console.log("Error: ", error);
+                $("#loading-spinner").addClass('d-none');
+                $("#no-data-card").removeClass('d-none');
+            }
+        });
+    }
+    
+    function clearModalElementsLocation() {
+        // Clear all text content
+        $('#site_name, #peoplename, #people_mobno, #siteincharge_peoplename, #siteincharge_mobno, #siteincharge_email, #map').html('');
+        $("#no-data-card").addClass('d-none');
+        $("#location-details-container").addClass('d-none');
+        $("#loading-spinner").addClass('d-none');
+    }
+
+    function initMap(buName, geofenceCoords, center, startLocation, endLocation) {
+        // Check if the geometry library is loaded
+        if (!google.maps.geometry) {
+            console.error("Google Maps Geometry Library is required. Include 'libraries=geometry' in the script URL.");
+            return;
+        }
+        // Helper function to check if a point is inside the geofence polygon
+        function isPointInsidePolygon(point, polygon) {
+            return google.maps.geometry.poly.containsLocation(
+                new google.maps.LatLng(point.lat, point.lng),
+                polygon
+            );
+        }
+        console.log("geofenceCoords",geofenceCoords)
+        // Initialize the map
+        if (geofenceCoords) {
+            const mapDiv = document.getElementById('map');
+            const map = new google.maps.Map(mapDiv, {
+                zoom: 15,
+                center: center
+            });
+            
+            // Draw the geofence (polygon)
+            const geofence = new google.maps.Polygon({
+                paths: geofenceCoords.map(([lng, lat]) => ({ lat, lng })),
+                strokeColor: "#6666FF",
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#87CEFA",
+                fillOpacity: 0.35
+            });
+            geofence.setMap(map);
+    
+            // Custom icon for the geofence center marker
+            const geofenceCenterIcon = {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 10,
+                fillColor: "#FF0000",
+                fillOpacity: 1,
+                strokeColor: "#FFFFFF",
+                strokeWeight: 2
+            };
+    
+            // Add marker for the geofence center
+            const centerMarker = new google.maps.Marker({
+                position: center,
+                map,
+                title: buName,
+                icon: geofenceCenterIcon
+            });
+    
+            // Function to draw a line (without labels)
+            function drawLine(origin, destination) {
+                new google.maps.Polyline({
+                    path: [origin, destination],
+                    geodesic: true,
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2,
+                    map: map
+                });
+            }
+    
+            // Function to slightly adjust the marker position to "split" overlapping markers
+            function adjustPosition(position, offset) {
+                return {
+                    lat: position.lat + offset,
+                    lng: position.lng + offset
+                };
+            }
+    
+            // Create a single InfoWindow to display messages
+            const infoWindow = new google.maps.InfoWindow();
+    
+            // Function to calculate distance from the center
+            function calculateDistance(markerPosition) {
+                const centerLatLng = new google.maps.LatLng(center.lat, center.lng);
+                const markerLatLng = new google.maps.LatLng(markerPosition.lat, markerPosition.lng);
+                return google.maps.geometry.spherical.computeDistanceBetween(centerLatLng, markerLatLng);
+            }
+    
+            // Add IN and OUT markers
+            let inMarker, outMarker;
+            let inOutsideGeofence = false, outOutsideGeofence = false;
+    
+            if (startLocation && startLocation.lat && startLocation.lng) {
+                const isInInside = isPointInsidePolygon(startLocation, geofence);
+                if (!isInInside) inOutsideGeofence = true;
+    
+                inMarker = new google.maps.Marker({
+                    position: startLocation,
+                    map,
+                    title: "IN Location"
+                });
+    
+                // Add click listener to IN marker
+                inMarker.addListener("click", () => {
+                    let content = isInInside
+                        ? "IN Location is inside the geofence."
+                        : "IN Location is outside the geofence.";
+    
+                    // If outside the geofence, show distance as well
+                    if (inOutsideGeofence) {
+                        const distance = calculateDistance(startLocation);
+                        content += `<br><b> ${distance.toFixed(2)}</b> meters`;
+                    }
+    
+                    infoWindow.setContent(content);
+                    infoWindow.open(map, inMarker);
+                });
+            }
+    
+            if (endLocation && endLocation.lat && endLocation.lng) {
+                const isOutInside = isPointInsidePolygon(endLocation, geofence);
+                if (!isOutInside) outOutsideGeofence = true;
+    
+                outMarker = new google.maps.Marker({
+                    position: endLocation,
+                    map,
+                    title: "OUT Location"
+                });
+    
+                // Add click listener to OUT marker
+                outMarker.addListener("click", () => {
+                    let content = isOutInside
+                        ? "OUT Location is inside the geofence."
+                        : "OUT Location is outside the geofence.";
+    
+                    // If outside the geofence, show distance as well
+                    if (outOutsideGeofence) {
+                        const distance = calculateDistance(endLocation);
+                        content += `<br> <b>${distance.toFixed(2)}</b> meters away.`;
+                    }
+    
+                    infoWindow.setContent(content);
+                    infoWindow.open(map, outMarker);
+                });
+            }
+    
+            // Draw lines if points are outside the geofence
+            if (inOutsideGeofence && outOutsideGeofence) {
+                drawLine(center, startLocation);
+                drawLine(center, endLocation);
+            } else if (inOutsideGeofence) {
+                drawLine(center, startLocation);
+            } else if (outOutsideGeofence) {
+                drawLine(center, endLocation);
+            }
+    
+            // Adjust the map bounds to fit the geofence polygon
+            const bounds = new google.maps.LatLngBounds();
+            geofenceCoords.forEach(coord => bounds.extend(new google.maps.LatLng(coord[1], coord[0])));
+            map.fitBounds(bounds);
+        }
+    }
+
+    var table = null;
+    function getReadableTextForINOUT(details){
+        if(details){
+            console.log(details, "details")
+            let verifiedInValuye = details['peventlogextras']['distance_in'] ? Math.round((1-details['peventlogextras']['distance_in'])*100) : 'N/A'
+            $("#fr_in").html(`Face Recognition: ${verifiedInValuye}%`)
+            let verifiedOutValuye = details['peventlogextras']['distance_out'] ? Math.round((1-details['peventlogextras']['distance_out'])*100) : 'N/A'
+            $("#fr_in2").html(`Face Recognition: ${verifiedOutValuye}%`)
+            let threshold = details['peventlogextras']['threshold'] ? details['peventlogextras']['threshold']: 'N/A'
+            $("#thresold, #thresold2").html(`Threshold Used: 0.90`)
+            let metric = details['peventlogextras']['similarity_metric'] ? details['peventlogextras']['similarity_metric'].toUpperCase(): 'N/A'
+            $("#fr_metric, #fr_metric2").html(`Metric Used: ${metric}`)
+            let ingps = details['startgps'] ? JSON.parse(details['startgps'])['coordinates'] : 'N/A'
+            let outgps = details['endgps'] ?  JSON.parse(details['endgps'])['coordinates'] : 'N/A'
+            let ondate = details['datefor'] ? details['datefor'] : 'N/A'
+            $("#fr_date, #fr_date2").html(`Captured Date: ${ondate}`)
+            let createdby = details['createdby'] ? details['createdby'] : 'N/A'
+            $("#fr_ppl, #fr_ppl2").html(`Performed By: ${createdby}`)
+            let inAddress = details['in_address'] ? details['in_address'] : 'N/A'
+            $("#in_address").html(`In Location: ${inAddress}`)
+            let outAddress = details['out_address'] ? details['out_address'] : 'N/A'
+            $("#out_address").html(`Out Location: ${outAddress}`)
+            let baseAddress = details['base_address'] ? details['base_address'] : 'N/A (This people not added in GeoFence)'
+            $("#base_address").html(`Base Location: ${baseAddress}`)
+        }
+        return null
+    }
+    
+    function getFRStatus(data){
+        fire_ajax_get({url:`{{ url('activity:previewImage') }}?action=getFRStatus&uuid=${data}`,})
+        .done((data, status, xhr) => {
+            const NA = "Information not available"
+            const filepathIN = data['attachment_in_out'].length ? `{{MEDIA_URL}}${data['attachment_in_out'][0]['filepath'].replace('youtility4_media/', '')}/${data['attachment_in_out'][0]['filename']}` : "{{ static('assets/media/images/blank.png') }}"
+            const filepathOUT = data['attachment_in_out'].length > 1 ? `{{MEDIA_URL}}${data['attachment_in_out'][1]['filepath'].replace('youtility4_media/', '')}/${data['attachment_in_out'][1]['filename']}` : "{{ static('assets/media/images/blank.png') }}"
+            const defaultIMG =  data['default_people_data'].length ? `{{MEDIA_URL}}${data['default_people_data'][0]['peopleimg'].replace('youtility4_media/', '')}` : "{{ static('assets/media/images/blank.png') }}"
+            
+            $("#attd_in_img").attr('src', filepathIN)
+            $("#attd_out_img").attr('src', filepathOUT)
+            $("#default_people_img").attr('src', defaultIMG)
+            $("#modal_fr_status").modal("show");
+            getReadableTextForINOUT(data['eventlog_in_out'].length > 0 ? data['eventlog_in_out'][0] : null)
+            $("#taken_on").html(`Take on: ${utc_to_local(data['default_people_data'][0]['ctzoffset'], data['default_people_data'][0]['cdtz'])}`)
+            $("#cuser").html(`Onboarded By: ${data['default_people_data'][0]['cuser__peoplename']}`)
+            $("#modified_on").html(`Last Updated on: ${utc_to_local(data['default_people_data'][0]['ctzoffset'], data['default_people_data'][0]['mdtz'])}`)
+            $("#muser").html(`Modified By: ${data['default_people_data'][0]['muser__peoplename']}`)
+        })
+        .fail((xhr, status, error) =>  {
+            console.log(error)
+        })
+    }
+    //if you want to modifiy here, then modify in custom.js initDateRange also
+    var params=null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+    const table_filters = localStorage.getItem('attds_filter')
+    console.log(table_filters)
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+
+    function matchStatus(row, data){
+        if(['SELF', 'MARK'].includes(row['peventtype__tacode'])){
+            if([null, "", 'NONE'].includes(row['punchouttime'])){
+                return '<span class="badge badge-warning">Pending</span>'
+            }
+            if(![null, "", 'NONE'].includes(row['punchintime'])){
+                return data === false ? '<span class="badge badge-danger">Not Matched</span>' : '<span class="badge badge-success">Matched</span>'
+            }
+        }return '--'
+    }
+
+    function convertToIST(time) {
+        // Create a Date object in UTC by appending the date
+        const utcDate = new Date(`1970-01-01T${time}Z`);  // 'Z' indicates UTC time
+      
+        // Convert to IST by adding 5 hours and 30 minutes
+        const istOffset = 5 * 60 + 30;  // IST is UTC + 5:30
+        const istDate = new Date(utcDate.getTime() + istOffset * 60000);  // Convert minutes to milliseconds
+      
+        // Format the IST time in HH:MM:SS format
+        const hours = String(istDate.getUTCHours()).padStart(2, '0');
+        const minutes = String(istDate.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(istDate.getUTCSeconds()).padStart(2, '0');
+      
+        return `${hours}:${minutes}:${seconds}`;
+        }
+
+    $(document).ready(function () {
+        
+        new ClipboardJS('btn-copy')
+        //beforeSend of capability ajax request 
+        function attdBeforeSend() {
+            $("#modal-attd").modal("show");
+        }
+        //datatable initialization
+        table = $('#attd_table').DataTable({
+            ajax:{
+				url: '{{ url("attendance:attendance_view") }}?action=list',
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+			},
+            pageLength:1000,
+            deferRender: true,
+            dom: `<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            order:[[10, 'desc']],
+            columnDefs:[
+                {targets:[6,7], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)}
+                }
+            ],
+            lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            responsive:true,
+            columns:[
+                {data:'peventtype__taname', title:'Type', width:"4%"},//0
+                {data:'bu__buname', title:'Site Name',
+                render: function (data, type, row, meta) {
+                    let startCoords = typeof row['sL'] === 'string' && row['sL'].length > 0 ? JSON.parse(row['sL']) : 'NONE';
+                    let endCoords = typeof row['eL'] === 'string' && row['eL'].length > 0 ? JSON.parse(row['eL']) : 'NONE';
+                    let startLocation = {}
+                    let endLocation = {}
+                    if (startCoords !== 'NONE') {
+                        startLocation = {
+                            lat: startCoords['coordinates'][1],
+                            lng: startCoords['coordinates'][0]
+                        };
+                    }
+                    if (endCoords !== 'NONE') {
+                        endLocation = {
+                            lat: endCoords['coordinates'][1],
+                            lng: endCoords['coordinates'][0]
+                        };
+                    }
+                    // Create a safely escaped string representation of the location
+                    const safeStartLocation = JSON.stringify(startLocation).replace(/"/g, '&quot;');
+                    const safeEndLocation = JSON.stringify(endLocation).replace(/"/g, '&quot;');
+
+                    // Return the formatted link with proper event handling
+                    return `<a 
+                        type="button" 
+                        class="" 
+                        onclick="getLocationStatus('${row['bu__buname']}', '${row['people__id']}', '${row['people__peoplename']}',
+                        '${row['people__mobno']}','${row['bu__siteincharge__peoplename']}', '${row['bu__siteincharge__mobno']}', 
+                        '${row['bu__siteincharge__email']}','${safeStartLocation}', '${safeEndLocation}');event.stopPropagation();"
+                    >${data}</a>`;
+                }
+                },//1
+                { data:'people__peoplecode',  title:"Code"},//2
+                {data:'people__peoplename', title:'People'},//3
+                {data:'facerecognitionin', title:'FR IN', width:"3%"},//4
+                {data:'sL', title:'Att IN',visible:false},//5
+                {data:'facerecognitionout', title:'FR OUT'},//6
+                {data:'eL', title:'Att OUT',visible:false},//7
+                {data:'verifiedby__peoplename', title:'Verified By', width:"5%",visible:false},//8
+                {data:'datefor', title:'Date For'},//9
+                {data:'punchintime', title:'In Time'},//10
+                {data:'punchouttime', title:'Out Time'},//11
+                {data:'id',  searchable:false, title:'FRL Status'},//12
+                { data:'uuid',  visible:false, searchable:false, className:'noVis'},//13
+                { data:'peventtype__tacode',  visible:false, searchable:false, className:'noVis'},//14
+                { data:'people__location__locname',  title:"Location",visible:false, searchable:false,},//15
+                {data:'shift__shiftname',title:"Shift Name"},
+                {data:'shift__starttime',title:'Shift starttime'},
+                {data:'shift__endtime',title:'Shift endtime'}
+                
+            ], 
+            columnDefs:[
+                {targets:9, render:function(data, type, row, meta){return utc_to_local(row['ctzoffset'], data, 'YYYY-MM-DD')}
+                },
+                {targets:10, render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)}
+                },
+                {targets:11, render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)}
+                },
+                {targets:[6], render:function(data, type, row, meta){
+                    return matchStatus(row, data)
+                }
+                },
+                {targets:[4], render:function(data, type, row, meta){
+                    return data === false ? '<span class="badge badge-danger">Not Matched</span>' : '<span class="badge badge-success">Matched</span>'
+                }
+                },
+                {targets:12, render:function(data, type, row, meta){
+                    return ['SELF', 'MARK'].includes(row['peventtype__tacode']) ? `<button type="button" class="btn p-0 btn-link" onClick="getFRStatus('${row['uuid']}');event.stopPropagation();">FRL Status</button>` : '--'}
+                },
+                {targets:3,data:"people__peoplename", render:function(data, type, row, meta){
+                    return data === 'NONE' ? 'Unknown' : `${data}`
+                }
+                },
+                {targets:[5], render:function(data, type, row, meta){
+                    let coords = typeof data === 'string' && data.length > 0 ? JSON.parse(data): 'NONE'
+                    if(coords !== 'NONE'){
+                            let lat = coords['coordinates'][1]
+                            let lng = coords['coordinates'][0]
+                            return `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank">${lat},${lng}</a>`
+                    }return coords
+                }
+                },
+                {targets:[7], render:function(data, type, row, meta){
+                    let coords = typeof data === 'string' && data.length > 0 ? JSON.parse(data): 'NONE'
+                    if(coords !== 'NONE'){
+                            let lat = coords['coordinates'][1]
+                            let lng = coords['coordinates'][0]
+                            return `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank">${lat},${lng}</a>`
+                    }return coords
+                },
+                },
+                {targets:[17,18], render:function(data,type,row,meta){
+                    return convertToIST (data)
+                }}
+            ],
+            buttons: [
+                "searchBuilder",
+                dataTablesPDFConfig(
+                    title = `Site: {{ request.user.bu.buname }}\nAttendance List`,
+                    columns = ':visible',
+                    filename = "attendance_list",
+                    pageSize = "A3",
+
+                ),
+                dataTablesExcelConfig(
+                    title = 'Site: {{ request.user.bu.buname }}\nAttendance List',
+                    columns = ':visible',
+                    filename = "attendance_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+            ],
+            select: {
+                style: 'single'
+            }
+        })
+        
+        //add input field to the datatables dom
+        initDateRangeHtml()
+        initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            let filters = {from:from_pd, to:to_pd}
+            reloadTable(table, filters)
+        })
+
+        
+        //BEGIN STYLING DATATABLE
+        $("th > input").addClass('form-control')
+        $("th > input").css('height', '35px')
+        var styles = {
+            "border-bottom": "none",
+            "background-color": "#f1f4f7"
+        }
+
+        $('#attd_table thead tr:eq(1)').css(styles)
+
+        //submit form
+		$('#modal-attd').on('submit', '#attd_form', function(e) {
+            console.log("submitted")
+			var form = $(this);
+			e.preventDefault()
+			const params   = { url: "{{ url('attendance:attendance_view') }}", modal:true }                     //attendance view
+			const formtype = $("#attd_content").attr('data-form')                                  //form-type (create/update)
+			const id       = $("#attd_content").attr('data-id')                                    //form instance id
+			var   payLoad  = {formData:form.serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'}  //payload for post request
+			var   status   = 'created'
+            if(formtype === 'update'){
+				var newPayLoad = {...payLoad, 'pk':id}
+				payLoad    = newPayLoad
+				status     = 'updated'
+			}
+			fire_ajax_form_post(params, payLoad)
+			.done((data, status, xhr) => { //function to submit post request
+				$("#modal-attd").modal("hide");
+				Swal.fire(
+				`Attendance ${status}`,
+				`Attendance with this type <strong>"${data.type}"</strong> has been ${status} successfully`,
+				'success'
+				)
+			})
+		})
+
+        $("table tr td").click(function() {
+            $(".selected").removeClass("selected");
+            $(this).closest("tr").find("td").not(":last-child").addClass("selected");
+        });
+        
+
+        table.on('select', function(){
+            var id = table.row({selected:true}).data().id
+            if (!(id)){ return }
+            const params = {
+				modal_id    : "#modal-attd",
+				url         : `{{ url('attendance:attendance_view') }}?id=${id}`,
+				beforeSend  : attdBeforeSend }
+			fire_ajax_get(params)
+			.done((data, status, xhr) => {
+				$("#attd_content").attr('data-form', 'update')
+				$("#modal-attd .modal-content").html(data.html_form)
+			})
+			.fail((xhr, status, error) => {
+				show_error_alert('Something went wrong!') //defined in custom.js
+			})
+        })
+
+        // add classes to checkboxes.
+        $(".booleans").addClass("form-check form-switch form-check-custom form-check-solid") 
+
+        //datatime widget
+        //$("#id_punchintime, #id_punchouttime").flatpickr({
+        //    enableTime: true,
+        //    dateFormat: "Y-m-d H:i",
+        //});
+
+        //date widget
+        $("#id_datefor").flatpickr({
+            dateFormat: 'd M Y'
+        });
+
+        //on click  fr_status_btn open modal fr_status
+        $("#fr_status_btn").click(function(e){
+            e.preventDefault()
+            $("#modal_fr_status").modal("show");
+            e.stopPropagation()
+        })
+
+    })//END document.ready()
+
+    //deleted ajax request
+    function isAttendanceDeleted(id){
+		const params = {url:`{{ url('attendance:attendance_view') }}?action=delete&id=${id}`}
+		fire_ajax_get(params)
+		.done((data, status, xhr) => {
+			if(!xhr.status === 200){
+				return false
+			}
+			return true
+		})
+		.fail((xhr, status, error) => {
+			show_error_alert('Something went wrong!') //defined in custom.js
+            return false
+		})
+	}
+
+    //delete attendance
+    function deleteAttendance(elemt){
+        var id  = $(elemt).attr("data-id");
+        show_alert_before_delete("Attendance")
+        .then((result) => {
+            if(result.isConfirmed){ //delete requested by user
+				status = isAttendanceDeleted(id) //fire's ajax request
+				if(status){
+					show_successful_delete_alert() //defined in customjs
+					$("#modal-attd").modal("hide")
+					//delete row from table
+					row_index = parseInt($("#attd_content").attr('data-rowid'), 10)
+					table.row(row_index).remove().draw();
+				}else{
+					show_error_alert('Something went wrong!');
+				}
+			}
+        })
+    }
+
+    
+</script>
+{% endblock extra_scripts %}

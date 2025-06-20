@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Required Meta Tags -->
+  <meta name="viewport" content="width = device-width, initial-scale = 1" />
+  <meta content="text/html;charset = utf-8" http-equiv="Content-Type">
+  
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" type="text/css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700"  type="text/css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" type="text/css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  
+  <!-- Global CSS & ICONS -->
+  <link href="{{ static('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
+  <link href="{{ static('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-darkness/jquery-ui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" type="text/css"/>
+  <link rel="shortcut icon" type="image/jpg" href="{{ static('assets/media/images/favicon.ico') }}"/>
+
+  <!-- Our Custom Local CSS File -->
+  <link href="{{ static('assets/css/local/global_level.css') }}" rel="stylesheet" type="text/css" />
+
+  <!-- A Block Avaialble For Child Base Files to Override -->
+  {%- block base_head -%}
+    
+  {% endblock base_head %}
+  
+
+  <!-- Page Title -->
+  <title>
+  {%- block title -%}
+  
+  {% endblock title %}
+  </title>
+  
+  <!-- A Block Available to Add Custom CSS to the End Page --->
+  {%- block extra_css -%}
+
+  {% endblock extra_css %}
+  
+  <!--CSS Rules to this Page-->
+  <style>
+    #loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #loading-spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 2s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body id="kt_body"
+  class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed toolbar-tablet-and-mobile-fixed aside-enabled aside-fixed"
+  style="--kt-toolbar-height:55px;--kt-toolbar-height-tablet-and-mobile:55px" data-kt-aside-minimize = 'off'>
+
+  
+  <input type="hidden" id="urlname" data-url = ''>
+  {%- block body -%}
+  
+  {% endblock body %}
+
+  <!-- BEGIN  GLOBAL JS BUNDLE (used by all pages) -->
+  
+  <script src="{{ static('assets/plugins/global/plugins.bundle.js') }}"></script>
+  <script src="{{ static('assets/plugins/global/apexcharts.js') }}"></script>
+  <script src="{{ static('assets/js/scripts.bundle.js') }}"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+
+  <!-- END  GLOBAL JS BUNDLE (used by all pages) -->
+
+<script>
+  // tojson filter converts python datatypes to json datatypes.
+  var   session            = {{ dict(request.session) |default ("") | tojson }}
+  console.log("session", session)
+  const fileUploadUrl = "{{ url('onboarding:file_upload') }}"
+
+  var dontBlock = false;
+  var target = document.querySelector("body")
+  var blockUI = new KTBlockUI(target, {
+    message: "<div class='blockui-message'><span class='spinner-border text-primary'></span>Loading...</div>",
+  });
+  function startBlockUi(){
+    if(!dontBlock)
+      blockUI.block();
+  }
+  
+  function endBlockUi(){
+    if (blockUI.isBlocked()) {
+        blockUI.release();
+    } 
+  }
+</script>
+<!-- BEGIN GLOBAL-CUSTOM-FILE LEVEL SCRIPTS --> 
+ <script src="{{ static('assets/js/local/custom.js') }}?v=5" type="text/javascript"></script>
+<!-- END GLOBAL-CUSTOM-FILE LEVEL SCRIPTS -->
+
+  <!-- BEGIN GLOBAL-INLINE CUSTOM SCRIPTS -->
+  <script>
+    /*=================================
+    to load script before dom-load write
+    them outside of "$(document).ready()"
+    ==================================*/
+    
+    // add classes to label tags.
+    //$('label').addClass("col-form-label col-md-2 col-sm-2 text-sm-right") 
+
+    $('body').removeClass('modal-open');
+    
+    // remove classes for checkboxes which are added by default. 
+    $('.booleans label').removeClass("col-md-2 col-sm-2")
+    
+    // remove form-control for select tags.
+    $('select').removeClass("form-control") 
+    
+    // add classes to checkboxes.
+    $(".booleans").addClass("form-check form-switch form-check-custom form-check-solid") 
+
+
+    $('.closeit').click(function () {
+    $('body').removeClass('modal-open');
+    });
+ 
+    //$('.menu-item').show()
+    // handles rendering of sidebar menus based on user capabilities stored in sessiion.
+  handle_rendering_of_menus(session); 
+
+    // create environment for onboarding wizard.
+    make_env_for_wizard(session);
+    
+
+    /*============================
+    to load scripts after dom-load write
+    them under "$(document).ready()"
+    ==============================*/
+    function toggleAttribute() {
+      var body = document.querySelector("body");
+      if (body.hasAttribute("data-kt-aside-minimize")) {
+        body.removeAttribute("data-kt-aside-minimize");
+      } else {
+        body.setAttribute("data-kt-aside-minimize", "on");
+      }
+    }
+    
+    $(document).ready(function() {
+      //adds styles to non-field-errors
+      $("#alert_msg").fadeTo(2000, 500).slideUp(500, function(){
+        $("#alert_msg").slideUp(700);
+      })
+      //container padding-top 0 for wizard
+      $('#kt_content').addClass('pt-1')
+          
+      //controls wizard steps-bar
+      stepper_controller(session);
+
+      //sets closeonSelect to false for multiple-select fields
+      $("select[multiple]").select2({
+          closeOnSelect:false 
+      })
+     
+    /*$("body[data-kt-aside-minimize='on'] #kt_aside #kt_aside_menu").hover(function(){
+        toggleAttribute()
+     });*/
+
+     
+
+    })
+  </script>
+  <!-- END GLOBAL-INLINE CUSTOM SCRIPTS -->
+  
+
+{% block switchSiteScript %}
+
+{% endblock switchSiteScript %}
+
+
+  <!-- BEGIN BASE LEVEL SCRIPTS FOR BASE PAGES -->  
+  {%- block base_script -%}
+
+  {% endblock base_script %}
+  <!-- END BASE LEVEL SCRIPTS FOR BASE PAGES-->
+
+<!-------- BEGIN SCRIPTS FOR NON-BASE PAGES ------->
+  {%- block extra_scripts -%}
+  {% endblock extra_scripts %}
+  <!-------- END SCRIPTS FOR NON-BASE PAGES ------->
+</body>
+
+<!---------------------- SWITCH SITE MODAL -------------------------->
+<div class="modal" tabindex="-1" role="dialog" id="popupshow_Attachment" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+        <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-indicators">
+          </div>
+          <div class="carousel-inner">
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+          </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div id="popup_switch_site" class="modal fade" aria-hidden="true" data-bs-backdrop="static">
+      <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title bold">Switch Site</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="alert alert-danger site_err_msg"  id="site_err_popup" style="display:none">
+                  <button type="button" class="close" data-dismiss="alert">x</button>
+                  <strong>Error! </strong>
+                </div>
+                <div class="alert alert-success site_success_msg"  id="site_success_popup" style="display:none">
+                  <button type="button" class="close" data-dismiss="alert">x</button>
+                  <strong>Success! </strong>
+                </div>
+                <form id="SwitchSiteForm" name="SwitchSiteForm" action="" method="post">
+                    <input type="hidden" name="oper" id="switchsite_oper" value="edit">
+                    <input type="hidden" name="id" id="switchsite_id" value="">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <div class="row g-3">
+                        <div class="col-md-3"><label>Current Site:</label></div>
+                        <div class="col-md-9">
+                            <div >
+                              <input type="text" name="defaultsite" value="" id="id_defaultsite" readonly required class="form-control" maxlength="250" />
+                            </div>
+                        </div>
+                        <div class="col-md-3"><label>Other Sites:</label></div>
+                        <div class="col-md-9">
+                            <div >
+                              <select class="form-select form-select-solid" name="assignesite" id="id_assignesite"  data-control="select2" required  maxlength="20">
+                              <option>NONE</option>
+                              </select>
+                          </div>
+                       </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary2 font-weight-bold" id="btnSwitchSite" name="btnSwitchSite" >Switch</button>
+                <button type="button" class="btn btn-danger font-weight-bold" data-bs-dismiss="modal">Cancel </button>
+            </div>
+  
+          </div>
+      </div>
+    </div>
+<!---BEGIN POP-UP/MODAL'S CODE HERE--->
+  {%- block popup_alerts -%}
+  
+  {% endblock popup_alerts %}
+<!---END POP-UP/MODAL'S CODE HERE--->
+</html>
+

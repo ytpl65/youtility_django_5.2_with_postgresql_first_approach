@@ -1,0 +1,362 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+Generate Attendance Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Generate Attendance Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{{ form.media.css }}
+<!-- ------------------------ BEGIN PAGE BREADCUMB --------------------- -->
+{% block pagebreadcumb %}
+
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Generate Attendance Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ----------------------- -->
+
+{% block form_title %}
+Generate Attendance Form
+{% endblock form_title %}
+
+{% block form %}     
+<form action="{{ url('reports:generateattendance') }}" method="post" class="validate"
+  id="generate_attendance">
+  <!-- ------------------------ CSRF MIDDLEWARE TOKEN ------------------ -->
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <div class="row">
+    <div class="">
+      <div class="input-group mb-3" id="company">
+        <div class="col-2">
+          {{ form.company.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" select the company from the drop-down menu">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.company }}
+          <div id="error_company" class="mt-3 d-none"></div>
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-2">
+          {{ form.additional_filter.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" select the desired additional filter to generate pdf from the drop-down menu">
+            info
+          </span>
+        </div>
+        <div class="col-5" id="additional">
+          {{ form.additional_filter }}
+          <div id="error_additional_filter" class="mt-3 d-none"></div>
+        </div>  
+      </div>
+      <div class="input-group mb-3 d-none" id="customer">
+        <div class="col-2">
+          {{ form.customer.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" select the customer from the drop-down menu">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.customer }}
+          <div id="error_customer" class="mt-3 d-none"></div>
+        </div>
+      </div>
+      <div class="input-group mb-3 d-none" id="site">
+        <div class="col-2">
+          {{ form.site.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" select the site from the drop-down menu">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.site }}
+          <div id="error_site" class="mt-3"></div>
+        </div>
+      </div>
+      <div class="input-group mb-3" id="period_from">
+        <div class="col-2">
+          {{ form.period_from.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" select the period from the drop-down menu">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.period_from }}
+          <div id="error_period_from" class="mt-3 d-none"></div>
+        </div>
+      </div>
+
+      <div class="input-group mb-3" id="type_of_form">
+        <div class="col-2">
+          {{ form.type_of_form.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" select the type of form from the drop-down menu">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.type_of_form }}
+          <div id="error_type_of_form" class="mt-3 d-none"></div>
+        </div>
+      </div>
+
+      <br/>
+    <br>  
+  </div><br>
+  <div class="form-actions">
+    <button type="submit" form="report_form" id="submit" class="btn btn-sm btn-primary2 btn-hover-scale">
+      Generate &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+
+    <button type="button" id="btn_clear" class="btn btn-sm btn-secondary btn-hover-scale">
+      Clear&nbsp;<i class="fas fa-times"></i>
+    </button>
+  </div>
+</form>
+{% endblock form %}
+
+{% block extra_scripts %}
+<script src="{{ static('assets/js/just-validate.production.min.js') }}"></script>
+    <script>
+    $(document).ready(function(){
+      $("#id_company").on('change', function() {
+      var selectedCompanyValue = $('#id_company').val()
+      function callPythonMethod(selectedCompanyValue) {
+        $.ajax({
+          url: '/reports/generatepdf-getdata/',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ company: selectedCompanyValue}),
+          headers: {
+              'X-CSRFToken': '{{ csrf_token }}'
+          },
+          success: function(data) {
+              // Handle successful response
+              
+              var $dropdown = $('#id_customer');
+              $dropdown.empty();
+              var Array = Object.values(data);
+              if (Array[1]) {
+                $.each(Array[1], function(index, customer) {
+                  $dropdown.append(
+                    $('<option></option>')
+                        .attr('value', customer.customer_code)
+                        .data('customerName', customer.name)
+                        .text(customer.customer_code + ' - ' + customer.name)
+                );
+                });
+              } else {
+                $dropdown.append($('<option></option>').attr('value', '').text(''));
+              }
+
+              var $dropdownPeriodFrom = $('#id_period_from');
+              $dropdownPeriodFrom.empty();
+              if (Array[2]) {
+                  $.each(Array[2], function(index, periodFrom) {
+                      $dropdownPeriodFrom.append($('<option></option>').attr('value', periodFrom.name).text(periodFrom.name));
+                  });
+                }
+                else {
+                  $dropdown.append($('<option></option>').attr('value', '').text(''));
+              }
+          },
+          error: function(xhr, status, error) {
+              console.error('AJAX request failed:', status, error);
+          }
+        });
+      }
+      callPythonMethod(selectedCompanyValue)
+      })
+      
+      $("#id_customer").on('change', function() {
+        var selectedCompanyValue = $('#id_company').val()
+        var selectedCustomerValue = $('#id_customer').val()
+        function callPythonMethodSites(selectedCompanyValue, selectedCustomerValue) {
+          $.ajax({
+            url: '/reports/generatepdf-getdata/',
+            type: 'POST',
+            contentType: 'application/json',
+            data: selectedCustomerValue === '' ? JSON.stringify({ company: selectedCompanyValue}) : JSON.stringify({ company: selectedCompanyValue, customer_code: selectedCustomerValue}),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(data) {
+              var $dropdown = $('#id_site');
+              $dropdown.empty();
+              var Array = Object.values(data);
+                if (Array[1]) {
+                  $.each(Array[1], function(index, site) {
+                      $dropdown.append($('<option></option>').attr('value', site.name).data('siteName', site.bu_name).text(site.name+ ' - ' + site.bu_name));
+                  });
+                } else {
+                  $dropdown.append($('<option></option>').attr('value', '').text('')); // Add empty option
+                }
+              
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+            }
+          });
+        }
+        callPythonMethodSites(selectedCompanyValue, selectedCustomerValue)
+        })
+
+      $("#btn_clear").click(() => {
+            location.href = "{{ url('reports:generateattendance') }}"
+      })
+        
+        function requiredOnLabel(label){
+          if (label) {
+            label.classList.add('required');
+          } 
+        }
+        
+        requiredOnLabel(document.querySelector('label[for="id_customer"]'));
+        requiredOnLabel(document.querySelector('label[for="id_site"]'));
+        requiredOnLabel(document.querySelector('label[for="id_period_from"]'));
+        requiredOnLabel(document.querySelector('label[for="id_period_to"]'));
+
+        $('#id_company').change(function() {
+          if ($(this).val() !== '') {
+            error_company.classList.add('d-none')
+          }        
+        });
+
+        $('#id_period_from').change(function() {
+          if ($(this).val() !== '') {
+            error_period_from.classList.add('d-none')
+          }        
+        });
+
+        $('#id_additional_filter').change(function() {
+          if ($(this).val() === 'CUSTOMER') {
+            customer.classList.remove('d-none');
+            site.classList.add('d-none');
+            error_additional_filter.classList.add('d-none')
+            $('#id_customer').change(function() {
+              if ($(this).val() !== '') {
+                error_customer.classList.add('d-none')
+              }
+            });
+          }else if($(this).val() === 'SITE'){
+            site.classList.remove('d-none');
+            customer.classList.remove('d-none');
+            error_additional_filter.classList.add('d-none')
+            $('#id_customer').change(function() {
+              if ($(this).val() !== '') {
+                error_customer.classList.add('d-none')
+              }
+            });
+            $('#id_site').change(function() {
+              if ($(this).val() !== '') {
+                error_site.classList.add('d-none')
+              }
+            });
+          } 
+        });
+
+        function hideShowError(elementId, errorElementId, errorMessage){
+          if (Array.isArray($(elementId).val())){
+            if ($(elementId).val().length <= 0) {
+              var parentDiv = document.getElementById(String(errorElementId.id))
+              if (!parentDiv.children.length > 0){
+                var newChild = document.createElement('div');
+                newChild.className = 'text-danger';
+                newChild.textContent = errorMessage;
+                parentDiv.appendChild(newChild);
+                errorElementId.classList.remove('d-none')
+              }
+            }
+            else {
+              errorElementId.classList.add('d-none')
+            }
+          }
+          else{
+            if (!$(elementId).val()) {
+              var parentDiv = document.getElementById(String(errorElementId.id))
+              if (!parentDiv.children.length > 0){
+                var newChild = document.createElement('div');
+                newChild.className = 'text-danger';
+                newChild.textContent = errorMessage;
+                parentDiv.appendChild(newChild);
+                errorElementId.classList.remove('d-none')
+              }
+            }
+            else {
+              errorElementId.classList.add('d-none')
+            }
+          }
+        }
+
+        //on form submit
+        $("#submit").on('click', function(e){
+
+          hideShowError('#id_additional_filter', error_additional_filter, 'Additional Filter is required.')
+          
+          hideShowError('#id_customer', error_customer, 'Customer is required.')
+
+          hideShowError('#id_site', error_site, 'Site is required.')
+
+          hideShowError('#id_period_from', error_period_from, 'Period is required.')
+
+          hideShowError('#id_company', error_company, 'Company is required.')
+
+          e.preventDefault()
+          
+          const formData = {
+            company: $('#id_company').val(),
+            additional_filter: $('#id_additional_filter').val(),
+            customer: $('#id_customer').val(),
+            customerName: $('#id_customer').find(':selected').data('customerName'),
+            site: $('#id_site').val(),
+            siteName: $('#id_site').find(':selected').data('siteName'),
+            period_from: $('#id_period_from').val(),
+            type_form: $('#id_type_of_form').val()
+          }
+          
+          if ($('#id_additional_filter').val() && $('#id_company').val() && $('#id_customer').val() && $('#id_period_from').val()){
+            const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+            $.ajax({
+              type: 'POST',
+              url: "{{ url('reports:generateattendance') }}",
+              data: JSON.stringify(formData),
+              contentType: 'application/json',
+              headers: {
+                  'X-CSRFToken': csrfToken
+              },
+              dataType: 'json',
+              success: function(response) {
+                  if (response.success) {
+                      window.location.href = "{{ url('reports:attendance_template') }}";
+                  } else {
+                      alert('Error: ' + response.message);
+                  }
+              },
+              error: function(xhr, status, error) {
+                  // Handle AJAX errors
+                  console.error('AJAX Error:', error);
+                  alert('An error occurred while generating the report.');
+              }
+          });
+          }
+      })
+      })
+    </script>
+{% endblock extra_scripts %}

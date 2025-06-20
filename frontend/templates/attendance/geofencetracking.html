@@ -1,0 +1,76 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Geofence Tracking List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Geofence Tracking List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">GeoFence Tracking List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN Schedhuled Tour TABLE ------------------------------------------->
+{% block table %}
+<table id="gftracking" class="display compact cell-border" style="width:100%" >
+</table>
+{% endblock table %}
+
+
+{% block extra_scripts %}
+<script>
+var table;
+$(document).ready(function(){
+    table = $("#gftracking").DataTable({
+    ajax:{
+        url: '{{ url("attendance:geofencetracking") }}?action=list',
+        data:function(d){
+            d.fields = ['id', 'datefor', 'geofence__gfname', 'slocation',
+            'elocation','people__peoplename']
+        }
+    },
+    pageLength:50,
+    columns: [
+        { data: "id", visible:false },
+        { data: "datefor" , title: "Date"},
+        { data: "geofence__gfname" , title: 'Geofence'},
+        { data: "slocation", 'title': 'Startpoint'},
+        { data: "elocation", title: 'Endpoint'},
+        { data: "people__peoplename", title: 'People'},
+    ],
+    serverSide:true,
+    fixedHeader:true,
+    search    : {return: true},
+    lengthMenu: [[10, 20, 30], [10, 20, 30]],
+    columnDefs:[
+        {targets:2, data: 'geofence__gfname',
+        render:function(data, type, row, meta){
+            var url= "{{ url('attendance:geofencetracking') }}?template=true&id=" + row['id'];
+            return `<a href=${url}>${data}</a>`
+        }}
+    ],
+    dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+    responsive : true,
+    buttons:[
+        {
+            text:`Add New &nbsp;<i class='fas text-dark fa-plus'></i></a>`,
+            action: function(e, dt, node, config){
+                window.location.href = "{{ url('attendance:geofencetracking') }}?action=form";
+            }
+        }
+    ]
+})
+
+})
+</script>
+{% endblock extra_scripts %}

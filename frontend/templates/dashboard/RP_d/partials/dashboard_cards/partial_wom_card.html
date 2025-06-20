@@ -1,0 +1,78 @@
+var womoptions = {
+series: _womChartSeries,
+chart: {
+height: '300px',
+width:"100%",
+type: 'pie',
+toolbar: {
+show: true
+},
+events:{
+dataPointSelection: function(event, chartContext, config) {
+console.log(config)
+let filters = {from:_from_pd, to:_to_pd}
+switch(config.dataPointIndex){
+case 0:
+window.open('{{ url("work_order_management:workorder") }}?template=true', '_blank');
+filters['status']='ASSIGNED'
+break;
+case 1:
+window.open('{{ url("work_order_management:workorder") }}?template=true', '_blank');
+filters['status'] = 'RE_ASSIGNED'
+break;
+case 2:
+window.open('{{ url("work_order_management:workorder") }}?template=true', '_blank');
+filters['status'] = 'COMPLETED'
+break;
+case 3:
+window.open('{{ url("work_order_management:workorder") }}?template=true', '_blank');
+filters['status'] = 'INPROGRESS'
+case 4:
+window.open('{{ url("work_order_management:workorder") }}?template=true', '_blank');
+filters['status'] = 'CLOSED'
+case 5:
+window.open('{{ url("work_order_management:workorder") }}?template=true', '_blank');
+filters['status'] = 'CANCELLED'
+break;
+
+}
+localStorage.setItem('womstats_filter', JSON.stringify(filters))
+}
+}
+},
+colors: ['#2E93fA', '#66DA26', '#00BFA8', '#E91E63', '#A9A9A9', '#ECD302'],
+responsive: [{
+breakpoint: 480,
+options: {
+legend: {
+position: 'bottom',
+offsetX: -10,
+offsetY: 0
+}
+}
+}],
+labels: ['Assigned', 'Re-Assigned', 'Completed', 'In Progress', 'Closed', 'Cancelled'],
+fill: {
+opacity: 1,
+},
+stroke: {
+width: 1,
+colors: undefined
+},
+yaxis: {
+show: false
+},
+legend: {
+position: 'right',
+},
+plotOptions: {
+polarArea: {
+rings: {
+strokeWidth: 0,
+},
+spokes: {
+strokeWidth: 0
+},
+}
+},
+};

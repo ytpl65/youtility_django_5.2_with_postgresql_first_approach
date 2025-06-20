@@ -1,0 +1,63 @@
+<script>
+$(document).ready(function(){
+    var tabSOS = $("#tabSitePeople").DataTable({
+        ajax:{
+            url:"{{ url('onboarding:rp_dashboard') }}",
+            data:function(d){
+                d.action="dashboard_sitepeople"                
+            }
+        },
+        language: { search: "", searchPlaceholder:"Serch keywords..." },
+        deferRender: true,
+        responsive : true,
+        dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        columns:[
+            {data:'people_id', visible:false, searchable:false},
+            {data:"peoplename", title:"Name", render:function(data, type, row, meta){
+                return `(${row['peoplecode']}) ${data}`
+            }
+            },
+            {data:'peoplecode', visible:false},
+            {data:'islocationmocked', visible:false},
+            {data:'batterylevel', visible:false},
+            {data:'modelname', visible:false},
+            {data:'offset', visible:false},
+            {data:'lastlogin', visible:false},
+            {data:'people__bu__buname', visible:false},
+            {data:'platformversion', visible:false},
+            {data:'mobno', title:"Contact"},
+            {data:'email', title:"Email"},
+            {data:'designation', title:"Designation"},
+            {data:'worktype', title:"Worktype"},
+            {
+            data: 'gps',
+            title: 'GPS Location',
+            render: function(data, type, row, meta) {
+            let gps = ['NONE', '', '0.0'].includes(data) ? null : JSON.parse(data)
+            let coords = gps && gps.coordinates === '0,0' ? [null, null] : gps.coordinates
+            let rowString = JSON.stringify(row)
+            return `<a href="javascript:void(0)" onclick='showMap(${rowString})'>${coords}</a>`
+            }
+            },
+
+        ],
+        order:[[1, 'desc'], [3, 'asc']],
+        ordering:false,
+        scrollCollapse: true,
+        buttons:['fullscreen']
+    })
+
+    $('button.dt-button').on('click', function () {
+        if ($(this).hasClass('dt-button')) {
+            if ($(this).hasClass('buttons-fullscreen')) {
+            // Enter full screen mode
+            window.fullScreen();
+            } else {
+            // Exit full screen mode
+            window.exitFullscreen();
+            }
+        }
+        });
+})
+</script>

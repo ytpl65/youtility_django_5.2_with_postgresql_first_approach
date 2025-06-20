@@ -1,0 +1,1195 @@
+{% extends "globals/base_form.html" %}
+{% from "onboarding/partials/partial_ta_form.html" import typeassist_form with context %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+Client Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Client Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!--- START CSS -->
+{% block extra_css %}
+<link href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet"
+    type="text/css" />
+{% endblock extra_css %}
+<!--- END CSS -->
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('onboarding:client') }}?template=true" class="pe-3">Client List</a>
+</li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Client Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!-------------  BEGIN POP-UPS CODE -------------->
+{% block popup_alerts %}
+{{ super()  }}
+<!------------- typeassist popup for onclick + icon ---------------------->
+{% call general_popup(title='Create TypeAssist', popup_id = "butype_popup") %}
+<form action="" method="post" id="pop_butype_form">
+    <div class="modal-body">
+        <input type="hidden" name="form_name" , value="ta_form">
+        {% if ta_form is defined %}
+        {{ typeassist_form() }}
+        {% endif %}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-sm  btn-secondary rounded-1" data-bs-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-sm  btn-primary2 rounded-1" value="Sumbit" form="pop_butype_form" />
+    </div>
+</form>
+{% endcall %}
+{% endblock popup_alerts %}
+<!-------------  END POP-UPS CODE -------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+{% if clientform.instance.id  %}
+Client:&nbsp; <span class="text-primary2 text-decoration-underline">{{ clientform.instance.buname }}</span>
+{% else %}
+Client
+{% endif %}
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors" role="alert" style="display:none">
+    <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+{% block card_tabs %}
+<ul id="formnavbar" class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active"id="client_details" aria-current="page" href="#">Client Details</a>
+    </li>
+    <li class="nav-item licensebased d-none">
+        <a class="nav-link" id="device_limits" href="#">Device Limits</a>
+    </li>
+    <li class="nav-item d-none userbased">
+        <a class="nav-link" id="user_limits" href="#">User Limits</a>
+    </li>
+    <li class="nav-item licensebased d-none">
+        <a class="nav-link" id="device_licenses" href="#">Device Lisenses</a>
+    </li>
+</ul>
+{% endblock card_tabs %}
+
+
+
+<!-------------- BEGIN FORM ------------------->
+{% block form %}
+<form action="" method='post' class="client-details-form" id="id_clientform" enctype="multipart/form-data">
+    <!-------------------------- CSRF MIDDLEWARE TOKEN --------------------->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="{{ clientform.ctzoffset.name }}" id="{{ clientform.ctzoffset.auto_id }}" value="-1">
+    <div class="row g-3">
+        <div class="col-10">
+            <div class="row">
+                <div class="col-md-6">
+                    {{ clientform.identifier.label_tag() }}
+                    {{ clientform.identifier }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientprefsform.startdate.label_tag() }}
+                    {{ clientprefsform.startdate }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientform.bucode.label_tag() }}
+                    {{ clientform.bucode }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientprefsform.enddate.label_tag() }}
+                    {{ clientprefsform.enddate }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientform.buname.label_tag() }}
+                    {{ clientform.buname }}
+                </div>
+                <div class="col-md-6 d-flex align-items-center">
+                    <div class="">
+                        <label for="{{ clientprefsform.onstop.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ clientprefsform.onstop }}&nbsp;&nbsp;{{ clientprefsform.onstop.label }}</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    {{ clientprefsform.validimei.label_tag() }}
+                    {{ clientprefsform.validimei }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientprefsform.onstopmessage.label_tag() }}
+                    {{ clientprefsform.onstopmessage }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientprefsform.validip.label_tag() }}
+                    {{ clientprefsform.validip }}   
+                </div>
+                <div class="col-md-6 d-none">
+                    {{ clientprefsform.clienttimezone.label_tag() }}
+                    {{ clientprefsform.clienttimezone }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientprefsform.reliveronpeoplecount.label_tag() }}
+                    {{ clientprefsform.reliveronpeoplecount }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientprefsform.pvideolength.label_tag() }}
+                    {{ clientprefsform.pvideolength }}
+                </div>
+                <div class="col-md-6">
+                    {{ clientprefsform.billingtype.label_tag() }}
+                    {{ clientprefsform.billingtype }}
+                </div>
+                <div class="col-md-6 col-sm-auto d-flex align-items-center mt-3">
+                    <div class="col-md-auto me-4">
+                        <label for="{{ clientform.gpsenable.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ clientform.gpsenable }}&nbsp;&nbsp;{{ clientform.gpsenable.label }}</label>
+                    </div>
+                    <div class="col-md-auto me-4">
+                        <label for="{{ clientform.skipsiteaudit.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ clientform.skipsiteaudit }}&nbsp;&nbsp;{{ clientform.skipsiteaudit.label }}</label>
+                    </div>
+                    <div class="col-md-auto me-4">
+                        <label for="{{ clientform.deviceevent.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ clientform.deviceevent }}&nbsp;&nbsp;{{ clientform.deviceevent.label }}</label>
+                    </div>
+                    <div class="col-md-auto me-4">
+                        <label for="{{ clientform.enablesleepingguard.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ clientform.enablesleepingguard }}&nbsp;&nbsp;{{ clientform.enablesleepingguard.label }}</label>
+                    </div>
+                    <div class="col-md-auto me-4">
+                        <label for="{{ clientform.enable.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ clientform.enable }}&nbsp;&nbsp;{{ clientform.enable.label }}</label>
+                    </div>
+                    <div class="col-md-auto me-4">
+                        <label for="{{ clientprefsform.usereliver.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ clientprefsform.usereliver }}&nbsp;&nbsp;{{ clientprefsform.usereliver.label }}</label>
+                    </div>
+                    <div class="col-md-auto">
+                        <label for="{{ clientprefsform.ispermitneeded.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ clientprefsform.ispermitneeded }}&nbsp;&nbsp;{{ clientprefsform.ispermitneeded.label }}</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-2">
+            <div class="col-md-auto">
+                <label for="">Client Logo</label>
+                <div class="h-200px w-200px dropzone" id="dropzone_file">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="device-limits-form d-none">
+    <form action="" id="device-form">
+        <input type="hidden" name="client_id" value="{{ clientform.instance.id }}">
+        <div class="row">
+            <div class="col-md-2">
+                {{ clientprefsform.no_of_devices_allowed.label_tag() }}
+            </div>
+            <div class="col-md-1">
+                {{ clientprefsform.no_of_devices_allowed }}
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    {{ clientprefsform.devices_currently_added.label_tag() }}
+                </div>
+                <div class="col-md-1">
+                    <span class="fs-4">
+                        {{ clientform.instance.bupreferences['devices_currently_added'] }}
+                    </span>
+
+                </div>
+            </div>
+        </div>
+        <button id="device_form_save" type="button" class="mt-4 btn btn-sm btn-primary2 ">Save</button>
+    </form>
+    <br>
+    <table id="tabActiveHandsets" class="display cell-border compact hover"></table>
+</div>
+
+<div class="device-licenses-form d-none">
+    <br>
+    <h4 class="ch4">License Subscriptions</h4>
+    <table id="tabLicense" class="display cell-border compact hover"></table>
+    <br>
+    <hr>
+    <br>
+    <h4 class="ch4">License Subscriptions (Cancelled)</h4>
+    <table id="tabTerminatedLicense" class="display cell-border compact hover"></table>
+</div>
+
+<div class="user-limits-form d-none">
+    <form action="" id="userlimitsform">
+        <input type="hidden" name="client_id" value="{{ clientform.instance.id }}">
+        <div class="row mb-3">
+            <div class="col-md-2">
+                {{ clientprefsform.no_of_users_allowed_web.label_tag() }}
+            </div>
+            <div class="col-md-1">
+            {{ clientprefsform.no_of_users_allowed_web }}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-2">
+                {{ clientprefsform.no_of_users_allowed_mob.label_tag() }}
+            </div>
+            <div class="col-md-1">
+            {{ clientprefsform.no_of_users_allowed_mob }}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-2">
+                {{ clientprefsform.no_of_users_allowed_both.label_tag() }}
+            </div>
+            <div class="col-md-1">
+            {{ clientprefsform.no_of_users_allowed_both }}
+            </div>
+        </div>
+        <button id="users_form_save" type="button" class="mt-4 btn btn-sm btn-primary2 ">Save</button>
+    </form>
+</div>
+
+{% endblock form %}
+
+{% block extras %}
+<br>
+<div class="my-3 row g-3 gx-6 client-details-form">
+    <div class="col-md-3 col-sm-3">
+        <h4 style="color:#3a3b40de">Web Capability</h4>
+        <!---- WEB CAPABILITY FIELD --->
+        {{ clientprefsform.webcapability }}
+    </div>
+    <div class="col-md-3 col-sm-3">
+        <h4 style="color:#3a3b40de">Mobile Capability</h4>
+        <!---- MOBILE CAPABILITY FIELD --->
+        {{ clientprefsform.mobilecapability }}
+    </div>
+    <div class="col-md-3 col-sm-3">
+        <h4 style="color:#3a3b40de">Report Capability</h4>
+        <!---- REPORT CAPABILITY FIELD --->
+        {{ clientprefsform.reportcapability }}
+    </div>
+    <div class="col-md-3 col-sm-3">
+        <h4 style="color:#3a3b40de">Portlet Capability</h4>
+        <!---- PORTLET CAPABILITY FIELD --->
+        {{ clientprefsform.portletcapability }}
+    </div>
+</div>
+<br>
+<!--List of business units --->
+<div class="row client-details-form">
+
+    <div class="card">
+        <div class="card-header p-0 mb-0">
+            <div class="card-title">
+                List of Sites&nbsp;<i class="fas text-white fa-table ch4"></i>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="tabListBu" class="display cell-border compact hover"></table>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header p-0 mb-0">
+            <div class="card-title">
+                List of Admin/Users&nbsp;<i class="fas text-white fa-table ch4"></i>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="tabAdminUsers" class="display cell-border compact hover"></table>
+            <div class="card-footer ps-0">
+                <p class="text-primary">Note: Select site from list of sites where you want to create a site-admin</p>
+                <p class="text-primary"><b>Note:</b>Default password for new admin-user is { Login ID }@123</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock extras %}
+<!------------- END FORM ---------------------->
+
+<!------------------- BEGIN FORM PAGE ACTIONS --------------->
+{% block page_actions %}
+{% if edit is defined %}
+{{ form_update('id_clientform', popup_id="delete_alert") }}
+{% else %}
+{{ form_create('id_clientform') }}
+{% endif %}
+{% endblock page_actions %}
+<!------------------- END FORM PAGE ACTIONS --------------->
+
+{% block extra_scripts %}
+{{ clientform.media.js }}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}"
+    type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}"
+    type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/editor.select2.js') }}" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    var tabListBus;
+    var tabListAdmins;
+    var tabLicense;
+    var tabTerminatedLicense;
+    var listbu_editor;
+    var licenseEditor;
+    var tabActiveHandsets;
+    function getCurrentEditingRow(editor, table) {
+        var rowModifier = editor.modifier();
+        return rowModifier ? table.row(rowModifier).data() : 'None'
+    }
+
+
+
+    function initialize_form() {
+        var data = getCurrentEditingRow(listbu_editor, tabListBus)
+        if (data !== 'None') {
+            //init parent
+            var newOption = new Option(data.parent__buname, data.parent_id, true, true);
+            $('#DTE_Field_parent').append(newOption).trigger('change');
+            //init identifier
+            var newOption = new Option(data.identifier__tacode, data.identifier_id, true, true);
+            $('#DTE_Field_identifier').append(newOption).trigger('change');
+        }
+    }
+
+    function validateCode(bucode) {
+        // validate bucode return false bucode has special characters and contains space
+        var regex = /^[a-zA-Z0-9_]+$/;
+        if (!regex.test(bucode)) {
+            return false;
+        } return true;
+    }
+
+    function validateName(name) {
+        // validate bucode return false bucode has special characters and contains space
+        var regex = /^[a-zA-Z0-9_\-@#\.]+$/;
+        if (!regex.test(name)) {
+            return false;
+        } return true;
+    }
+
+    function validateEmail(email) {
+        //validate email return false if email is invalid
+
+        var regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (!regex.test(email)) {
+            return false;
+        } return true
+    }
+
+    function validatePhone(phone) {
+        var regex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+        if (!regex.test(phone)) {
+            return false;
+        }
+        return true;
+    }
+    function validateLoginid(loginid) {
+        //validate loginid return false if loginid is invalid
+        var regex = /^[a-zA-Z0-9@#_\.\-\_]+$/;
+        if (!regex.test(loginid)) {
+            return false;
+        } return true
+    }
+
+    function validateDate(date) {
+        //validate date return false if date is invalid
+        var regex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!regex.test(date)) {
+            return false;
+        } return true
+    }
+
+
+    function currentlyActiveHandsetsList(){
+        tabActiveHandsets = $("#tabActiveHandsets").DataTable({
+            ajax: {
+                url: `{{ url('onboarding:client') }}?action=getCurrentlyActiveHandsets&client_id={{ clientform.instance.id }}`
+            },
+            columns: [
+                { data: 'id', defaulContent: "", visible: false },
+                { data: 'handsetname', title: 'Handset Name' },
+                { data: 'modelname', title: 'Model' },
+                { data: 'phoneno', title: 'Number' },
+                { data: 'dateregistered', title:"Date Registered"},
+                { title: 'IMEI Device No', data: 'imeino' },
+                { data: 'lastcommunication', title:"Last Communication" },
+                { data: 'lastloggedinuser', title:"Last Logged In User" },
+            ],
+            dom: `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            deferRender: true,
+            responsive: true,
+            ordering: false,
+            select: {
+                style: 'single'
+            },
+            buttons:[]
+        })
+    }
+
+    function licenseList(){
+        tabLicense = $("#tabLicense").DataTable({
+            ajax: {
+                url: `{{ url('onboarding:subscription') }}?action=getLicenseList&client_id={{ clientform.instance.id }}`
+            },
+            columns: [
+                { data: 'id', defaulContent: "", title:"Sub ID"},
+                { title: 'Created Date', data: 'cdtz' },
+                { title: 'Start Date', data: 'startdate' },
+                { title: 'End Date', data: 'enddate' },
+                {data:"status", title:"Status"},
+                { data:"assignedhandset", title:"Assigned Handset" },
+            ],
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            buttons:[
+                 { extend: "create", editor: licenseEditor },
+                { extend: "edit", editor: licenseEditor },
+                { extend: "remove", editor: licenseEditor },
+                dataTablesPDFConfig(
+                    title = `License Subscription List`,
+                    columns = [0,1,2,3,4,5],
+                    filename="subscription_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Task List`,
+                    columns = [1,2,3,4,5],
+                    filename="subscription_list" 
+                ),
+            ],
+            deferRender: true,
+            responsive: true,
+            ordering: false,
+            select: {
+                style: 'single'
+            },
+        })
+    }
+
+    function terminatedLicenseList(){
+        tabTerminatedLicense = $("#tabTerminatedLicense").DataTable({
+            ajax: {
+                url: `{{ url('onboarding:subscription') }}?action=getTerminatedLicenseList&client_id={{ clientform.instance.id }}`
+            },
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns:[
+                { data: 'id', defaulContent: "", title: "Sub ID" },
+                { data: 'enddate', title:"Sub End Date"},
+                { data:"terminateddate", title:"Terminated Date" },
+                { data:"reason", title:"Reason" },
+                { data:"assignedhandset", title:"Last Assigned Handset" },
+            ],
+            buttons:[
+                dataTablesPDFConfig(
+                    title = `License Subscription List`,
+                    columns = [0,1,2,3,4],
+                    filename="cancelled_subscription_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Task List`,
+                    columns = [0,1,2,3,4],
+                    filename="cancelled_subscription_list" 
+                ),
+            ]
+
+        })
+    }
+
+    function licenseListEditor(){
+        licenseEditor = new $.fn.dataTable.Editor({
+            table: "#tabLicense",
+            ajax:{
+                url: `{{ url('onboarding:subscription') }}`,
+                data: function(data){
+                    let currentRow            = getCurrentEditingRow(licenseEditor, tabLicense)
+                    data.pk                   = currentRow !== 'None' ? currentRow['id'] : currentRow
+                    data.csrfmiddlewaretoken  = '{{ csrf_token }}'
+                    data.startdate            = $("#DTE_Field_startdate").val()
+                    data.enddate              = $("#DTE_Field_startdate").val()
+                    data.istemporary          = $("#DTE_Field_istemporary_0").is(":checked")? 1 : 0
+                    data.client_id = '{{ clientform.instance.id }}'
+                    data.subscriptionPostData = true
+                }
+            },
+            fields:[
+                { label: "Start Date", data:"startdate", name: "startdate", type: "text" },
+                { label:"End Date", data:"enddate", name: "enddate", type: "text" },
+                { label: "Temporary", data:"istemporary", name: "istemporary", type: "checkbox", def:false, options: [{ label: '', value: 1 }] }
+            ],
+            idSrc:"id",
+            formOptions:{
+                main:{ onReturn: false }
+            }
+        })
+    }
+
+    function licenseEditorEventHandlers(){
+     licenseEditor.on('open', function(e, mode, action){
+        $("#DTE_Field_startdate, #DTE_Field_enddate").flatpickr({
+                dateFormat: 'Y-m-d'
+        })
+        if(action === 'edit'){
+            licenseEditor.clear()
+        }
+     })
+    }
+
+
+    $(document).ready(function () {
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+        var isActiveHandsetsDataTableInitialized = false;
+        var isLicenseDataTableInitialized = false;
+        var isTerminatedLicenseDataTableInitialized = false;
+
+        //ADD CALENDER TO DATE FIELDS WITH FLAT-PICKR PLUGIN
+        $("#id_startdate, #id_enddate").flatpickr({
+            dateFormat: 'd-M-Y',
+            parseDate: (datestr, format) => {
+                return new Date(datestr.replace(/(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
+            },
+        })
+
+        $('#btn_clear').click((e) => {
+            e.preventDefault()
+            location.href = "{{ url('onboarding:client') }}?action=form"
+        })
+
+        //add form attribute to fields which are outside form element
+        $("#id_webcapability").attr("form", "id_clientform")
+        $("#id_reportcapability").attr("form", "id_clientform")
+        $("#id_portletcapability").attr("form", "id_clientform")
+        $("#id_mobilecapability").attr("form", "id_clientform")
+
+        //on usereliver checked make reliveronpeoplecount required and class required to its label field
+        $("#id_usereliver").change(function () {
+            console.log("chaged....")
+            if ($(this).is(":checked")) {
+                $("#id_reliveronpeoplecount").attr("required", true)
+                $("label[for='id_reliveronpeoplecount']").addClass("required")
+            } else {
+                $("#id_reliveronpeoplecount").attr("required", false)
+                $("label[for='id_reliveronpeoplecount']").removeClass("required")
+            }
+        })
+
+        // submit the popup-butype-taform for validation and saving in db.
+        $('#pop_butype_form').on('submit', sumit_popup_form({
+            'url': "{{ url('onboarding:ta_popup') }}",
+            'form': "#pop_butype_form",
+            'field': "#id_identifier",
+            'modal': "#butype_popup"
+        }))
+        //for select2 search work in bootstrap modals
+        $("#pop_butype_form").find("select[name = tatype]").select2({
+            dropdownParent: $('#pop_butype_form')
+        })
+        //sets closeonSelect to false for multiple-select fields
+        $("[multiple]").select2({
+            closeOnSelect: false
+        })
+
+        // A mapping of nav link IDs to their corresponding form classes and initialization functions
+        const navLinkMappings = {
+            'device_limits': {
+                formClass: '.device-limits-form',
+                initFunction: () => {
+                    if (!isActiveHandsetsDataTableInitialized) {
+                        currentlyActiveHandsetsList();
+                        isActiveHandsetsDataTableInitialized = true;
+                    }
+                }
+            },
+            'device_licenses': {
+                formClass: '.device-licenses-form',
+                initFunction: () => {
+                    if (!isLicenseDataTableInitialized) {
+                        licenseListEditor();
+                        licenseEditorEventHandlers();
+                        licenseList();
+                        isLicenseDataTableInitialized = true;
+                    }
+                    if (!isTerminatedLicenseDataTableInitialized) {
+                        terminatedLicenseList();
+                        isTerminatedLicenseDataTableInitialized = true;
+                    }
+                }
+            },
+            'client_details': {
+                formClass: '.client-details-form',
+                initFunction: null // No initialization needed for this form
+            },
+            'user_limits': {
+                formClass: ".user-limits-form", // Add form class if exists
+                initFunction: null // Add initialization function if needed
+            }
+        };
+
+        // Generic function to show a form and set the active nav link
+        function showFormAndSetActiveNavLink(navLinkId) {
+            // Hide all forms
+            $(".client-details-form, .device-limits-form, .device-licenses-form, .user-limits-form").addClass("d-none");
+            // Remove active class from all nav links
+            $('.nav-link').removeClass('active');
+
+            // Show the relevant form and set the nav link as active
+            const mapping = navLinkMappings[navLinkId];
+            if (mapping.formClass) {
+                $(mapping.formClass).removeClass('d-none');
+            }
+            $('#' + navLinkId).addClass('active');
+
+            // Call initialization function if defined
+            if (mapping.initFunction) {
+                mapping.initFunction();
+            }
+
+            if (navLinkId === 'user_limits') {
+                 $('#btn_clear').addClass('d-none')
+                 $('#form_update').addClass('d-none')
+                 $('#btn_del').addClass('d-none')
+            }
+            if (navLinkId === 'client_details') {
+                $('#btn_clear').removeClass('d-none')
+                $('#form_update').removeClass('d-none')
+                $('#btn_del').removeClass('d-none')
+            }
+        }
+
+        // Generic click event handler for all nav links
+        $('.nav-link').click(function() {
+            const navLinkId = $(this).attr('id');
+            showFormAndSetActiveNavLink(navLinkId);
+        });
+        
+        
+        //set formnavbar visibility
+        if("{{ clientform.instance.id }}" != 'None'){
+            //on license based client show formnavbar
+            if("{{ clientform.instance.bupreferences['billingtype'] }}" == 'LICENSEBASED'){
+                $("#formnavbar > .licensebased").removeClass("d-none")
+            }
+            if("{{ clientform.instance.bupreferences['billingtype'] }}" == 'USERBASED'){
+                $("#formnavbar > .userbased").removeClass("d-none")
+            }
+        }
+
+        $("#device_form_save").click(() => {
+            const params = { url: "{{ url('onboarding:client') }}", modal: false }
+            const id = "{{ clientform.instance.pk }}" //form instance id
+            var payLoad = { 
+                formData: $("#device-form").serialize(),
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                action:"saveDeviceLimits"  }
+            if (id != 'None') {
+                var newPayLoad = { ...payLoad, 'pk': id }
+                payLoad = newPayLoad
+            }
+            fire_ajax_form_post(params, payLoad)
+                .done((data, status, xhr) => {
+                    let url = "{{ url('onboarding:client') }}"
+                    show_successful_save_alert(update = id != 'None' ? true : false)
+                })
+        })
+        
+        $("#users_form_save").click(() => {
+            const params = { url: "{{ url('onboarding:client') }}", modal: false }
+            const id = "{{ clientform.instance.pk }}" //form instance id
+            var payLoad = { 
+                formData: $("#userlimitsform").serialize(),
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                action:"saveUserLimits"  }
+            if (id != 'None') {
+                var newPayLoad = { ...payLoad, 'pk': id }
+                payLoad = newPayLoad
+            }
+            fire_ajax_form_post(params, payLoad)
+                .done((data, status, xhr) => {
+                    let url = "{{ url('onboarding:client') }}"
+                    show_successful_save_alert(update = id != 'None' ? true : false)
+                })
+        })
+        
+
+
+        //editor of datatable business units
+        listbu_editor = new $.fn.dataTable.Editor({
+            ajax: {
+                url: "{{ url('onboarding:client') }}",
+                data: function (d) {
+                    let currentRow = getCurrentEditingRow(listbu_editor, tabListBus)
+                    d.pk = currentRow !== 'None' ? currentRow['id'] : currentRow
+                    d.parent = $('#DTE_Field_parent').val()
+                    d.csrfmiddlewaretoken = '{{ csrf_token }}'
+                    d.bucode = $('#DTE_Field_bucode').val()
+                    d.buname = $('#DTE_Field_buname').val()
+                    d.enable = $('#DTE_Field_enable').val()
+                    d.identifier = $('#DTE_Field_identifier').val()
+                    d.ctzoffset = $("#id_ctzoffset").val()
+                    d.bupostdata = true
+                }
+            },
+            table: "#tabListBu",
+            fields: [
+                { label: 'Code', name: 'bucode', data: 'bucode' },
+                { label: 'Name', name: 'buname', data: 'buname' },
+                { label: 'Type', name: 'identifier', type: 'select', data: 'identifier__tacode' },
+                { label: 'Belongs to', name: 'parent', type: 'select', data: 'parent__buname' },
+                {
+                    label: 'Enable', name: 'enable', data: 'enable', type: 'select', def: 1, options: [
+                        { label: 'True', value: 1 },
+                        { label: 'False', value: 0 }
+                    ]
+                },
+            ],
+            idSrc: 'id',
+            formOptions: {
+                main: {
+                    onReturn: false
+                }
+            }
+        })
+
+        //LISTBU EDITOR ON OPEN EVENT
+        listbu_editor.on('open', function (e, mode, action) {
+            $(".DTE_Field").addClass('p-1 form-control') // add required classes
+            $("#DTE_Field_identifier, #DTE_Field_parent").addClass("form-control form-select") // add css to alerton form field
+            if (action === 'create' || action === 'edit') {
+                init_select_field({
+                    url: "{{ url('onboarding:client') }}?action=loadIdentifiers",
+                    id: "#DTE_Field_identifier",
+                    item: 'Types',
+                })
+
+                // initialize select field parent
+                init_select_field({
+                    url: "{{ url('onboarding:client') }}?action=loadParents&parentid={{ clientform.instance.id }}",
+                    id: '#DTE_Field_parent',
+                    item: 'Types'
+                })
+            }
+
+        })
+
+        listbu_editor.on('opened', function (e, mode, action) {
+            //get the data of rows in editing
+            //var data = getCurrentEditingRow(childEditor, childTable)
+            if (action == 'edit') {
+                initialize_form()
+            }
+            //code text transform to uppercase while typing
+            $("#DTE_Field_bucode").css("text-transform", "uppercase")
+            $('.DTED_Lightbox_Content').draggable()
+        })
+
+        //datatable  list of business units
+        tabListBus = $("#tabListBu").DataTable({
+            ajax: {
+                url: `{{ url('onboarding:client') }}?action=getlistbus&id={{ clientform.instance.id }}`
+            },
+            columns: [
+                { data: 'id', defaulContent: "", visible: false },
+                { data: 'bucode', title: 'Code' },
+                { data: 'buname', title: 'Name' },
+                { data: 'identifier__tacode', title: 'Type' },
+                { data: 'identifier_id', visible: false, defaulContent: null },
+                { data: 'parent__buname', title: 'Belongs to' },    
+                { data: 'parent_id', visible: false, defaulContent: null },
+                {data:'enable',title:'Enable',render:function(data,type,row,meta){
+                    if (data === true){ return '<i class="bi bi-check-circle-fill text-success"></i> Active'}
+                    else if(data === false){ return '<i class= "bi bi-check-circle-fill text-danger"></i> Inactive'}
+                    else{return data.toString()}
+                }
+                }
+            ],
+            dom: `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            deferRender: true,
+            responsive: true,
+            ordering: false,
+            buttons: [
+                { extend: "create", editor: listbu_editor },
+                { extend: "edit", editor: listbu_editor },
+                { extend: "remove", editor: listbu_editor }
+            ],
+            select: {
+                style: 'single'
+            },
+            createdRow: function (row, data, dataIndex) {
+                if (data.enable === false) {
+                    $(row).addClass('disabled-record text-white')
+                }
+            }
+        })
+
+        adminsEditor = new $.fn.dataTable.Editor({
+            table: "#tabAdminUsers",
+            ajax: {
+                url: "{{ url('onboarding:client') }}",
+                data: function (d) {
+                    let currentRow = getCurrentEditingRow(adminsEditor, tabListAdmins)
+                    d.pk = currentRow !== 'None' ? currentRow['id'] : currentRow
+                    d.csrfmiddlewaretoken = '{{ csrf_token }}'
+                    d.client_id = '{{ clientform.instance.id }}'
+                    d.ctzoffset = $("#id_ctzoffset").val()
+                    d.peoplecode = $('#DTE_Field_peoplecode').val()
+                    d.peoplename = $('#DTE_Field_peoplename').val()
+                    d.loginid = $('#DTE_Field_loginid').val()
+                    d.gender = $('#DTE_Field_gender').val()
+                    d.email = $('#DTE_Field_email').val()
+                    d.mobno = $('#DTE_Field_mobno').val()
+                    d.isadmin = $('#DTE_Field_isadmin').val()
+                    d.dateofbirth = $('#DTE_Field_dateofbirth').val()
+                    d.dateofjoin = $('#DTE_Field_dateofjoin').val()
+                    d.adminspostdata = true
+
+                }
+            },
+            fields: [
+                { label: 'Name', name: 'peoplename', data: 'peoplename' },
+                { label: 'Code', name: 'peoplecode', data: 'peoplecode', fieldInfo: 'Enter text without any spaces and special characters' },
+                { label: 'Email', name: 'email', data: 'email' },
+                { label: 'Login ID', name: 'loginid', data: 'loginid' },
+                { label: 'Mobile', name: 'mobno', data: 'mobno', fieldInfo: "Enter country code followed by 10 digit mobile no, For eg: +91xxxxxxxxxx" },
+                { label: 'Date Of Birth', name: 'dateofbirth', data: 'dateofbirth', type: 'text', fieldInfo: "Select or Enter date of birth in yyyy-mm-dd format" },
+                { label: 'Date Of Join', name: 'dateofjoin', data: 'dateofjoin', type: 'text' },
+                {
+                    label: 'Admin', name: 'isadmin', data: 'isadmin', type: 'select', def: 1, readonly: true,
+                    options: [
+                        { label: 'True', value: 1 },
+                        { label: 'False', value: 0 }
+                    ]
+                },
+
+                {
+                    label: 'Gender', name: 'gender', data: 'gender', type: 'select', def: 'M',
+                    options: [
+                        { label: 'Male', value: 'M' },
+                        { label: 'Female', value: 'F' },
+                        { label: 'Other', value: 'O' }
+                    ]
+                },
+            ],
+            idSrc: 'id',
+            formOptions: {
+                main: {
+                    onReturn: false
+                }
+            }
+        })
+
+
+
+        adminsEditor.on('open', function (e, mode, action) {
+            $(".DTE_Field").addClass('p-1')
+            $("#DTE_Field_dateofbirth, #DTE_Field_dateofjoin").flatpickr({
+                dateFormat: 'Y-m-d'
+            })
+        })
+
+        adminsEditor.on('opened', function (e, mode, action) {
+            $('.DTED_Lightbox_Content').draggable()
+            this.field('isadmin').disable()
+        })
+
+        //adminsEditor form validations
+        adminsEditor.on('preSubmit', function (e, o, action) {
+            var peoplename = this.field('peoplename')
+            var peoplecode = this.field('peoplecode')
+            var email = this.field('email')
+            var loginid = this.field('loginid')
+            var mobno = this.field('mobno')
+            var dateofbirth = this.field('dateofbirth')
+            var dateofjoin = this.field('dateofjoin')
+            var isadmin = this.field('isadmin')
+            if (action == "create") {
+                //check for duplicates in the table
+                tabListAdmins.column(1).data().filter(function (value, index) {
+                    if (value === peoplecode.val() || value === loginid.val()) {
+                        peoplename.error('Peoplecode or loginid with this value already exists')
+                    }
+                    if ("{{ clientform.instance.bupreferences['no_of_users_allowed_web'] }}" == tabListAdmins.data().count())
+                           { Swal.fire({
+                                title: "CAN'T CREATE A NEW USER ! \nThe maximum number of authorized users limit has been reached.",
+                                showClass: {
+                                    popup: `
+                                    animate__animated
+                                    animate__fadeInUp
+                                    animate__faster
+                                    `
+                                },
+                                hideClass: {
+                                    popup: `
+                                    animate__animated
+                                    animate__fadeOutDown
+                                    animate__faster
+                                    `
+                                }
+                                });
+                            }
+                })
+                if (this.inError()) {
+                    return false
+                }
+            }
+            if (action !== 'remove') {
+
+                if (!(peoplecode.isMultiValue() || peoplename.isMultiValue() || mobno.isMultiValue() ||
+                    loginid.isMultiValue() || dateofbirth.isMultiValue() || dateofjoin.isMultiValue())) {
+                    if (!peoplename.val()) {
+                        console.log(peoplename.val(), "@@@@222")
+                        peoplename.error('Please enter a name')
+                    }
+                    if (!email.val()) {
+                        console.log(email.val(), "@@@@222")
+                        email.error('Please enter a email')
+                    } else {
+                        if (!validateEmail(email.val())) {
+                            email.error('Please enter a valid email address')
+                        }
+                    }
+                    if (!mobno.val()) {
+                        console.log(mobno.val(), "@@@@222")
+                        mobno.error('Please enter a mobno')
+                    } else {
+                        if (!validatePhone(mobno.val())) {
+                            mobno.error('Please enter a valid Mobile number')
+                        }
+                    }
+                    if (!peoplecode.val()) {
+                        console.log(peoplecode.val(), "@@@@222")
+                        peoplecode.error('Please enter a code')
+                    } else {
+                        if (!validateCode(peoplecode.val())) {
+                            peoplecode.error('Please enter a valid code only alphabets numbers and underscore allowed')
+                        }
+                    }
+                    if (!loginid.val()) {
+                        console.log(loginid.val(), "@@@@222")
+                        loginid.error('Please enter a loginid')
+                    }
+                    if (!dateofbirth.val()) {
+                        console.log(dateofbirth.val(), "@@@@222")
+                        dateofbirth.error('Please enter a dateofbirth')
+                    } else {
+                        if (!validateDate(dateofbirth.val())) {
+                            dateofbirth.error('Please enter a valid "Date of birth" in yyyy-mm-dd format')
+                        }
+                    }
+                    if (!dateofjoin.val()) {
+                        console.log(dateofjoin.val(), "@@@@222")
+                        dateofjoin.error('Please enter a dateofjoin')
+                    } else {
+                        if (!validateDate(dateofjoin.val())) {
+                            dateofjoin.error('Please enter a valid "Date of join" in yyyy-mm-dd format')
+                        }
+                    }
+                }
+                if (this.inError()) {
+                    return false
+                }
+            }
+
+        })
+
+        //listbu_editor form validations
+        listbu_editor.on('preSubmit', function (e, o, action) {
+            var buname = this.field('buname')
+            var bucode = this.field('bucode')
+            var identifier = this.field('identifier')
+            var parent = this.field('parent')
+            if (action == "create") {
+                //check for duplicates in the table
+                tabListBus.column(1).data().filter(function (value, index) {
+                    if (value === bucode.val()) {
+                        bucode.error('Site with this code already exists')
+                    }
+                })
+                if (this.inError()) {
+                    return false
+                }
+            }
+            if (action !== 'remove') {
+                if (!(buname.isMultiValue() || bucode.isMultiValue() || identifier.isMultiValue() || parent.isMultiValue())) {
+                    if (!buname.val()) {
+                        console.log(buname.val(), "@@@@222")
+                        buname.error('Please enter a name')
+                    }
+                    if (!bucode.val()) {
+                        console.log(bucode.val(), "@@@@222")
+                        bucode.error('Please enter a code')
+                    } else {
+                        //validate budcode
+                        if (!validateCode(bucode.val())) {
+                            bucode.error('Please enter a valid code - alphabets, numbers and underscore allowed')
+                        }
+                    }
+                    if (!$("#DTE_Field_identifier").val()) {
+                        console.log(identifier.val(), "@@@@222")
+                        identifier.error('Please select a type')
+                    }
+                    if (!$("#DTE_Field_parent").val()) {
+                        console.log(parent.val(), "@@@@222")
+                        parent.error('Please select a parent')
+                    }
+
+
+                    if (this.inError()) {
+                        return false
+                    }
+
+
+                }
+
+            }
+        })
+
+        setUpDropzone({
+            foldertype: "client",
+            ownername: 'Business Unit',
+            attachmenttype: "ATTACHMENT",
+            uploadUrl: "{{ url('activity:attachments') }}",
+            csrftoken: "{{ csrf_token }}",
+            ctzoffset: $("#id_ctzoffset").val(),
+            formId: "#dropzone_file",
+            peopleid: "{{ request.user.id }}",
+            ownerid: "{{ ownerid }}",
+            create_or_update: '{{ clientform.instance.id }}' == 'None' ? "create" : "update",
+            media_url: "{{ MEDIA_URL }}",
+            width: 300,
+            height: 400,
+        })
+
+
+        //datatable  list of peoples
+        tabListAdmins = $("#tabAdminUsers").DataTable({
+            ajax: {
+                url: `{{ url('onboarding:client') }}?action=getadmins&clientid={{ clientform.instance.id }}`,
+                data: function (d) {
+                }
+            },
+            columns: [
+                { data: 'id', defaulContent: "", visible: false },
+                { data: 'peoplecode', title: 'Code' },
+                { data: 'peoplename', title: 'Name' },
+                { data: 'loginid', title: 'Login ID' },
+                { data: 'email', title: 'Email' },
+                { data: 'mobno', title: 'Mobile' },
+                { data: 'dateofbirth', title: 'Date Of Birth', visible: false },
+                { data: 'dateofjoin', title: 'Date Of Join', visible: false },
+                { data: 'gender', title: 'Gender' },
+                { data: 'isadmin', title: 'Admin' },
+
+            ],
+            dom: `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            deferRender: true,
+            responsive: true,
+            ordering: false,
+            buttons: [
+                { extend: "create", editor: adminsEditor },
+                { extend: "edit", editor: adminsEditor },
+                { extend: "remove", editor: adminsEditor }
+            ],
+            select: {
+                style: 'single'
+            }
+            
+        })
+
+    
+
+
+        $("#tabAdminUsers_wrapper .buttons-create").addClass('disabled')//on page load disable new button of child table
+
+
+
+        //on submit form post request
+        $("#id_clientform").submit((e) => {
+            e.preventDefault()
+            var form = $(this);
+            const params = { url: $(form).attr("action"), modal: false }
+            const id = "{{ clientform.instance.pk }}" //form instance id
+            var payLoad = { formData: $("#id_clientform").serialize(), csrfmiddlewaretoken: '{{ csrf_token }}', 'uuid': "{{ ownerid }}" }
+            if (id != 'None') {
+                var newPayLoad = { ...payLoad, 'pk': id }
+                payLoad = newPayLoad
+            }
+            fire_ajax_form_post(params, payLoad)
+                .done((data, status, xhr) => {
+                    let url = "{{ url('onboarding:client') }}"
+                    show_successful_save_alert(update = id != 'None' ? true : false)
+                    window.setTimeout(function () {
+                        window.location.href = `${url}?id=${data.pk}`;
+                    }, 2000);
+                })
+        })
+        //delete ajax request 
+        function isClientDeleted(id) {
+            let urlname = "{{ url('onboarding:client') }}"
+            const params = { url: `${urlname}?action=delete&id=${id}` }
+            fire_ajax_get(params)
+                .done((data, status, xhr) => {
+                    if (!xhr.status === 200) {
+                        return false
+                    }
+                    return true
+                })
+                .fail((xhr, status, error) => {
+                    show_error_alert('Something went wrong!') //defined in custom.js
+                    return false
+                })
+        }
+
+        //on click on "#btn_del" call the deleteClient function
+        $("#btn_del").on('click', (e) => {
+            e.preventDefault()
+            const id = "{{ clientform.instance.pk }}"
+            if (id != 'None') {
+                show_alert_before_delete("Client")
+                    .then((res) => {
+                        if (res.isConfirmed) {
+                            status = isClientDeleted(id)
+                            console.log(status, "status")
+                            if (status) {
+                                show_successful_delete_alert()
+                                window.setTimeout(function () {
+                                    window.location.href = "{{ url('onboarding:client') }}?action=form";
+                                }, 2000);
+                            }
+                        }
+                    })
+            }
+        })
+
+
+        //disable the create button of sites table
+        $("#tabListBu_wrapper .buttons-create").addClass('disabled')
+        //if client form instance  not equal to None then enable the create button of sites table
+        if ("{{ clientform.instance.pk }}" != 'None') {
+            $("#tabListBu_wrapper .buttons-create").removeClass('disabled')
+            $("#tabAdminUsers_wrapper .buttons-create").removeClass('disabled')
+        }
+    })
+</script>
+{% endblock extra_scripts %}

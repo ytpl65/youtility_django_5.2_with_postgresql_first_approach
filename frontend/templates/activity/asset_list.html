@@ -1,0 +1,168 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Asset Lists
+{% endblock card_title %}
+<!---- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Asset Lists
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!----------- BEGIN PAGE BREADCUMBS ----------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Asset List</a></li>
+{% endblock pagebreadcumb %}
+<!----------- END PAGE BREADCUMBS ------------->
+
+
+<!------------------ BEGIN PEOPLE TABLE ------------------------->
+{% block table %}
+<div class="table-responsive">
+    <table id="asset_table" class="display compact cell-border" style="width:100%">
+	</table>
+</div>
+{% endblock table %} 
+<!------------------ END PEOPLE TABLE ---------------------------->
+
+
+{% block extra_scripts %}
+<script>
+var params=null
+
+let filters = localStorage.getItem('assetFilters') ? JSON.parse(localStorage.getItem('assetFilters')) : null
+if(filters && filters.AssetType === 0){
+	switch(filters.AssetStatus){
+		case 0:
+		params = {status:'WORKING'}
+		break;
+		case 1:
+		params = {status:'MAINTENANCE'}
+		break;
+		case 2:
+		params = {status:'STANDBY'}
+		break;
+		case 3:
+		params = {status:'SCRAPPED'}
+		break;
+	}
+	localStorage.clear()
+}
+
+
+
+$(document).ready(function () {
+		//BEGIN DATATABLE INITIALIZATION
+		var table = $('#asset_table').DataTable({
+			ajax:{
+				url: "{{ url('activity:asset') }}?action=list",
+				data:function(d){
+					d.params = JSON.stringify(params)
+				}
+			},
+			columns:[
+				{data: 'id', title:"ID", visible:false, defaultContent: "", className:'noVis'},
+				{data: 'identifier',title:'Type', visible:false, defaultContent: ""},
+				{data: 'assetcode', title: 'Code'},
+				{data: 'assetname', title: 'Name'},
+				{data: 'parent__assetname', title: 'Belongs To', visible:false},
+				{data: 'location__locname', title: 'Location'},
+				{data: 'runningstatus', title: 'Status'},
+				{data: 'enable', title: 'Enable'},
+				{data:"bu__buname", title:'Site', visible:false},
+				{data:"bu__bucode", title:'Site Code', visible:false},
+				{data:null,title:'QR Code', defaultContent: "Print", render: function(data, type, row, meta) {
+                    let downloadUrl = `{{ url('activity:asset') }}?action=qrdownload&code=${encodeURIComponent(row['assetcode'])}&name=${row['assetname']}`
+                    return `<a href="${downloadUrl}" class="qr-download-link">QR Download</a>`
+                }
+				},
+				{data:'gps', visible:false, title:"GPS", render:function(data, type, row, meta){
+                        let coords = typeof data === 'string' && data.length > 0 ? JSON.parse(data): 'NONE'
+                        if(coords !== 'NONE'){
+                            let lat = coords['coordinates'][1]
+                            let lng = coords['coordinates'][0]
+                            return `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank">${lat},${lng}</a>`
+                        }return coords
+                    }
+                }
+
+			],
+			order:[[1, 'asc']],
+			deferRender:true,
+			lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            responsive:true,
+			dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			columnDefs:[
+				{targets:[2,3], data: 'assetname', render:function(data, type, row, meta){
+					let updateUrl = "{{ url('activity:asset') }}"
+					return `<a href=${updateUrl}?id=${row['id']}>${data}</a>`
+				}
+				},
+				{targets:6, data: 'runningstatus',  render:function(data, type, row, meta){
+					if(data === 'MAINTENANCE'){return `<span class="badge badge-danger">${data}</span>`}
+					if(data === 'SCRAPPED'){return `<span class="badge badge-secondary">${data}</span>`}
+					if(data === 'STANDBY'){return `<span class="badge badge-orange">${data}</span>`}
+					if(data === 'WORKING'){return `<span class="badge badge-success">${data}</span>`}
+				}
+				},
+				{targets:[4,5], render:function(data, type, row, meta){
+					return data || 'NONE'
+				}
+				},
+				{targets:7, data:"enable", render:function(data, type, row, meta){
+					return data === true ? '<i class="bi bi-check-circle-fill text-success"></i> Active': '<i class="bi bi-x-circle-fill text-danger"></i> Inactive'				
+				}
+				},
+
+
+			],
+			createdRow:function(row, data, dataIndex){
+				if(data['enable'] === false){
+					$(row).addClass('disabled-record text-white')
+				}
+			},
+			buttons:[
+				{
+					extend: 'searchBuilder',
+					config: {
+					columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+					}
+				},
+				{
+					text:'<i class="bi bi-file-bar-graph-fill text-primary"></i>',
+					titleAttr:"Asset Logs",
+					action: function(e, dt, node, config){
+						return location.href = "{{ url('activity:assetlogs') }}?template=true"
+					}
+				},
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Asset List`,
+                    columns = ':visible',
+					filename = 'asset_list'
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Asset List`,
+                    columns = ':visible',
+					filename = 'asset_list'
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+					text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_asset",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+						return location.href = "{{ url('activity:asset') }}?action=form"
+					}
+				},
+			],
+		})
+
+	});
+</script>
+{% endblock extra_scripts %}

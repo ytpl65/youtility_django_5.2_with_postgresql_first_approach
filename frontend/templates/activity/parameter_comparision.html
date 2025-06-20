@@ -1,0 +1,251 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Parameter Comparision
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extras_css %}
+{{ asset_param_form.media.css }}
+{% endblock extras_css %}
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Parameter Comparision
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Parameter Comparision</a></li>
+{% endblock pagebreadcumb %}
+
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors" role="alert" style="display:none">
+    <strong>Error: </strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+
+{% block form%}
+<form action="" method="post" id="asset_param_form">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ asset_param_form.asset_type.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ asset_param_form.asset_type }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ asset_param_form.question.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ asset_param_form.question }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ asset_param_form.asset.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ asset_param_form.asset }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label for="" class="required">Date Range</label>
+                </div>
+                <div class="col-md-8">
+                    <input type="text" id="id_daterange" required class="form-control">
+                </div>
+            </div>
+            
+            <div class="input-group mb-3 d-none">
+                <div class="col-md-4">
+                    {{ asset_param_form.fromdate.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ asset_param_form.fromdate }}
+                </div>
+            </div>
+            <div class="input-group mb-3 d-none">
+                <div class="col-md-4">
+                    {{ asset_param_form.uptodate.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ asset_param_form.uptodate }}
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <button type="button" class="btn btn-sm btn-primary2"id="btn-load"><i class="fas text-white fa-chart-line"></i>&nbsp;Load Chart</button>
+</form>
+
+{% endblock form%}
+
+{% block extras %}
+<br><br>
+<div class="graph">
+    <div class="line-chart-parameter-cmp border border-1 p-2"></div>
+</div>
+{% endblock extras %}
+
+{% block extra_scripts %}
+{{ asset_param_form.media.js }}
+
+<script>
+      var options = {
+            series: [],
+            chart: {
+                type   : 'line',
+                stacked: false,
+                height : 350,
+                zoom   : {
+                    type          : 'x',
+                    enabled       : true,
+                    autoScaleYaxis: true
+                },
+                toolbar: {
+                    autoSelected: 'zoom'
+                }
+            },
+            noData: {
+                text: 'No data available!',
+                align: 'center',
+                verticalAlign: 'middle',
+                offsetX: 0,
+                offsetY: 0,
+                style: {
+                color: '#01579b',
+                fontSize: '16px',
+                fontFamily: undefined
+                }
+            },
+            
+            dataLabels: {
+                enabled: false
+            },
+            markers: {
+                size: 1,
+            },
+            title: {
+                text : 'Asset Comparision Line Chart',
+                align: 'left'
+            },
+            stroke: {
+                curve: 'straight'
+            },
+            yaxis: {
+                title: {
+                    text: 'Parameter Comparision'
+                },
+            },
+            xaxis: {
+                type: 'datetime',
+            },
+            tooltip: {
+                shared: false,
+            }
+        };  
+
+        //var chart = new ApexCharts(document.querySelector("#chart"), options);
+        //chart.render();
+
+    var _from_pd = moment().format('YYYY-MM-DD');
+    var _to_pd = moment().format('YYYY-MM-DD')
+    var chart;
+      
+      
+    $(document).ready(() => {
+        //asset field select2 config...
+        $("#id_question").djangoSelect2({
+            maximumSelectionLength:5,
+            closeOnSelect:false
+        })
+        
+        //initialize dates of hidden fields
+        $("#id_fromdate").val(_from_pd)
+        $("#id_uptodate").val(_to_pd)
+        
+
+        //flatpick date range config...
+        last_3_month = new Date().setMonth(new Date().getMonth() - 3)
+        $("#id_fromdate").flatpickr({
+            dateFormat: 'Y-m-d',
+            maxDate:new Date(),
+            minDate:last_3_month
+        })
+        $("#id_uptodate").flatpickr({
+            dateFormat: 'Y-m-d',
+            maxDate:new Date(),
+            minDate:last_3_month
+        })
+
+
+
+        // on change asset type
+        $("#id_asset_type").change((e) => {
+            //reset asset options
+            fire_ajax_get({
+                url:"{{ url('activity:param_comparision') }}",
+                data:{'action':"get_assets", "of_type":$("#id_asset_type").val()}
+            }).done((data, status, xhr) => {
+                $("#id_asset").empty()
+                $("#id_asset").append(new Option("", "", false, false)) //first option is empty
+                data.options.forEach((item) => {
+                    var newOption = new Option(item.assetname, item.id, false, false)
+                    $("#id_asset").append(newOption)
+                })
+            })
+        })
+
+        
+        // on change asset
+        $("#id_asset").change((e) => {
+            //reset question options
+            fire_ajax_get({
+                url:"{{ url('activity:param_comparision') }}",
+                data:{'action':"get_questions",  "of_asset":$("#id_asset").val()}
+            }).done((data, status, xhr) => {
+                $("#id_question").empty()
+                $("#id_question").append(new Option("", "", false, false)) //first option is empty
+                data.options.forEach((item) => {
+                    var newOption = new Option(item.question__quesname, item.question_id, false, false)
+                    $("#id_question").append(newOption)
+                })
+            })
+        })
+        var chart = new ApexCharts(document.querySelector(".line-chart-parameter-cmp"), options);
+        chart.render()
+
+        //on load click
+        $("#btn-load").click((e) => {
+            fire_ajax_get({
+                url:"{{ url('activity:param_comparision') }}",
+                data:{action:"get_data_for_graph", formData:$("#asset_param_form").serialize()}
+            }).done((data, status, xhr) => {
+                chart.updateSeries(data.series)
+            })
+        })
+        
+        //initialze the date range field
+        initDateRange("#id_daterange", start = _from_pd, end = _to_pd).on('apply.daterangepicker', function(e, picker){
+            _from_pd = picker.startDate.format('YYYY-MM-DD');
+            _to_pd = picker.endDate.format('YYYY-MM-DD');
+            $("#id_fromdate").val(_from_pd)
+            $("#id_uptodate").val(_to_pd)
+        })
+
+    })
+</script>
+{% endblock extra_scripts %}

@@ -1,0 +1,169 @@
+{% extends 'globals/base_list.html' %}
+
+{% block extra_css %}{% endblock extra_css %}
+
+{% block pagebreadcumb %}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Import Update Data</a></li>
+{% endblock pagebreadcumb %}
+{% block table %}
+    {% if result %}
+        {% if result.has_errors() %}
+            {% block errors %}
+                <h2>Errors</h2>
+                <ul>
+                    {% for error in result.base_errors %}
+                        <li>
+                            {{ error.error }}
+                            <div class="traceback">
+                                {{ error.traceback|linebreaks }}
+                            </div>
+                        </li>
+                        {% endfor %}
+                        {% for line, errors in result.row_errors() %}
+                    {% for error in errors %}
+                        <li>
+                        Line number: {{ line }} - {{ error.error }}
+                        <div><code>{{ error.row.values()}}</code></div>
+                        <div class="traceback">{{ error.traceback|linebreaks }}</div>
+                        </li>
+                    {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% endblock %}
+        {% elif result.has_validation_errors()  %}
+            {% block validation_errors %}
+                <h2 class="invalid_rows">Some rows failed to validate</h2>
+                <p>Please correct these errors in your data where possible, then reupload it using the form above.</p>
+                <table id="import_table" class="import-preview">
+                    <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>Errors</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in result.invalid_rows %}
+                            <tr>
+                                <td>{{ row.number }}</td>
+                                <td class="errors">
+                                    <div class="validation-error-container">
+                                        <ul class="validation-error-list"> 
+                                            {% for field_name, error_list in row.field_specific_errors.items() %}
+                                                <li>
+                                                    <span class="validation-error-field-label">
+                                                        {{ field_name }}
+                                                    </span>
+                                                    <ul>
+                                                        {% for error in error_list %}
+                                                            <li>{{ error }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </li>
+                                            {% endfor%}
+                                            {% if row.non_field_specific_errors %}        
+                                                        {% for error in row.non_field_specific_errors %}
+                                                        {{ error }}
+                                                        {% endfor %}
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </td>
+                                
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endblock %}
+        {% else %}
+            {% block preview %}
+                <h2>Preview</h2>
+                <table id="import_table" class="import-preview display cell-bordered compact">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        {% for field in result.diff_headers %}
+                        <th>{{ field }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    {% for row in result.valid_rows() %}
+                    <tr class="{{ row.import_type }}">
+                        <td class="import-type">
+                        {% if row.import_type == 'new' %}
+                            New
+                        {% elif row.import_type == 'skip' %}
+                            Skipped
+                        {% elif row.import_type == 'delete' %}
+                            Delete
+                        {% elif row.import_type == 'update' %}
+                            Update
+                        {% endif %}
+                        </td>
+                        {% for field in row.diff %}
+                        <td>{{ field }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% endblock %}
+        {% endif %}
+    {% endif %}
+{% endblock table %}
+{% block extra_scripts %}
+<script>
+var table= null
+function ConfirmImport(){
+    fd = new FormData()
+    fd.append('action', 'confirmImport')
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    fd.append('table', localStorage.getItem('table'))
+    $.ajax({
+        url:"{{ url('onboarding:import_update') }}",
+        data: fd,
+        contentType: false,
+        processData: false,
+        type: 'POST',
+        success:function(res){
+            localStorage.removeItem('table')
+            Swal.fire({
+                icon: "success",
+                title: `Total ${res.totalrows} record processed successfully!`,
+            }).then((res) => {
+                location.href = "{{ url('onboarding:import_update') }}?action=form"
+            })
+        },
+        error:function(xhr, status, error){
+            show_error_alert("Somthing went wrong!")
+        }
+    })
+}
+
+function onClickConfirmButton(){
+    if(confirm("Are you sure you want to continue, please make sure you are OK with preview data.")){
+        ConfirmImport()
+    }
+}
+
+$(document).ready(() => {
+    table = $("#import_table").DataTable({
+        deferRenderer:true,
+        dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+        <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        responsive:true,
+        ordering:false,
+        buttons:[
+        {
+            text:'Confirm Import',
+            className:'confirm_import',
+            action:function(e, dt, node, config){
+                onClickConfirmButton()
+            }
+        }]
+    })
+    //hide or show
+    if($("h2.invalid_rows").is(':visible')){
+        $(".confirm_import").hide()
+    }
+})
+</script>
+{% endblock extra_scripts %}

@@ -1,0 +1,518 @@
+{% extends "globals/layout.html" %}
+
+{%- block base_head -%}
+  <title>Dashboard</title>
+{% endblock base_head %}
+
+{% block extra_css %}
+<link href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet"
+    type="text/css" />
+<link href="{{ static('assets/css/daterangepicker.css') }}" rel="stylesheet" type="text/css" />
+{{ load_leaflet_tags() }}
+{% endblock extra_css %}
+
+{% block breadcumbactions %}
+<div class="dashboard_timeline">
+    <div class="input-group pe-4">
+        <span class="input-group-text" id="basic-addon1">From: </span>
+        <input type="text" id="id_daterange" class="form-control">
+    </div>
+</div>
+{% endblock breadcumbactions %}
+
+{% block popup_alerts %}
+{{ modal_for_table_view() }}
+{% endblock popup_alerts %}
+
+
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+    {{ super() }}
+        <div class="btn-group">
+            <button class="btn btn-secondary dropdown-toggle bg-transparent" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                Dashboard
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" id="btn_draggable" href="#">Positionize the portlets</a></li>
+                <li><a class="dropdown-item" id="btn_freeze" href="#">Freeze the portlets</a></li>
+            </ul>
+        </div>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+ 
+
+<!------------------------------ START PAGE BODY CONTAINER -------------------------->
+{% block pagebody_container %}
+<div class="row gy-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4">
+        <div class="col">
+            <div class="db_portlet card card-flush h-100 d-none" data-portlet-id="1" id="TASKSCARD">
+                {% include "dashboard/RP_d/partials/dashboard_cards/partial_taskstats_card.html" %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="db_portlet card card-flush h-100 d-none" data-portlet-id="2" id="ASSETSCARD">
+                <div class="card-header mb-3">
+                    <h3 class="card-title align-items-start flex-column pt-9">
+                        <span class="card-label fw-bold y-primary fw-bold fs-1" style="color: #01579b;">Assets Status</span>
+                    </h3>
+                </div>
+                <div class="card-body pb-0 pt-7 px-2 mt-n12">
+                    <div id="assets_status_chart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="db_portlet card card-flush h-100 d-none" data-portlet-id="3" id="TOURCARD">
+                {% include "dashboard/RP_d/partials/dashboard_cards/partial_guardtour_card.html" %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="db_portlet card card-flush h-100 d-none" data-portlet-id="4" id="ALERTSCARD">
+                <div class="card-header mb-3">
+                    <h3 class="card-title align-items-start pt-9 flex-column">
+                        <span class="card-label fw-bold fs-1" style="color: #01579b;">Alerts</span>
+                    </h3>
+                </div>
+                <div class="card-body pb-0 pt-7 ps-6">
+                    <div class="alerts_not_found">
+                        <span>No Data Found <i class="bi bi-exclamation-circle text-danger fs-5"></i></span>
+                        <div>From&nbsp;<span class="from"></span> to&nbsp; <span class="upto"></span></div>
+                    </div>
+                    <div id="alerts_donut_chart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="db_portlet card card-flush h-100 d-none" data-portlet-id="5" id="PPMCARD">
+                {% include "dashboard/RP_d/partials/dashboard_cards/partial_ppm_card.html" %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="db_portlet card card-flush h-100 d-none" data-portlet-id="10" id="TICKETSCARD">
+                <div class="card-header mb-3">
+                    <h3 class="card-title align-items-start flex-column pt-9">
+                        <span class="card-label fw-bold y-primary fw-bold fs-1" style="color: #01579b;">Ticket Metrics</span>
+                    </h3>
+                </div>
+                <div class="card-body pb-0 pt-7 px-2 ps-6">
+                    <div class="tickets_not_found">
+                        <span>No Data Found <i class="bi bi-exclamation-circle text-danger fs-5"></i></span>
+                        <div>From&nbsp;<span class="from"></span> to&nbsp; <span class="upto"></span></div>
+                    </div>
+                    <div id="tickets_status_chart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="mt-0 p-2">
+                <div class="db_portlet row card portlet d-none  mb-2 p-2" data-portlet-id ="6" id="PORTLET_SOS_ALERTS">
+                    <div class="counter card-body bg-gray-100 bg-opacity-60 p-2 rounded-3">
+                        <div class="d-flex count-item justify-content-between">
+                            <i class="fas text-white align-middle p-4 yiconpadd yicon text-danger fa-exclamation-triangle"></i>
+                            <div class="pe-3" data-cardtype='SOSALERTS'>
+                                <h6 class="pb-1 y-primary  timer count-title text-end count-number" id="sos_count"></h6>
+                                <p class="h4 text-gray-500 fw-semibold fs-6">SOS Alerts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="db_portlet row card portlet d-none mb-2 p-2 " data-portlet-id ="7" id="PORTLET_INCIDENTREPORTS">
+                    <div class="card-body counter  bg-gray-100 bg-opacity-60  p-2 rounded-3 ">
+                        <div class="d-flex count-item justify-content-between">
+                            {# <i class="fas text-white p-4 yiconpadd yicon fa-clipboard-user y-primary fs-1"></i> #}
+                            <i class="fas text-white p-4 yiconpadd yicon text-start text-warning fa-file-medical-alt"></i>
+                            <div class="pe-3" data-cardtype='INCREPORTS'>
+                                <h6 class="pb-1 y-primary text-end timer count-title count-number" id="ir_count"></h6>
+                                <p class="h4 text-gray-500 fw-semibold fs-6">Incident Reports</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="db_portlet row card portlet d-none mb-2 p-2" data-portlet-id ="8" id="PORTLET_FR_FAILURES">
+                    <div class="card-body counter  bg-gray-100 bg-opacity-60  p-2 rounded-3">
+                        <div class="d-flex count-item justify-content-between">
+                            <i class="bi bi-person-bounding-box yiconpadd yicon p-4 y-primary"></i>
+                            <div class="pe-3" data-cardtype='ATTENDANCE'>
+                                <h6 class="pb-1 y-primary  text-end timer count-title count-number" id="att_count"></h6>
+                                <p class="h4 text-gray-500 fw-semibold fs-6">Attendance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="db_portlet row card portlet d-none mb-2 p-2" data-portlet-id ="9" id="PORTLET_ROUTES">
+                    <div class="card-body counter  bg-gray-100 bg-opacity-60 p-2 rounded-3">
+                        <div class="d-flex count-item justify-content-between">
+                            <i class="fas text-white yicon yiconpadd text-success p-4 fa-route"></i>
+                            <div class="pe-3" data-cardtype='ROUTES'>
+                                <h6 class="pb-1 y-primary text-end timer count-title count-number" id="route_count"></h6>
+                                <p class="h4 text-gray-500 fw-semibold fs-6">Routes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="mt-0 p-2">
+                <div class="db_portlet row card portlet mb-2 p-2 d-none" data-portlet-id ="9" id="PORTLET_SITEDIVERSION">
+                    <div class="card-body counter  bg-gray-100 bg-opacity-60 p-2 rounded-3">
+                        <div class="d-flex count-item justify-content-between">
+                            <i class="fas  yicon yiconpadd text-purple p-4 fa-code-branch"></i>
+                            <div class="pe-3" data-cardtype='SITEDIVERSION'>
+                                <h6 class="pb-1 y-primary text-end timer count-title count-number" id="diversion_count">0
+                                </h6>
+                                <p class="h4 text-gray-500 fw-semibold fs-6">Site Diversions Alerts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-0 p-2">
+                <div class="db_portlet row card portlet mb-2 p-2 d-none" data-portlet-id ="9" id="PORTLET_SITECRISIS">
+                    <div class="card-body counter  bg-gray-100 bg-opacity-60 p-2 rounded-3">
+                        <div class="d-flex count-item justify-content-between">
+                            <i class="fas  yicon yiconpadd text-danger p-4 fa-dumpster-fire"></i>
+                            <div class="pe-3" data-cardtype='SITECRISIS'>
+                                <h6 class="pb-1 y-primary text-end timer count-title count-number" id="sitecrisis_count">0
+                                </h6>   
+                                <p class="h4 text-gray-500 fw-semibold fs-6">Site Crisis Alerts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-0 p-2">
+                <div class="db_portlet row card portlet mb-2 p-2 d-none" data-portlet-id ="9" id="PORTLET_DYNAMICTOURS">
+                    <div class="card-body counter  bg-gray-100 bg-opacity-60 p-2 rounded-3">
+                        <div class="d-flex count-item justify-content-between">
+                            <i class="fas  yicon yiconpadd text-danger p-4 fa-infinity"></i>
+                            <div class="pe-3" data-cardtype='DYNAMICTOURS'>
+                                <h6 class="pb-1 y-primary text-end timer count-title count-number" id="dynamictours_count">0
+                                </h6>   
+                                <p class="h4 text-gray-500 fw-semibold fs-6">Dynamic Tours</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-0 p-2">
+                <div class="db_portlet row card portlet mb-2 p-2 d-none" data-portlet-id ="9" id="PORTLET_WORKPERMIT">
+                    <div class="card-body counter  bg-gray-100 bg-opacity-60 p-2 rounded-3">
+                        <div class="d-flex count-item justify-content-between">
+                            <i class="fas yicon yiconpadd y-primary p-4 fa-file-alt"></i>
+                            <div class="pe-3" data-cardtype='WORKPERMIT'>
+                                <h6 class="pb-1 y-primary text-end timer count-title count-number" id="workpermit_count">
+                                </h6>   
+                                <p class="h4 text-gray-500 fw-semibold fs-6">Work Permit</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!--main row-->
+
+
+
+
+{% endblock pagebody_container %}
+<!------------------------------ END PAGE BODY CONTAINER -------------------------->
+
+
+
+{% block extra_scripts %}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript">
+</script>
+<script src="{{ static('assets/js/daterangepicker.js') }}" type="text/javascript"></script>
+
+<script>
+    //Global Variables here
+    var from, upto, map;
+    var assets_status_counts=null;
+    var total_number_of_assets=null;
+    
+    function savePortletPositions(ele) {
+        const positions = {};
+        $(ele).each(function() {
+            const portletId = $(this).data('portlet-id');
+            const offset = $(this).offset();
+            positions[portletId] = { top: offset.top, left: offset.left };
+        });
+        localStorage.setItem('portletPositions', JSON.stringify(positions));
+    }
+
+    function restorePortletPositions(ele){
+        // Restore positions of the elements from localStorage
+        const savedPositions = localStorage.getItem('portletPositions');
+        if (savedPositions) {
+            const positions = JSON.parse(savedPositions);
+            $(ele).each(function() {
+                const portletId = $(this).data('portlet-id');
+                if (positions[portletId]) {
+                    const offsetParent = $(this).offsetParent();
+                    const parentOffset = offsetParent.offset();
+                    const top = positions[portletId].top - parentOffset.top + offsetParent.scrollTop();
+                    const left = positions[portletId].left - parentOffset.left + offsetParent.scrollLeft();
+                    $(this).css({ top: top, left: left });
+                }
+            });
+        }
+    }
+
+    function showMap(row){
+        let gps = ['NONE', '0.0,0.0', ""].includes(row['gps']) ? null : JSON.parse(row['gps'])
+        let lat = gps ? gps.coordinates[1] : null
+        let lng = gps ? gps.coordinates[0] : null
+        
+        if(row && gps && lat && lng){
+        let html = `<table><tbody class="border border-1">
+        <tr class="border border-1"><td>Site</td><td>${row['people__bu__buname']}</td></tr>
+        <tr class="border border-1"><td>Device using</td><td>${row['modelname']}</td></tr>
+        <tr class="border border-1"><td>Battery Level</td><td>${row['batterylevel']}</td></tr>
+        <tr class="border border-1"><td>Platform Version</td><td>${row['platformversion']}</td></tr>
+        <tr class="border border-1"><td>Location Mocked</td><td>${row['islocationmocked']}</td></tr>
+        <tr class="border border-1"><td>Last Login</td><td>${utc_to_local(row['offset'], row['lastlogin'])}</td></tr>
+        </tbody></table>`
+        
+        L.marker([lat, lng]).addTo(map).bindPopup(html).openPopup()
+        map.flyTo([lat, lng], 18, {
+            animate: true,
+            duration:1.0
+        })              
+        }else{
+            show_error_alert("Not a coordinates, unable to plot on map!", 'Not Found')
+        }
+    }
+
+    function convertListToString(list, prefix) {
+        return list.map(item => prefix + item[0]).join(", ");
+    }
+</script>
+
+<!----- Datatable For SOS ------>
+{# {% include "dashboard/RP_d/partials/partial_sitepeople_datatable.html" %} #}
+
+
+
+<script>
+
+    var _taskJobstatus = null;
+    var _popUpTable = null;
+    var _dataTableConfig = null;
+    var _db_cardtype = null;
+    var _assetChart = null;
+    var _alertChart = null;
+    var _tktChart = null;
+    var _from_pd = moment().format('YYYY-MM-DD');
+    var _to_pd = moment().format('YYYY-MM-DD')
+    var _assetChartSeries;
+    var _alertChartSeries;
+    var _tktChartSeries;
+
+
+
+    $(document).ready(() => {
+
+        //show only assigned portlet caps
+        if("{{ request.user.is_superuser }}" == 'False'){
+            var pcaps = session['people_portletcaps'].length === 0 ? session['client_portletcaps'] :  session['people_portletcaps']
+            let ele = convertListToString(pcaps, "#")
+            console.log(ele)
+            $(ele).removeClass('d-none') 
+        }else{
+            $('.card').removeClass('d-none') 
+        }
+    })
+</script>
+
+    {% include "dashboard/RP_d/partials/dashboard_cards/partial_datatables_config.html" %}
+
+<script>
+    function getStatsForDashboard(){
+        let params = {
+            data:{"from":_from_pd, "upto":_to_pd, action:"getCounts"},
+            url:"{{ url('onboarding:rp_dashboard') }}",
+        }
+        fire_ajax_get(params)
+        .done((data, status, xhr) => {
+            console.log(data.counts)
+            let data_ = data.counts
+            //task portlet 
+            $("#tasks_completed").html(data_.completed_tasks_count)
+            $("#tasks_autoclosed").html(data_.autoclosed_tasks_count)
+            $("#tasks_pending").html(data_.assigned_tasks_count)
+            $("#tasks_scheduled").html(data_.totalschd_tasks_count)
+            
+            //ppm portlet
+            $("#ppmtasks_completed").html(data_.completed_ppmtasks_count)
+            $("#ppmtasks_autoclosed").html(data_.autoclosed_ppmtasks_count)
+            $("#ppmtasks_pending").html(data_.assigned_ppmtasks_count)
+            $("#ppmtasks_scheduled").html(data_.totalschd_ppmtasks_count)
+            
+            //internal tour portlet
+            $("#tours_completed").html(data_.completed_tours_count)
+            $("#tours_scheduled").html(data_.totalscheduled_tours_count)
+            $("#tours_autoclosed").html(data_.inprogress_tours_count)
+            $("#tours_partiallycompleted").html(data_.partiallycompleted_tours_count)
+            
+            //asset portlet
+            $("#total_assets").html(data_.assetchart_total_count)
+            $("#total_alerts").html(data_.alertchart_total_count)
+            
+            //other portlet
+            $("#ir_count").html(data_.IR_count)
+            $("#route_count").html(data_.route_count)
+            $("#sos_count").html(data_.sos_count)   
+            $("#att_count").html(data_.FR_fail_count)
+            $("#diversion_count").html(data_.diversion_count)
+            $("#sitecrisis_count").html(data_.sitecrisis_count)
+            $("#dynamictours_count").html(data_.dynamic_tour_count)
+            $("#workpermit_count").html(data_.workpermit_count)            
+            
+            
+
+            let assetCharData = data_.assetchartdata
+            let alertsChartData = data_.alertchartdata
+            let ticketsChartData = data_.ticketchartdata
+            let WomChartData = data_.womchartdata
+            if(_assetChart !== null && _alertChart !== null){
+                _assetChart.updateSeries(assetCharData)
+                _alertChart.updateSeries(alertsChartData)
+                _tktChart.updateSeries(ticketsChartData)
+                _womChart.updateSeries(WomChartData)
+            }else{
+                _assetChartSeries = assetCharData
+                _alertChartSeries = alertsChartData
+                _tktChartSeries = ticketsChartData
+                _womChartSeries = WomChartData
+                //script related to chart of asset status card loaded with this file
+                {% include "dashboard/RP_d/partials/dashboard_cards/partial_assets_card.html" %}
+                {% include "dashboard/RP_d/partials/dashboard_cards/partial_alerts_card.html" %}
+                {% include "dashboard/RP_d/partials/dashboard_cards/partial_ticket_card.html" %}
+                {% include "dashboard/RP_d/partials/dashboard_cards/partial_wom_card.html" %}
+                _assetChart = new ApexCharts(document.querySelector("#assets_status_chart"), barChartOptions);
+                _alertChart = new ApexCharts(document.querySelector("#alerts_donut_chart"), donutChartOptions);
+                _tktChart = new ApexCharts(document.querySelector("#tickets_status_chart"), ticketoptions);
+                _womChart = new ApexCharts(document.querySelector("#wom_status_chart"), womoptions);
+                
+                
+                setTimeout(function() {
+                    _assetChart.render()
+                    _alertChart.render()
+                    _tktChart.render()
+                    //_womChart.render()
+                }, 200); 
+            }
+
+            //display msg of no data
+            data_.alertchart_total_count === 0 ? $('.alerts_not_found').show() : $('.alerts_not_found').hide()
+            data_.ticketchart_total_count === 0 ? $('.tickets_not_found').show() : $('.tickets_not_found').hide()
+            data_.wom_total_count === 0 ? $('.wom_not_found').show() : $('.wom_not_found').hide()
+            
+            $('.from').html(_from_pd)
+            $('.upto').html(_to_pd)
+        })
+        .fail((xhr, status, error) => {
+            console.log(xhr)
+        })
+        
+
+    }
+    
+    
+
+    $(document).ready(() => {
+        getStatsForDashboard()
+
+        //add input field to the datatables dom
+        initDateRange("#id_daterange", start = _from_pd, end = _to_pd).on('apply.daterangepicker', function(e, picker){
+            _from_pd = picker.startDate.format('YYYY-MM-DD');
+            _to_pd = picker.endDate.format('YYYY-MM-DD');
+            getStatsForDashboard()
+            console.log(picker.startDate.format('YYYY-MM-DD'), picker.endDate.format('YYYY-MM-DD'))
+            
+        })
+        //restore the position of elements
+        //restorePortletPositions('.db_portlet')
+
+        //on click btn_draggable make it draggable
+        $("#btn_draggable").click(() => {
+            $(".db_portlet").draggable({
+                stop: function(event, ui) {
+                    savePortletPositions('.db_portlet');
+                }
+            });
+        })
+
+        //on click btn_draggable make it draggable
+        $("#btn_freeze").click(() => {
+            $(".db_portlet").draggable('destroy');
+        })
+
+        
+
+        $(".count-item").on('click', function() {
+            let cardType = $(this).find('[data-cardtype]').attr('data-cardtype');
+            let jobstatus = $(this).find('[data-jobstatus]').attr('data-jobstatus');
+            let filterData = {cardType:cardType, jobstatus:jobstatus, from:_from_pd, to:_to_pd}
+            console.log(filterData, cardType, jobstatus, "&&&")
+            switch (cardType) {
+                case 'SOSALERTS':
+                localStorage.setItem('sos_alerts_filter', JSON.stringify(filterData))
+                window.open('{{ url("attendance:attendance_view") }}?template=sos_template')
+                break;
+                case 'DYNAMICTOURS':
+                filterData['dynamic']=true
+                localStorage.setItem('dynamic_tours_filter', JSON.stringify(filterData))
+                window.open('{{ url("schedhuler:jobneedtours") }}?template=true', '_blank');
+                break;
+                case 'INCREPORTS':
+                localStorage.setItem('incident_reports_filter', JSON.stringify(filterData))
+                window.open("{{ url('reports:incidentreport_list') }}?template=true", '_blank');
+                break;
+                case 'ROUTES':
+                localStorage.setItem('routes_filter', JSON.stringify(filterData))
+                window.open("{{ url('schedhuler:jobneedexternaltours') }}?template=true", '_blank');
+                break;
+                case 'SITEDIVERSION':
+                localStorage.setItem('site_diversion_stats_filters', JSON.stringify(filterData))
+                window.open("{{ url('attendance:attendance_view') }}?template=site_diversions", '_blank');
+                break;
+                case 'SITECRISIS':
+                localStorage.setItem('sitecrisis_stats_filters', JSON.stringify(filterData))
+                window.open("{{ url('attendance:attendance_view') }}?template=sitecrisis", '_blank');
+                break;
+                case 'ATTENDANCE':
+                localStorage.setItem('attds_filter', JSON.stringify(filterData))
+                window.open('{{ url("attendance:attendance_view") }}?template=true', '_blank');
+                break;
+                case 'TASKSTATS':
+                localStorage.setItem('taskstats_filter', JSON.stringify(filterData))
+                window.open('{{ url("schedhuler:jobneedtasks") }}?template=true', '_blank');
+                break;
+                case 'PPMTASKSTATS':
+                localStorage.setItem('ppmstats_filter', JSON.stringify(filterData))
+                window.open('{{ url("activity:ppmjobneed") }}?template=true', '_blank');
+                break;
+                case 'TOURSTATS':
+                localStorage.setItem('tourstats_filter', JSON.stringify(filterData))
+                window.open('{{ url("schedhuler:jobneedtours") }}?template=true', '_blank');
+                break;
+                case 'WORKPERMIT':
+                filterData['dynamic']=true
+                localStorage.setItem('workpermit_filter', JSON.stringify(filterData))
+                window.open('{{ url("work_order_management:work_permit") }}?template=true', '_blank');
+                break;
+                default:
+                {}
+            }
+        })
+    })
+</script>
+
+{% endblock extra_scripts %}

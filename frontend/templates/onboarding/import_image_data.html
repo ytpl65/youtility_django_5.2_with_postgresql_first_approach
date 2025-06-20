@@ -1,0 +1,128 @@
+{% extends 'globals/base_list.html' %}
+
+
+{% block extra_css %}{% endblock extra_css %}
+
+{% block pagebreadcumb %}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Import Data</a></li>
+{% endblock pagebreadcumb %}
+
+{% block table%}
+
+    {% if not boolean_var %}
+        <h1>False</h1>
+        <table id="import_table" class="import-error-preview">
+            <thead>
+                <tr>
+                    <th>Image Name</th>
+                    <th>Errors</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in image_data %}
+                    <tr>
+                        <td>{{ row.name }}</td>
+                        <td>
+                            <ol>
+                                {% for error in row.error %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ol>
+                            
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <h2>Preview</h2>
+        <table class="import-preview" id="import_table">
+            <thead>
+                <tr>
+                    <th>Image Name</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in image_data %}
+                    <tr>
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.size }}KB</td>
+                        <td>{{ row.mimeType }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+
+{% endblock table %}
+
+{% block extra_scripts %}
+<script>
+var table= null
+function ConfirmImport(){
+    fd = new FormData()
+    fd.append('action', 'confirmImport')
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    fd.append('google_drive_link','{{ google_drive_link }}')
+    fd.append('table', localStorage.getItem('table'))
+    $.ajax({
+        url:"{{ url('onboarding:import') }}",
+        data: fd,
+        contentType: false,
+        processData: false,
+        type: 'POST',
+        success:function(res){
+            console.log(res);
+            localStorage.removeItem('table')
+            Swal.fire({
+                icon: "success",
+                title: `Total ${res.totalrows} inserted successfully!`,
+            }).then((res) => {
+                location.href = "{{ url('onboarding:import') }}?action=form"
+            })
+        },
+        error:function(xhr, status, error){
+            show_error_alert("Somthing went wrong!")
+        }
+    })
+}
+
+function onClickConfirmButton(){
+    if(confirm("Are you sure you want to continue, please make sure you are OK with preview data.")){
+        ConfirmImport()
+    }
+}
+
+
+$(document).ready(() => {
+    table = $("#import_table").DataTable({
+        deferRenderer:true,
+        dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+        <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        responsive:true,
+        ordering:false,
+        buttons:[
+        {
+            text:'Confirm Import',
+            className:'confirm_import',
+            action:function(e, dt, node, config){
+                onClickConfirmButton()
+            }
+        }]
+
+    })
+    //hide or show
+    if($(".import-error-preview").is(':visible')){
+        $(".confirm_import").hide()
+    }
+
+
+
+
+})
+
+</script>
+{% endblock extra_scripts %}

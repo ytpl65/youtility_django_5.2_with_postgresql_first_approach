@@ -1,0 +1,318 @@
+{% extends "globals/base_list.html" %}
+
+{% block card_title %}
+Vendor List
+{% endblock card_title %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Vendor List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Vendor List</a></li>
+{% endblock pagebreadcumb %}
+
+{% block table %}
+<table id="vendor_table" class="display compact cell-border"></table>
+{% endblock table %}
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING animate__animated animate__zoomIn -->
+<div class="modal"  tabindex="-1" aria-hidden="true" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-vendor">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="vendor_content">
+		</div>
+	</div>
+</div>
+
+{% call general_popup(title="Set GPS Location", popup_id="open_map", modal_size="modal-lg") %}
+	<div class="modal-body card">
+		<div class="card-body p-0">
+			<div id="map" style="width:750px; height:350px"></div>
+		</div>
+	</div>
+	<div class="modal-footer d-flex justify-content-between">
+		<div><p>Tip: Zoom in for accurate coordinates of address, place the marker and then set the coords.</p></div>
+		<div></div>
+		<div><a href="#" class="btn" id="close_setgps" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-primary2" id="set_the_coords">Set the coordinates</a></div>
+		
+	</div>
+	{% endcall %}
+{% endblock popup_alerts %}
+
+{% block extra_scripts %}
+<script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3PUZCB7u2PiV8whHeAshweOPIK_d690o&libraries=places&v=weekly&loading=async"
+      defer
+    ></script>
+<script src="{{ static('assets/js/just-validate.production.min.js') }}"></script>
+
+
+<script>
+var table=null;
+const urlname = "{{ url('work_order_management:vendor') }}"
+const modal_id        = "#modal-vendor"
+const modalcontent_id = "#vendor_content"
+const formid          = "#vendorform"
+
+
+//form validations
+function form_validate(){
+    const validator = new JustValidate('#vendorform', { errorFieldCssClass: 'is-invalid', validateBeforeSubmitting: true});
+    return validator
+    .addField('#id_code', [
+                { rule:"customRegexp", value:/^[a-zA-Z0-9_-]+$/ ,errorMessage:"Code should not contain spaces and any special characters other than _(underscore) and -(hyphen), which are allowed"},
+                { rule:'minLength', value:3 },
+                { rule:'required'},
+                { rule:'maxLength', value:15 }
+
+            ])
+    .addField('#id_email', [
+                { rule:'customRegexp', value:/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, errorMessage:"Not a valid format" },
+                { rule:'required'},
+            ])
+    .addField('#id_mobno', [
+                { rule:"customRegexp", value:/^\+\d{1,3}\d{1,13}$/, errorMessage:"Not a valid format it should be like: +<code>xxxxxxxxx"},
+                { rule:'minLength', value:10 },
+                { rule:'required'},
+                { rule:'maxLength', value:15 }
+            ])	
+}
+
+//global var
+	var map;
+	var userMarker;
+
+	    function clearAllMarkers(markers){
+		// Clear out the old markers.
+		markers.forEach((marker) => {
+			marker.setMap(null);
+		});
+	}
+
+	function placeMarker(location) {
+		if ( userMarker ) {
+			userMarker.setPosition(location);
+		} else {
+			userMarker = new google.maps.Marker({
+			position: location,
+			map: map,
+			icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+			});
+		}
+	}
+
+    function initMap() {
+		map = new google.maps.Map(document.getElementById("map"), {
+			center: { lat: -34.397, lng: 150.644 },
+			zoom: 8,
+		});
+		//search-radius-form controls
+		const controlDiv = document.createElement('DIV');
+		controlDiv.id = "search_rad_controls";
+
+		// Create the search box and link it to the UI element.
+		const controlInput = document.createElement('input');
+		controlInput.id = "pac-input";
+		controlInput.className = "controls mt-2 form-control";
+		controlInput.placeholder = 'Search any keyword..'
+		controlInput.style = 'width: 170% !important;'
+
+		controlDiv.appendChild(controlInput);
+		map.controls[google.maps.ControlPosition.TOP_LEFT].push(controlDiv);
+
+		const searchBox = new google.maps.places.SearchBox(controlInput);
+
+		// Bias the SearchBox results towards current map's viewport.
+		map.addListener("bounds_changed", () => {
+			searchBox.setBounds(map.getBounds());
+		});
+
+		let markers = [];
+
+		// Listen for the event fired when the user selects a prediction and retrieve
+		// more details for that place.
+		searchBox.addListener("places_changed", () => {
+			const places = searchBox.getPlaces();
+
+			if (places.length == 0) {
+			return;
+			}
+
+			// Clear out the old markers.
+			clearAllMarkers(markers)
+			markers = [];
+
+			// For each place, get the icon, name and location.
+			const bounds = new google.maps.LatLngBounds();
+
+			places.forEach((place) => {
+			if (!place.geometry || !place.geometry.location) {
+				console.log("Returned place contains no geometry");
+				return;
+			}
+
+			const icon = {
+				url: place.icon,
+				size: new google.maps.Size(71, 71),
+				origin: new google.maps.Point(0, 0),
+				anchor: new google.maps.Point(17, 34),
+				scaledSize: new google.maps.Size(25, 25),
+			};
+			
+			let marker = new google.maps.Marker({
+				map,
+				icon,
+				title: place.name,
+				position: place.geometry.location,
+				animation:google.maps.Animation.DROP
+				})
+			
+			// Create a marker for each place.
+			markers.push(
+				marker
+			);
+
+			//on click marker zoom in
+			marker.addListener("click", () => {
+				map.setZoom(17);
+				map.setCenter(marker.getPosition());
+			});
+
+			if (place.geometry.viewport) {
+				// Only geocodes have viewport.
+				bounds.union(place.geometry.viewport);
+			} else {
+				bounds.extend(place.geometry.location);
+			}
+			});
+			map.fitBounds(bounds);
+		}); // searchBox.addListener
+
+		//place marker when user clicks on map
+		google.maps.event.addListener(map, 'click', function(event) {
+			clearAllMarkers(markers)
+			placeMarker(event.latLng);
+		});
+	}// initMap end
+
+
+
+$(document).ready(() => {
+    
+    //beforeSend of question ajax request 
+	function vendorBeforeSend() {
+		$(modal_id).modal("show");
+	}
+
+    table = $("#vendor_table").DataTable({
+        ajax:{
+            url:`${urlname}?action=list`
+        },
+		lengthMenu: [250,500,750,1000],
+        pageLength: 500,
+        columns:[
+            {visible:false, title:"ID", data:"id", className:'noVis'},
+            {title:"Code", data:"code"},
+            {title:"Name", data:"name"},
+            {title:"Type", data:"type__taname", render:function(data, type, row, meta){
+				return data || '--'
+			}
+			},
+            {title:"Mob.#", data:"mobno"},
+            {title:"Email", data:"email"},
+            {title:"Created By", data:"cuser__peoplename"},
+            {title:"Created On", data:"cdtz"},
+            {visible:false, title:"Ctzoffset", data:"ctzoffset", className:'noVis'},
+        ],
+        deferRender:true,
+        responsive:true,
+        columnDefs:[
+            {
+					targets: [1,2],
+					data   : 'name',
+					render : function ( data, type, row, meta ) {
+						return `<a href="#" class="ques-link" data-id=${row['id']} data-rowid=${meta.row}>${data}</a>`
+					}
+				},
+                {targets:[7], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+				},
+        ],
+        dom       :`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                    <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        buttons:[
+				{
+					extend: 'searchBuilder',
+					config: {
+					columns: [1, 2, 3, 4, 5, 6, 7] // Include all columns except the ID & Ctzoffset column (index 0)
+					}
+				},
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Vendor List`,
+                    columns = ':visible',
+					filename = "vendor_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Vendor List`,
+                    columns = ':visible',
+					filename = "vendor_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+            {
+				text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+				className: "btn btn-sm border border-primary btn-light-primary add_new_vendor",
+				//action for add_new_button 
+				action: function (e, dt, node, config) {
+					const params = {
+						'modal_id': modal_id,
+						'url': `${urlname}?action=form`,
+					}
+					fire_ajax_get(params)
+						.done((data, status, xhr) => {
+							$(`${modal_id} .modal-content`).html(data.html_form)
+							$(modal_id).modal("show");
+						})
+						.fail((xhr, status, error) => {
+							show_error_alert("Something went wrong!")
+						})
+				}
+			}
+        ],
+        select:{
+            style:'single',
+        }
+
+    })//DataTable End
+
+    table.on('select', function(e, dt, type, indexes){
+        if(type === 'row'){
+            var id = table.rows(indexes).data().pluck('id')[0]
+            if(!(id)){ return}
+            const params = {
+                'modal_id':modal_id,
+                url:`${urlname}?id=${id}`,
+				beforeSend:vendorBeforeSend
+            }
+            fire_ajax_get(params)
+            .done((data, status, xhr) => {
+					$(modalcontent_id).attr('data-form', 'update')
+					$(`${modal_id} .modal-content`).html(data.html_form)
+				})
+				.fail((xhr, status, error) => {
+					show_error_alert('Something went wrong!') //defined in custom.js
+				})
+        }
+    })
+})
+
+</script>
+
+{% endblock extra_scripts %}

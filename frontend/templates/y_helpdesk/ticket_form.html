@@ -1,0 +1,344 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Ticket Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ ticketform.media.css }}
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('helpdesk:ticket') }}?template=true" class="pe-3">Ticket List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Ticket Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Ticket {% if  ticketform.instance.id is not none  %}- {{ ticketform.instance.ticketno }}{% endif %} 
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS ---------->
+
+{% block form %}
+<form  method="post" id="ticketform">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="{{ ticketform.ctzoffset.name }}" id = "{{ ticketform.ctzoffset.auto_id }}" value="-1">
+    {{ ticketform.ticketsource }}
+
+    <div class="row gy-3">
+       <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.ticketdesc.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="A brief summary of your issue or request">
+                    {{ ticketform.ticketdesc }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.status.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="Current status of ticket">
+                    {{ ticketform.status }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.priority.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="Select the appropriate priority level for your ticket based on the urgency of your issue or request">
+                    {{ ticketform.priority }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.ticketcategory.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="Select the people that this ticket should be assigned to">
+                    {{ ticketform.ticketcategory }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.assignedtopeople.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="Select the people that this ticket should be assigned to">
+                    {{ ticketform.assignedtopeople }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.assignedtogroup.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="Select the group that this ticket should be assigned to">
+                    {{ ticketform.assignedtogroup }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.asset.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="Select the asset if the ticket is associated to asset/checkpoint">
+                    {{ ticketform.asset }}
+                </div>
+            </div>
+
+       </div>
+       <div class="col-md-6">
+            
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.location.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="Select the location associated with this issue or request">
+                    {{ ticketform.location }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    <label > Created By</label>
+                </div>
+                <div class="col-md-9"  data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="This field displays the name of the user who created this ticket">
+                    <input type="text" readonly name="cuser" class="form-control" value="{{ ticketform.instance.cuser }}">
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.cdtz.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="This field displays the date and time when this ticket was created" >
+                    {{ ticketform.cdtz }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.isescalated.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="This field displays whether ticket is escalated or not">
+                    {{ ticketform.isescalated }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="pt-3 col-md-3">
+                    {{ ticketform.comments.label_tag() }}
+                </div>
+                <div class="col-md-9" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" title="Please provide a detailed description of the issue or request in the comments field">
+                    {{ ticketform.comments }}
+                </div>
+            </div>
+       </div>
+    </div>
+</form>
+{% endblock form %}
+
+
+{% block extras %}
+    {{ fileupoad() }}
+{% if ticketform.instance.id is not none %}
+    <br><hr>
+    <div class="mt-7 tab-pane">
+        <p class="ch4">Ticket History&nbsp;<i class="bi bi-clock-fill fs-5"></i></p>
+        <div class="scroll hover-scroll h-300px bg-light-dark p-2 border rounded-2">
+        {% for item in ticketform.instance.ticketlog['ticket_history']|reverse %}
+            {% if item['details'] != 'No changes detected'  %}
+            <div class="d-flex align-items-center mb-6">
+                {# <span data-kt-element="bullet" class="bullet bullet-vertical d-flex align-items-center min-h-20px mh-100 me-4 bg-primary"></span> #}
+                <i class="bi bi-pencil-square fs-4 me-2"></i>
+                {% if item['isescalated'] is true %}
+                    <div class="text-gray-800 fw-semibold fs-6 me-5">
+                    {{ item['when'] |string_to_datetime(ticketform.instance.ctzoffset) }} &nbsp; &nbsp;<span class="text-primary fs-5">{{ item['details'][0] }}</span> 
+                    </div>
+                {% else %}
+                
+                <div class="fliex-grow-1 me-5 d-flex">
+                    <!-- DATETIME --->
+                    <div class="text-gray-800 fw-semibold fs-6 me-5">
+                        {{ item['when']|string_to_datetime(ticketform.instance.ctzoffset) }}
+                    </div>
+                    <!-- Location & Prioirity -->
+                    <div class="text-gray-600 fw-semibold fs-6 me-3">
+                    <div><span class="text-gray-500 fw-semibold">Location &nbsp;&nbsp;</span><span class="text-gray-800 fw-semibold">{{ item['previous_state'].get('location', '--') }}</span> 
+                    <span class="text-gray-500 fw-semibold">&nbsp;&nbsp;Priority &nbsp;&nbsp;</span><span class="text-gray-800 fw-semibold">{{ item['previous_state'].get('priority', '--') }}</span></div>
+                    </div>
+                    <!-- User -->
+                    <div class="text-gray-600 fw-semibold fs-6">
+                        User&nbsp;&nbsp;
+                        <a href="{{ url('peoples:people') }}?id={{ item['people_id'] }}">{{ item['who'] }}</a>
+                        &nbsp;Comments&nbsp;&nbsp;
+                        <span class="fs-6 text-gray-800">{{ item['previous_state'].get('comments', '--') }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+        </div>
+    </div>
+{% endif %}
+{% endblock extras %}
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    {% if ticketform.instance.id %}
+    <button type="submit" id="submitTour" form="ticketform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    {% else %}
+    <button type="submit" form="ticketform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Save&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    {% endif %}
+    <button type='button' id="clearForm" class="btn btn-sm btn-secondary btn-hover-scale">
+        Clear&nbsp;<i class="fas fa-cloud-upload-alt"></i>
+    </button>
+</div>
+{% endblock ajax_page_actions %}
+
+{% block extra_scripts %}
+{{ ticketform.media.js }}
+<script>
+    // add classes to label tags.
+    $('label').removeClass("col-form-label col-md-2 col-sm-2 text-sm-right")
+
+    function showHideSelectField(val) {
+        if (val == "PEOPLE") {
+            //$("#aatopdiv").show();
+            $(".people").show();
+            $("#id_peopleradio").attr('checked', 'checked')
+            $("#id_assignedtogroup").val(1)
+            $(".pgroup").hide();
+        } else {
+            //$("#aatopdiv").hide();
+            $(".pgroup").show();
+            $("#id_groupradio").attr('checked', 'checked')
+            $(".people").hide();
+            $("#id_assignedtopeople").val(1)
+        }
+    }
+
+    $(document).ready(function(){
+        //if ticket status is resolved or closed disabled all fields
+        if ('{{ticketform.instance.id}}' !== 'None') {
+            if(['CLOSED', 'RESOLVED'].includes($("#id_status").val())){
+                // Disable checkboxes
+                $("input[type='checkbox']").prop("disabled", true);
+                // Disable text fields
+                $("input, textarea").prop("disabled", true);
+
+                // Disable select2 fields (assuming select2 has been initialized)
+                $(".django-select2, .form-select").select2({"disabled": 'readonly'})
+            }
+        }
+
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        //toggle people and pgroup field based on radio button value
+
+        if ('{{ticketform.instance.id}}' === 'None') {
+            $("#id_status").select2({"disabled": 'readonly'})
+            showHideSelectField('PEOPLE')
+        }else{
+            var assignto = '{{ticketform.instance.assignedtopeople}}' == ('None' || "") ? "GROUP" : "PEOPLE"
+            showHideSelectField(assignto)
+            $('#id_status option[value="NEW"]').remove();
+            if("{{ ticketform.instance.cuser_id }}" !== "{{ request.user.id }}"){
+                $('#id_status option[value="CLOSED"]').remove();
+            }
+        }
+        $("#id_cuser").select2({"disabled": 'readonly'})
+        $("#id_cdtz").prop('readonly', true)
+        $("#id_comments").val("")
+
+        //hide the delete button when instance is not saved yet.
+        if ('{{ticketform.instance.id}}' == 'None') {
+            $("#btn_del").hide()
+        }
+
+        $("#clearForm").click(() => {
+            location.href = "{{ url('helpdesk:ticket') }}?action=form"
+        })
+
+        //on submit form post request
+        $("#ticketform").submit((e) => {
+            e.preventDefault()
+            var form = $(this);
+            const params   = { url: $(form).attr("action"), modal: false }
+            const formtype = '{{ticketform.instance.id}}' == 'None' ? "create" : "update" //form-type (create/update)      
+            const id       = '{{ ticketform.instance.id }}'                                          
+            var   payLoad  = { formData: $("#ticketform").serialize(),csrfmiddlewaretoken: '{{ csrf_token }}', 'uuid':"{{ ownerid }}" }
+            
+            if (formtype === 'update') {
+                var newPayLoad = { ...payLoad, 'pk': id }
+                    payLoad    = newPayLoad
+            }
+            submit_form_alert().then((res) => {
+                if(res.isConfirmed){
+                    fire_ajax_form_post(params, payLoad)
+                    .done((data, status, xhr) => {
+                        Swal.fire(
+                            `Ticket Form saved`,
+                            'success'
+                        ).then(function () {
+                            location.href = `{{ url('helpdesk:ticket') }}?template=true`;
+                        })
+                    })
+                    .fail((xhr, status, error) => {
+                        if(!typeof(xhr.responseJSON.errors) === 'object'){
+                            show_error_alert(xhr.responseJSON.errors, "Failed to save!")
+                        }else{}
+                        
+                    })
+                }
+            })
+        })
+
+        setUpDropzone({
+            foldertype:"ticket",
+            ownername:'Ticket',
+            attachmenttype:"ATTACHMENT",
+            uploadUrl:"{{ url('activity:attachments') }}",
+            csrftoken:  "{{ csrf_token }}",
+            ctzoffset:$("#id_ctzoffset").val(),
+            formId:"#dropzone_file", 
+            peopleid: "{{ request.user.id }}",
+            ownerid:"{{ ownerid }}",
+            create_or_update:'{{ ticketform.instance.id }}' == 'None' ? "create" : "update",
+            media_url: "{{ MEDIA_URL }}"
+        })
+
+        $('#id_status').on('select2:select', function (e) {
+        var selectedValue = e.params.data.id; // get the selected value
+        if (['CLOSED', 'RESOLVED'].includes(selectedValue)) {
+            var confirmation = confirm(`Are you sure you want to change the status to ${selectedValue}?`); // show confirmation message
+            if (!confirmation) {
+            // if user clicks "Cancel" in the confirmation dialog, deselect the option
+            location.href = "{{ url('helpdesk:ticket') }}?id={{ ticketform.instance.id }}"
+            
+            }
+        }
+        });
+
+        $("#id_location").change(() => {
+            let locationid = $('#id_location').val();
+            getAssetsOfLocation(locationid, '{{ url("activity:location") }}')
+        });
+    })
+
+</script>
+
+{% endblock extra_scripts %}

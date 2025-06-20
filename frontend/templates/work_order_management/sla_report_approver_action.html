@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+       
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+        <table>
+            <tr>
+                <th>Report Name</th>
+                <td>{{ report_name }}</td>
+            </tr>
+            <tr>
+                <th>Site Name</th>
+                <td>{{ sitename }}</td>
+            </tr>
+            <tr>
+                <th>Service Month</th>
+                <td>{{ service_month }}</td>
+            </tr>
+            <tr>
+                <th>Vendor Name</th>
+                <td>{{ vendorname }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>{{ status }}</td>
+            </tr>
+        </table>
+        
+        <br>
+        If the following report details are correct, please proceed to approve it with the
+        <a style="margin-right:20px" class="ybtn-success"
+        href="{{ HOST }}{{ url('work_order_management:reply_sla') }}?action=accepted&womid={{reportid}}&peopleid={{ peopleid }}&sitename={{ sitename }}"
+        target="_blank">Click Here to Approve
+        </a>
+        <br>
+        <hr>
+        Conversely, if any information is not correct you can reject it with
+        <a class="ybtn-warn"
+        href="{{ HOST }}{{ url('work_order_management:reply_sla') }}?action=rejected&womid={{reportid}}&peopleid={{ peopleid }}"
+        target="_blank">Click Here to Reject
+        </a>
+    
+        <hr>
+
+</body>
+
+</html>

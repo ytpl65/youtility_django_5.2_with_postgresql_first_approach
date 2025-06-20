@@ -1,0 +1,119 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+Capability Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+{% block extra_css %}
+{{ cap_form.media.css }}
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('peoples:cap_list') }}" class="pe-3">Capability List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Capability Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!-------------  BEGIN POP-UPS CODE ------------->
+{% block popup_alerts %}
+	{{ super()  }}
+	{% if edit is defined %}
+		<!-- to delete an instance with popup_alert pass the delete_url_name, instance_id, popup_title, popup_id -->
+		{% call general_popup(title="Delete", popup_id="delete_alert") %}
+            <div class="modal-body">
+                <h4>Are you sure, you want to delete this?</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No Go back</button>
+                <a href="{{ url('peoples:capability') }}?action=delete&id={{ cap_form.instance.id }}" id="delete_cap" class="btn btn-sm  btn-danger rounded-1">Yes I'm Sure</a>
+            </div>
+        {% endcall %}
+	{% endif %}
+{% endblock popup_alerts %}
+<!-------------  END POP-UPS CODE --------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Capability Form
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+
+<!-------------- BEGIN FORM ------------------->
+{% block form %}
+<form action="" method="post" id="id_capform">
+	<!---------------------- CSRF-MIDDLEWARE TOKEN ---------------------->
+	{# <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> #}
+	<input type="hidden" name="{{ cap_form.ctzoffset.name }}" id = "{{ cap_form.ctzoffset.auto_id }}" value="-1">
+	{% for field in cap_form %}
+	{% if field.name not in ['ctzoffset'] %}
+		<div class="mb-3 row">
+			<!--LABEL FIELD-->
+			{{ field.label_tag() }}
+			<!--INPUT GROUP -->
+			<div class="col-md-10">
+				{{ field }}
+				<!--HELP TEXT -->
+				{% if field.help_text %}
+				<small>{{ field.help_text }}</small>
+				{% endif %}
+				<!-- ERROR FIELD -->
+				{{ field.errors }}
+			</div>
+		</div>
+	{% endif %}
+	{% endfor %}
+</form>
+{% endblock form %}
+<!------------- END FORM ---------------------->
+
+<!------------------- BEGIN FORM PAGE ACTIONS ------------>
+{% block formpage_actions %}
+{% if edit is defined %}
+{{ form_update('id_capform', popup_id="delete_alert") }}
+{% else %}
+{{ form_create('id_capform') }}
+{% endif %}
+{% endblock formpage_actions %}
+<!------------------- END FORM PAGE ACTIONS --------------->
+
+<!--------------- BEGIN PAGE-LEVEL EXTRA SCRIPTS --------------->
+{% block extra_scripts %}
+{{ cap_form.media.js }}
+<script>
+	$(document).ready(function () {
+		 //set ctzoffset
+  		$("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+		//hide the delete button when instance is not saved yet.
+		if ('{{cap_form.instance.capscode}}' == ('None' || "")) {
+			$("#btn_del").hide()
+		}
+		$("#btn_clear").click(() => {
+			location.href = "{{ url('peoples:capability') }}?action=form"
+		})
+		
+		//submit ajax form
+		$("#savebtn, #form_update").click((e) => {
+			console.log(`jquery version ${$().jquery}`)
+			e.preventDefault();
+			const params = {url: "{{ url('peoples:capability') }}", type: "post"}
+			const payload = {formData:$("#id_capform").serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'}
+			submit_ajax_form_post(params, payload)	
+		})
+		
+	})
+</script>
+{% endblock extra_scripts %}
+<!--------------- END PAGE-LEVEL EXTRA SCRIPTS --------------->

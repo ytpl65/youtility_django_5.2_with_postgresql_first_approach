@@ -1,0 +1,69 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+{% endblock header_end %}
+
+{% block inline_css %}
+<style>
+thead tr th, tbody tr td {
+    font-size:0.5rem;
+}
+</style>
+{% endblock inline_css %}
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block table %}
+<table id="listoftask" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Plan Date Time</th>
+            <th scope="col">Description</th>
+            <th scope="col">Assign To</th>
+            <th scope="col">Asset</th>
+            <th scope="col">Question Set</th>
+            <th scope="col">Status</th>
+            <th scope="col">Expiry</th>
+            <th scope="col">Grace Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['Planned Date Time'] }}</td>
+            <td>{{ row['Description'] }}</td>
+            <td>{{ row['Assigned To'] }}</td>
+            <td>{{ row['Asset'] }}</td>
+            <td>{{ row['Question Set'] }}</td>
+            <td>{{ row['Status'] }}</td>
+            <td>{{ row['Expired Date Time'] }}</td>
+            <td>{{ row['Gracetime'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

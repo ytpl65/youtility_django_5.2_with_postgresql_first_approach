@@ -1,0 +1,43 @@
+<script>
+var default_table_config = {
+    language: { search: "", searchPlaceholder:"Serch keywords..." },
+    deferRender: true,
+    responsive : true,
+    dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+    ordering:false,
+    scrollCollapse: true,
+    buttons:[]
+}
+
+var tasks_dashboard_options = {
+    ajax:{
+        url:"{{ url('onboarding:rp_dashboard') }}",
+        data:function(d){
+            d.action="dashboard_tasks_card"
+            d.jobstatus = _taskJobstatus//global var                
+            d.from = _from_pd//global var                
+            d.upto = _to_pd//global var                
+        }
+    },
+    columns:[
+        {data:'id', visible:false, searchable:false},
+        {data:"plandatetime", title:"Plan Datetime", render:function(data, type, row, meta){
+             return convert_to_local(type, data, row)
+        }
+        },
+        {data:'jobdesc', title:'Description'},
+        {data:'assignedto', title:'People/Group'},
+        {data:'performedby__peoplename', title:'Performed By'},
+        {data:'jobstatus', title:"Status", visible:false},
+        {data:'qset__qsetname', title:'Question set'},
+        {data:'asset__assetname', title:'Asset/Smartplace'},
+        {data:'expirydatetime', title:'Exp datetime', render:function(data, type, row, meta){
+            return convert_to_local(type, data, row)
+        } },
+        {data:'gracetime', title:'Gracetime'},
+    ],
+    order:[[1, 'desc'], [3, 'asc']],
+    ...default_table_config
+}
+</script>

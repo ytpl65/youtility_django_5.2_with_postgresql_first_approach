@@ -1,0 +1,81 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+
+{% endblock header_end %}
+
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block inline_css %}
+<style>
+.totalrow > td{ 
+ color: aliceblue;
+}
+</style>
+{% endblock inline_css %}
+
+{% block table %}
+<table id="tasksummary" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Planned Date</th>
+            <th scope="col">Total Tasks</th>
+            <th scope="col">Scheduled</th>
+            <th scope="col">Adhoc</th>
+            <th scope="col">Completed</th>
+            <th scope="col">Not Performed</th>
+            <th scope="col">Assigned</th>
+            <th scope="col">Closed</th>
+            <th scope="col">Percentage</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['Planned Date'] }}</td>
+            <td>{{ row['Total Tasks'] }}</td>
+            <td>{{ row['Total Scheduled'] }}</td>
+            <td>{{ row['Total Adhoc'] }}</td>
+            <td>{{ row['Total Completed'] }}</td>
+            <td>{{ row['Not Performed'] }}</td>
+            <td>{{ row['Total Pending'] }}</td>
+            <td>{{ row['Total Closed'] }}</td>
+            <td>{{ row['Percentage'] }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="totalrow">
+            <td>Total</td>
+            <td>{{ data | sum(attribute='Total Tasks') }}</td>
+            <td>{{ data | sum(attribute='Total Scheduled') }}</td>
+            <td>{{ data | sum(attribute='Total Adhoc') }}</td>
+            <td>{{ data | sum(attribute='Total Completed') }}</td>
+            <td>{{ data | sum(attribute='Not Performed') }}</td>
+            <td>{{ data | sum(attribute='Total Pending') }}</td>
+            <td colspan="2">{{ data | sum(attribute='Total Closed') }}</td>
+        </tr>
+    </tbody>
+</table>
+{% endblock table %}
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

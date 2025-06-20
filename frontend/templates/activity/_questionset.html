@@ -1,0 +1,157 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Question Set List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Question Set List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN BU TABLE ------------------------------------------->
+{% block table %}
+    <!------------------ BEGIN TABLE --------------------->
+	<table id="qset_table" class="display compact cell-border" style="width:100%">
+        <thead class="fw-bold fs-6">
+        </thead>
+		<tbody></tbody>
+    </table>
+    <!------------------ END TABLE --------------------->
+{% endblock table %}
+<!------------------ --------------------------END BU TABLE ------------------------------------------------->
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal" tabindex="-1" aria-hidden="true"  aria-labelledby="exampleModalLabel" data-bs-keyboard="false" data-bs-backdrop="static" id="modal-qset">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="qset_content">
+		</div>
+	</div>
+</div>
+{% endblock popup_alerts %}
+
+<!--------- BEGIN EXTRA SCRIPTS ----------------------------->
+{% block extra_scripts %}
+<script>
+	var Qsettable             = null;
+	const modal_id        = "#modal-qset"
+	const modalcontent_id = "#qset_content"
+	const formFilter      = "#qset_filter"
+	const table_id        = "#qset_table"
+	const formTable       = "#assigned_ques_table"
+	const formid          = "#id_qsetform"
+	const urlname         =  "{{ url('activity:questionset') }}"
+	const viewname        = "Questionset"
+	const rowlink         = "a.qset-link"
+	
+	$(document).ready(function () {
+	
+        //beforeSend of capability ajax request 
+        function qsetBeforeSend(){
+            $(modal_id).modal("show");
+        }
+		//datatable initialization
+        Qsettable = $(table_id).DataTable({
+			//orderCellsTop: true,
+			ajax:{
+				url: "{{ url('activity:questionset') }}?action=list&type=QUESTIONSET"
+			},
+			pageLength:50,
+            deferRender: true,
+			responsive : true,
+			columns:[
+				{data: 'id', visible:false},
+				{data: 'ctzoffset', visible:false},
+				{data: 'type', visible:false},
+				{data: 'qsetname', title:'Name'},
+				{data: 'cdtz', title:"Created Date"},
+				{data: 'mdtz', title:"Modified Date"},
+			],
+			dom       : `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			columnDefs:[
+				{targets:0, data: "id", visible:false, searchable:false, orderable:false },
+				{
+					targets: 3,
+					data   : 'qsetname',
+					render : function ( data, type, row, meta ) {
+						let formUrl = "{{ url('activity:questionset') }}"
+						return `<a href="${formUrl}?id=${row['id']}">${data}</a>`
+					}
+				},
+				{targets:4, data:'cdtz', render: function(data, type, row, meta){
+						return convert_to_local(type, data, row)
+					}
+				},
+				{targets:5, data:'mdtz', render: function(data, type, row, meta){
+						return convert_to_local(type, data, row)
+					}
+				},],
+			buttons:[
+				{
+					text:`Add New Questionset &nbsp;<i class='fas text-dark fa-plus'></i></a>`,
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+                        const params = {
+                            'modal_id'    : modal_id,
+                            'url'         : `${urlname}?action=form&type=QUESTIONSET`,
+                            'beforeSend'  : qsetBeforeSend }
+						fire_ajax_get(params)
+						.done((data, status, xhr) => {
+							location.href = '{{ url("activity:questionset") }}?action=form&type=QUESTIONSET'
+                        })
+						.fail((xhr, status, error) => {
+							show_error_alert("Something went wrong!")
+						})
+					}
+				}
+			]
+		})
+
+		
+
+
+	}); //END document.ready()
+
+	//delete ajax request 
+	function isQsetDeleted(id){ 
+		console.log("id ", id)
+		const params = {url:`${urlname}?action=delete&id=${id}`, beforeSend:function(){}}
+		fire_ajax_get(params)
+		.done((data, status, xhr) => {
+			if(!xhr.status === 200){
+				return false
+			}
+			return true
+		})
+		.fail((xhr, status, error) => {
+			show_error_alert('Something went wrong!') //defined in custom.js
+			return false
+		})
+	}
+
+	//delete questionset 
+	function deleteQset(elemt){
+		var id = $(elemt).attr("data-id");
+		show_alert_before_delete('Questionset')
+		.then((result) => {
+			if(result.isConfirmed){ //delete requested by user
+				status = isQsetDeleted(id) //fire's request
+				console.log("status ", status)
+				if(status){
+					show_successful_delete_alert() //defined in customjs
+					$(modal_id).modal("hide")
+					Qsettable.row('.selected').remove().draw();
+				}else{
+					show_error_alert('Something went wrong!');
+				}
+			}
+		})
+	}
+</script>
+{% endblock extra_scripts %}

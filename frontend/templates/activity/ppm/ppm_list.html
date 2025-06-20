@@ -1,0 +1,138 @@
+{% extends "globals/base_list.html" %}
+
+{% block card_title %}
+ PPM List
+{% endblock card_title %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+PPM List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+<style>
+
+</style>
+{% endblock extra_css %}
+
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">PPM List</a></li>
+{% endblock pagebreadcumb %}
+
+{% block breadcumbactions %}
+{# <div class="d-flex">
+    <h5 class="me-4" ><a id="schedule_ppm" href="javascript:void(0)" class="border-bottom border-primary border-3">Schedule</a></h5>
+    <h5 ><a id="ppm_planner" class="border-bottom border-primary border-3" href="javascript:void(0)">Planner</a></h5>
+</div> #}
+{% endblock breadcumbactions %}
+
+
+{% block table %}
+<table id="jobneedppm_table" class="display compact cell-border">
+</table>
+<table id="jobppm_table" class="display compact cell-border">
+</table>
+
+{% endblock table %}
+
+
+{% block extra_scripts %}
+<script>
+    var jnppm_table, jb_table;
+    var from_pd, to_pd;
+    var current_sel_jobstatus = 'NONE';
+    function initSelectField(){
+        let html = 
+                `<label>Status:&nbsp;</label>
+                <select name="choice" id="custom_jobstatus" style="width:100%" class="form-select">
+                <option value="NONE">-------------------</option>
+                {% for opt in status_options %}
+                <option value="{{ opt[0] }}">{{ opt[1] }}</option>
+                {% endfor %}
+                </select>`
+        $("div.jobstatusSelect").append(html)
+    }
+
+
+    function initJobPPM() {
+        // Initialize table 2
+        jb_table = $("#jobppm_table").DataTable({
+            ajax:{
+                url:"{{ url('activity:ppm') }}?action=job_ppmlist",
+            },
+            deferRenderer:true,
+            responsive:true,
+			pageLength:10,
+			lengthMenu: [10, 20, 50, 100],
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields2'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns:[
+                {data:'id', title:"ID", visible:false, className:'noVis'},
+                {data:'jobname', title:'Name'},
+                {data:'asset__assetname', title:'Asset'},
+                {data: 'qset__qsetname', title: 'Questionset'},
+                {title: 'People/Group', data:'assignedto'},
+                {title: 'From', data:'fromdate'},
+                {title: 'To', data:'uptodate'},
+                {data:'planduration', title:"Duration"},
+                {data:'expirytime', title:"Exp Time"},
+                {data:'gracetime', title:"Gracetime"},
+                {data:'bu__buname', title:"Site"},
+                {data:'bu__bucode', title:"Site Code", visible:false},
+            ],
+            columnDefs:[
+                {targets:[1], render:function(data, type, row, meta){
+                    let url = "{{ url('activity:ppm') }}"
+                    return `<a href="${url}?id=${row['id']}">${data}</a>`
+                }},
+                {targets:[5], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }},
+                {targets:[6], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }},
+            ],
+            buttons:[
+                {
+                    extend: 'searchBuilder',
+                    config: {
+                    columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    }
+                },
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n PPM List`,
+                    columns = [1,2,3,4,5,6,7,8,9, 10, 11],
+                    filename = 'ppm_list'
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n PPM List`,
+                    columns = [1,2,3,4,5,6,7,8,9, 10, 11],
+                    filename = 'ppm_list'
+                ),
+                dataTablesColumnVisibilityConfig(),
+                {
+                    text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_job",
+                    action: function(e, dt, node, config){
+                        //This will send the page to the location specified
+                        console.log("hitted success")
+                        window.location.href = "{{ url('activity:ppm') }}?action=form";
+                    }
+                }
+            ]
+        })
+    }
+
+
+    
+    $(document).ready(() => {
+        
+        
+        initJobPPM()
+        
+    })
+</script>
+{% endblock extra_scripts %}

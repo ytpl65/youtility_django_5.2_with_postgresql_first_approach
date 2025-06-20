@@ -1,0 +1,60 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+{% endblock header_end %}
+
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block table %}
+<table id="ppmsummary" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Site Name</th>
+            <th scope="col">Asset Type</th>
+            <th scope="col">Total PPM Scheduled</th>
+            <th scope="col">PPM Completed on Time</th>
+            <th scope="col">PPM Completed After Schedule</th>
+            <th scope="col">PPM Missed</th>
+            <th scope="col">Percentage</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['Site Name'] }}</td>
+            <td>{{ row['Asset Type'] }}</td>
+            <td>{{ row['Total PPM Scheduled'] }}</td>
+            <td>{{ row['Completed On Time'] }}</td>
+            <td>{{ row['Completed After Schedule'] }}</td>
+            <td>{{ row['PPM Missed'] }}</td>
+            <td>{{ row['Percentage'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

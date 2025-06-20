@@ -1,0 +1,660 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Vendor Performance
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ slaform.media.css }}
+<link href="{{ static('assets/plugins/custom/DataTables/datatables.min.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet"
+    type="text/css" />
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('work_order_management:sla') }}?template=true" class="pe-3">Vendor
+        Performance</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Vendor Performance Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Vendor Performance Form
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    {% if slaform.instance.id %}
+    <div class="d-flex">
+        {% if slaform.instance.workpermit != 'APPROVED' and request.session['is_sla_approver'] %}
+        <div class="dropdown me-2 action_btn">
+            <button class="btn p-3 btn-primary2 dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                Action
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item approve-sla" href="#">Approve</a></li>
+                <li><a class="dropdown-item reject-sla" href="#">Reject</a></li>
+            </ul>
+        </div>
+        {% endif %}
+        <div>
+            <button class="btn btn-sm me-2 btn-secondary" type="button" id="btn_clear">
+                Clear&nbsp;<i class="fas text-dark fa-trash-alt"></i>
+            </button>
+        </div>
+        <div>
+            <button class="btn btn-sm  btn-secondary" type="button" id="id_attachment" data-bs-toggle="modal"
+                data-bs-target="#popup_attachment">
+                Attachments&nbsp;<i class="fas text-dark fa-paperclip"></i>
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <button type="button" id="load_questions" class="btn btn-sm btn-primary2">
+        Load Questionaire &nbsp;<i class="bi text-white bi-cloud-download"></i>
+    </button>
+    <button type="submit" form="slaform" class="btn btn-sm btn-success">
+        Submit &nbsp;<i class="bi text-white bi-cloud-upload"></i>
+    </button>
+    {% endif %}
+</div>
+{% endblock ajax_page_actions %}
+
+
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors" role="alert" style="display:none">
+    <strong>Error: </strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+
+{% block popup_alerts %}
+{{ mainattachment() }}
+{% endblock popup_alerts %}
+
+
+{% block breadcumbactions %}
+
+{% endblock breadcumbactions %}
+
+{% block form %}
+<form action="{{ url('work_order_management:sla') }}" method="post" id="slaform">
+    <!--------------------------CSRF MIDDLEWARE TOKEN---------------------->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="{{ slaform.ctzoffset.name }}" id="{{ slaform.ctzoffset.auto_id }}" value="-1">
+    <input type="hidden" name="{{ slaform.workpermit.name }}" id="{{ slaform.workpermit.auto_id }}" value="PENDING">
+    <input type="hidden" name="{{ slaform.performedby.name }}" id="{{ slaform.performedby.auto_id }}"
+        value="{{ request.user.id }}">
+    <input type="hidden" name="{{ slaform.parent.name }}" id="{{ slaform.parent.auto_id }}" value="1">
+    <input type="hidden" name="pk" id="pk" value="{{ slaform.instance.id }}">
+    <input type="hidden" name="{{ slaform.identifier.name }}" id="{{ slaform.identifier.auto_id }}" value="SLA">
+    <div class="mb-3 row g-3 gx-6">
+        <div class="col-md-6">
+            <div class="input-group-sm input-group mb-3">
+                <div class="col-md-4 col-sm-12 pt-2">
+                    {{ slaform.qset.label_tag() }}
+                </div>
+                <div class="col-md-8 col-sm-12 ">
+                    {{ slaform.qset }}
+                </div>
+            </div>
+            <div class="input-group-sm input-group mb-3">
+                <div class="col-md-4 col-sm-12 pt-2">
+                    {{ slaform.approvers.label_tag() }}
+                </div>
+                <div class="col-md-8 col-sm-12 ">
+                    {{ slaform.approvers }}
+                </div>
+            </div>
+            <div class="input-group-sm input-group mb-3">
+                <div class="col-md-4 col-sm-12 pt-2">
+                    {{ slaform.month.label_tag() }}
+                </div>
+                <div class="col-md-8 col-sm-12 ">
+                    {{ slaform.month }}
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-6">
+            <div class="input-group-sm input-group mb-3">
+                <div class="col-md-4 col-sm-12 pt-2">
+                    {{ slaform.seqno.label_tag() }}
+                </div>
+                <div class="col-md-8 col-sm-12 ">
+                    {{ slaform.seqno }}
+                </div>
+            </div>
+            <div class="input-group-sm input-group mb-3">
+                <div class="col-md-4 col-sm-12 pt-2">
+                    {{ slaform.vendor.label_tag() }}
+                </div>
+                <div class="col-md-8 col-sm-12 ">
+                    {{ slaform.vendor }}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</form>
+{% endblock form %}
+
+{% block extras %}
+{% if sla_details is defined %}
+<div class="approvers py-4 my-4 d-none">
+    <h4>Approver List</h4>
+    <table id="tabApprovers" class="display"></table>
+</div>
+<br>
+<div class="border border-1 p-4 rounded-2 mb-3  workpermit-details-section">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="">Service Level Agreement Details</h3>
+        <div class="d-flex">
+            <a href="#" class="open-slad" data-bs-toggle="tooltip" data-bs-placement="top" title="open all sections"><i
+                    class="bi fs-4 text-dark  bi-view-stacked me-4"></i></a>
+            <a href="#" class="close-slad" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="close all sections"><i class="bi fs-4 text-dark  bi-stack"></i></a>
+        </div>
+    </div>
+    <div id="sla_details_container" class="">
+        <form action="" method="post" id="sla_details_form" autocomplete="on">
+            <div class="sections accordion" id="sla_details">
+                {{ plot_sections_questions(sla_details, "sla_details", "sla_section") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+
+
+{% endblock extras %}
+
+
+{% block extra_scripts %}
+{{ slaform.media.js }}
+
+<script>
+    //set the variables which are gonna used in attachment.js file for fetching attachments against the owner
+    var attachmentParams = {
+        attachmentUrl: '{{ url("activity:attachments") }}',
+        attachmentOwner: '{{ slaform.instance.uuid }}',
+        csrf: '{{ csrf_token }}',
+        ownername: "Wom",
+        folderType: 'workpermit',
+        media_url: '{{ MEDIA_URL }}',
+        peopleid: "{{ request.user.id }}"
+    }
+</script>
+<script src="{{ static('assets/js/local/attachment.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}"
+    type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript">
+</script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/editor.select2.js') }}" type="text/javascript"></script>
+<script>
+    const urlname = "{{ url('work_order_management:sla') }}";
+    var attachmentDetails;
+    var ajaxData = {};
+    function init_approver_datatables() {
+        //datatable  initialization of approvers table
+        table = $("#tabApprovers").DataTable({
+            ajax: {
+                url: `${urlname}?action=approver_list&womid={{ slaform.instance.id }}`,
+            },
+            columns: [
+                {
+                    data: null, title: "SNo.", defaultContent: null, render: function (data, type, row, meta) {
+                        return meta.row + 1;
+                    }
+                },
+                { title: "Approver", data: "name" },
+                { title: "Status", data: 'status' }
+            ],
+            dom: 'rt',
+            createdRow: function (row, data, dataIndex) {
+                console.log(data['name'], '{{ request.user.peoplecode }}');
+                if (data['name'] === '{{ request.user.peoplecode }}') {
+                    $(".action_btn").removeClass('d-none');
+                }
+            }
+        });
+    }
+
+    $("input[type=range]").on("change input", function () {
+        $("#range_value").html($(this).val());//assign value..
+    });
+
+    function showAttachmentDetails(id, from) {
+        $('#id_attachmentdetails').modal('show');
+        ajaxData.id = id;
+        ajaxData.action = 'getAttachments';
+        attachmentDetails.ajax.reload();
+    }
+
+    function makeSlaDetailsReadonly(){
+        console.log('Here')
+        const container = document.querySelector('.workpermit-details-section')
+        if(container){
+            container.querySelectorAll('input').forEach(input => {
+                input.setAttribute('readonly',true);
+            })
+        }
+    }
+
+
+    $(document).ready(function () {
+        if ("{{ slaform.instance.id }}" !== "None") {
+            makeReadonlyFieldsUnderClass("wp_section");
+            makeRangeReadonly(".wp_section input[type=range]");
+            makeSlaDetailsReadonly()
+        }
+
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset());
+
+        //url of workpermit
+
+
+        //on click clear button
+        $("#btn_clear").click((e) => {
+            location.href = `${urlname}?action=form`;
+        });
+
+        // Function to initialize date pickers with specific configurations
+        function initializeDatePicker(config, labelText) {
+            document.querySelectorAll('.input-group').forEach(group => {
+                const input = group.querySelector('input.datetimes');
+                const label = group.querySelector('.input-group-text');
+                if (input && label && !input.classList.contains('flatpickr-input') && label.textContent.includes(labelText)) {
+                    flatpickr(input, config);
+                }
+            });
+        }
+
+        // Get current date and time
+        let now = new Date();
+        let startOfDay = now;
+        let endOfDay = new Date(startOfDay.getTime() + (24 * 60 * 60 * 1000));
+
+        // Configuration for wp_section (Permit valid from)
+        let wpConfig = {
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: 'd-M-Y H:i',
+            minDate: startOfDay,
+            maxDate: endOfDay
+        };
+
+        // Configuration for rwp_section (PERMIT RETURNED AT)
+        let rwpConfig = {
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: 'd-M-Y H:i',
+            minDate: new Date(startOfDay.getTime() - (2 * 24 * 60 * 60 * 1000)),
+            maxDate: new Date(startOfDay.getTime() + (24 * 60 * 60 * 1000))
+        };
+
+        // Initialize date pickers
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeDatePicker(wpConfig, "Permit valid from");
+            initializeDatePicker(wpConfig, "Permit valid upto");
+            initializeDatePicker(rwpConfig, "PERMIT RETURNED AT");
+            initializeDatePicker(rwpConfig, "WORK CHECKED AT");
+        });
+
+        // Function to initialize any missed date pickers
+        function initializeMissedDatePickers() {
+            document.querySelectorAll('.input-group').forEach(group => {
+                const input = group.querySelector('input.datetimes');
+                const label = group.querySelector('.input-group-text');
+                if (input && label && !input.classList.contains('flatpickr-input')) {
+                    if (label.textContent.includes("Permit valid from")) {
+                        flatpickr(input, wpConfig);
+                    } else if (label.textContent.includes("Permit valid upto")) {
+                        flatpickr(input, wpConfig);
+                    } else if (label.textContent.includes("PERMIT RETURNED AT")) {
+                        flatpickr(input, rwpConfig);
+                    } else if (label.textContent.includes("WORK CHECKED AT")) {
+                        flatpickr(input, rwpConfig);
+                    }
+                }
+            });
+        }
+
+        // Call this function after a short delay to catch any elements that might have been missed
+        setTimeout(initializeMissedDatePickers, 100);
+
+        //valiating form fields
+        function validateNumericInputs() {
+            clearValidationErrors();
+            const numericInputs = document.querySelectorAll('.sla_section input[type="text"]');
+            let isValid = true;
+
+            numericInputs.forEach(input => {
+                const value = parseFloat(input.value);
+                const min = 0;
+                const max = 10;
+                const label = input.closest('.input-group').querySelector('.input-group-text').textContent;
+
+
+                console.log(label);
+                if (label == 'Response Time' || label == 'Resolution Time') {
+                    return true;
+                }
+                else {
+                    if (isNaN(value)) {
+                        showValidationError(input, `Please enter a valid score for ${label}.`);
+                        isValid = false;
+                    } if (value > max || value < min) {
+                        console.log('else if statement :- ', value, min, max);
+                        if (label == 'Uptime (%)' && (value < 100 || value > 0)) {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                        showValidationError(input, `Value must be between ${min} and ${max}.`);
+                        isValid = false;
+                    }
+                }
+            });
+
+            return isValid;
+        }
+
+        var monthMap = {
+            "January": "1",
+            "February": "2",
+            "March": "3",
+            "April": "4",
+            "May": "5",
+            "June": "6",
+            "July": "7",
+            "August": "8",
+            "September": "9",
+            "October": "10",
+            "November": "11",
+            "December": "12"
+        };
+
+        var $monthDropdown = $('#id_month');
+        var urlParams = new URLSearchParams(window.location.search);
+        var month = urlParams.get('month');
+        if (month) {
+            $monthDropdown.val(month);
+        }
+        else {
+            var monthName = "{{ month_name }}";
+            var monthValue = monthMap[monthName];
+            $monthDropdown.val(monthValue);
+        }
+        if ($monthDropdown.hasClass('select2-hidden-accessible')) {
+            $monthDropdown.trigger('change');
+        }
+        function showValidationError(element, message) {
+            let errorElement = element.nextElementSibling;
+            if (!errorElement || !errorElement.classList.contains('error-message')) {
+                errorElement = document.createElement('div');
+                errorElement.classList.add('error-message', 'text-danger', 'mt-1');
+                element.parentNode.insertBefore(errorElement, element.nextSibling);
+            }
+            errorElement.textContent = message;
+            element.classList.add('is-invalid');
+        }
+
+        function clearValidationErrors() {
+            document.querySelectorAll('.error-message').forEach(el => el.remove());
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        }
+
+
+        //load the questionaire of selected template
+        $("#load_questions").click((e) => {
+
+            var qsetid = $("#id_qset").val();
+            var approvers = $("#id_approvers").val();
+            var workpermitname = $("#select2-id_qset-container").attr('title');
+            var vendor = $("#id_vendor").val();
+            var month = $("#id_month").val();
+
+
+            console.log(workpermitname, approvers, qsetid);
+            if (qsetid.length == 0) {
+                display_field_error('qset', 'Select Permit to Work');
+                return;
+            }
+
+            if (approvers.length == 0) {
+                display_field_error('approvers', 'At least one approver needed!');
+                return;
+            }
+
+
+            location.href = `${urlname}?qsetid=${qsetid}&approvers=${approvers}&vendor=${vendor}&month=${month}`;
+        });
+
+
+        //hide load questionaire button if qset is selected
+        if ($("#id_qset").val().length > 0) {
+            $("#load_questions").addClass('d-none');
+        }
+
+        if ($("#id_qset").val().length > 0) {
+            $("#id_qset").attr('readonly', true);
+            $("#id_approvers").attr('readonly', true);
+            $("#id_seqno").attr('readonly', true);
+            $("#id_vendor").attr('readonly', true);
+            $("#id_month").attr('readonly', true);
+        }
+
+        //set seqno once loaded
+        $("#id_seqno").val("{{ slaform.instance.other_data['wp_seqno'] }}");
+        //submit workpermit form
+        $("#slaform").submit((e) => {
+            e.preventDefault();
+
+            if (!validateNumericInputs()) {
+                return;
+            }
+
+            const slaDetailsform = $("#sla_details_form").get(0);
+            if (slaDetailsform && !slaDetailsform.checkValidity()) {
+                // If the form is invalid, stop here
+                slaDetailsform.reportValidity();
+                return false;
+            }
+
+            const params = {
+                url: $("#slaform").attr("action"),
+                modal: false
+            };
+            var element = document.getElementById("select2-id_qset-container");
+            var text = element.textContent;
+            var $monthDropdown = $('#id_month');
+            var selectedMonth = $monthDropdown.val();
+            var monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+
+            var payLoad = {
+                formData: $("#slaform").serialize(),
+                sladetails: $("#sla_details_form").serialize(),
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                'uuid': "{{ ownerid }}",
+                'permit_name': text,
+                'submit_button_flow': true,
+                'month_name': monthNames[selectedMonth - 1]
+            };
+
+            submit_form_alert().then((res) => {
+                if (res.isConfirmed) {
+                    fire_ajax_form_post(params, payLoad)
+                        .done((data, status, xhr) => {
+                            show_successful_save_alert(update = false);
+                            window.setTimeout(function () {
+                                window.location.href = `${urlname}?id=${data.pk}`;
+                            }, 2000);
+                        })
+                        .fail((xhr, status, error) => {
+                            if (!typeof (xhr.responseJSON.errors) === 'object') {
+                                show_error_alert(xhr.responseJSON.errors, "Failed to save!");
+                            } else { }
+                        });
+                }
+            });
+        });
+
+        $(".approve-sla").click((e) => {
+            //appprove workpermit
+            submit_form_alert(text = null, title = 'Vendor Performance Report !').then((res) => {
+                if (res.isConfirmed) {
+                    let slaid = "{{ slaform.instance.id }}";
+                    fire_ajax_get({
+                        url: `${urlname}?action=approve_sla&slaid=${slaid}`,
+                    }).done((data, status, xhr) => {
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Vendor Performance Report has been approved',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        window.setTimeout(function () {
+                            window.location.href = `${urlname}?id={{ slaform.instance.id }}`;
+                        }, 1500);
+
+                    });
+                }
+            });
+        });
+
+        $(".reject-sla").click((e) => {
+            //appprove workpermit
+            submit_form_alert(text = null, title = 'Reject Vendor Performance Report!').then((res) => {
+                if (res.isConfirmed) {
+                    let womid = "{{ slaform.instance.id }}";
+                    fire_ajax_get({
+                        url: `${urlname}?action=reject_sla&slaid=${womid}`,
+                    }).done((data, status, xhr) => {
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Vendor Performance Report has been rejected',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        window.setTimeout(function () {
+                            window.location.href = `${urlname}?id={{ slaform.instance.id }}`;
+                        }, 1500);
+
+                    });
+                }
+            });
+        });
+
+        //submit rwp_details
+        $("#rwp_details_form").submit((e) => {
+            e.preventDefault();
+            if (confirm("Are you sure, you want to submit?")) {
+                const params = {
+                    url: urlname,
+                    modal: false,
+
+                };
+                const payLoad = {
+                    wom_id: '{{ slaform.instance.id }}',
+                    action: "submit_return_workpermit",
+                    return_work_permit_formdata: $("#rwp_details_form").serialize(),
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                };
+                fire_ajax_form_post(params, payLoad)
+                    .done((data, status, xhr) => { //function to submit post request
+                        show_successful_save_alert(update = true);
+                        window.setTimeout(function () {
+                            window.location.href = `${urlname}?id=${payLoad.wom_id}`;
+                        }, 2000);
+                    });
+            }
+        });
+
+        //on click open-wpd
+        $(".open-wpd").on("click", (e) => {
+            console.log("clicked");
+            if ($('.accordion-collapse').hasClass('show')) {
+                e.preventDefault();
+            } else {
+                $('.accordion-collapse').addClass("show");
+            }
+        });
+
+        //on click close-wpd
+        $(".close-wpd").on("click", (e) => {
+            console.log(!$('.accordion-collapse').hasClass('show'));
+            if (!$('.accordion-collapse').hasClass('show')) {
+                e.preventDefault();
+            } else {
+                $('.accordion-collapse').removeClass("show");
+            }
+        });
+        if ("{{ slaform.instance.id }}" !== "None") {
+            $('.approvers').removeClass('d-none');
+            init_approver_datatables();
+
+        }
+
+        $("select[multiple]").select2({
+            closeOnSelect: false
+        });
+
+        $('#id_attachmentdetails').on('shown.bs.modal', function (event) {
+            $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+            $('#id_attachmentdetails').modal({
+                keyboard: false
+            });
+            attachmentDetails = $("#tabAttachmentDetails").DataTable(
+                {
+                    ajax: {
+                        url: `{{ url("work_order_management:work_permit") }}`,
+                        data: function (d) {
+                            return $.extend(d, ajaxData);
+                        }
+                    },
+                    retrieve: true,
+                    columns: [
+                        { data: "id", visible: false },
+                        { title: 'SL No.', width: "5%", data: null, defaultContent: null, render: function (data, type, row, meta) { return meta.row + 1; } },
+                        { data: "filepath", width: "5%", title: 'File', render: function (data, type, row, meta) { return `<img src="{{ MEDIA_URL }}${row.filepath.replace('youtility4_media/', "")}/${row.filename}" class="card-img-top" target="_blank" alt="" style="width: 30px;height: 30px;">`; } },
+                        { data: "filename", title: 'File Name' },
+                        {
+                            data: null, width: "5%", defaultContent: null, title: "Action", render: function (data, type, row, meta) {
+                                let file = `{{ MEDIA_URL }}${row.filepath.replace('youtility4_media/', "")}/${row.filename}`;
+                                return `<a href="${file}" target="_blank" class=""><i class="ch4 fas fa-eye"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="${file}" download="${row.filename}"><i class="ch4 fas fa-save"></i></a>`;
+                            }
+                        },
+                    ],
+                    ordering: false,
+                    deferRender: true,
+                    scrollX: true,
+                    dom: `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                    <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                    buttons: [],
+
+                }
+            );
+        });
+    })
+</script>
+{% endblock extra_scripts %}

@@ -1,0 +1,97 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Escalation List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Escalation List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!----------- BEGIN PAGE BREADCUMBS ----------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="" class="pe-3">Escalation List
+</a></li>
+{% endblock pagebreadcumb %}
+<!----------- END PAGE BREADCUMBS ------------->
+
+
+<!------------------ BEGIN BU TABLE ------------------------->
+{% block table %}
+<div class="table-responsive">
+	<table id="esc_table" class="compact display cell-border" style="width:100%">
+	</table>
+</div>
+{% endblock table %}
+<!------------------ END BU TABLE --------------------------->
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script>
+	$(document).ready(function () {
+		//BEGIN DATATABLE INITIALIZATION
+		var table = $('#esc_table').DataTable({
+            ajax: {
+                url: '{{ url("helpdesk:escalationmatrix") }}?action=list',
+            },
+            deferRender: true,
+			responsive : true,
+            language: {
+				searchPlaceholder: "Search keyword"
+			},
+            columns:[
+                {title:"ID", data:'id', visible:false, className:"noVis"},
+                {title:"Ctzoffset", data:'ctzoffset', visible:false, className:"noVis"},
+                {title:'Category', data:'taname', render:function(data, type, row, meta){
+                    let url = "{{ url('helpdesk:escalationmatrix') }}"
+                    return `<a href="${url}?id=${row['id']}">${data}</a>`
+                }},
+                {title:'Created on', data:'cdtz', render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }},
+                {title:"Site", data:"bu__buname"},
+                {title:"Site Code", data:"bu__bucode", visible:false},
+                
+            ],
+            dom       : `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			<'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            buttons:[
+                {
+                    extend: 'searchBuilder',
+                    config: {
+                    columns: [2, 3, 4, 5]
+                    }
+                },
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Escalation List`,
+                    columns = [2,3],
+                    filename = "escalation_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Escalation List`,
+                    columns = [2,3],
+                    filename = "escalation_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+					text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_escalation",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+						location.href =  "{{ url('helpdesk:escalationmatrix') }}?action=form"
+					}
+				}
+			]
+		})
+        
+		//END STYLING DATATABLE
+	});
+    
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS ------------------------------->

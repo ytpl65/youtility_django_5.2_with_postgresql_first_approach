@@ -1,0 +1,479 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Question Set Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ checklistform.media.css }}
+<link  href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css"/>
+<link  href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet" type="text/css"/>
+{% endblock extra_css %}
+
+{% block form_title %}
+Question Set
+{% endblock form_title %}
+
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('activity:checklist') }}?template=true" class="pe-3">Question Set List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Question Set Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+
+
+{% block form %}
+
+    <form action="" method="post" id="id_qsetform">
+    <input type="hidden" name="pk" id="pk" value="{{ checklistform.instance.pk }}">
+    <div class="d-none">
+    </div>
+    {{ checklistform.parent }}
+    <input type="hidden" name="{{ checklistform.ctzoffset.name }}" id = "{{ checklistform.ctzoffset.auto_id }}" value="-1">
+        <div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors" role="alert"
+            style="display:none">
+            <strong>Error</strong> <span></span>
+            <button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <!--============================== QuestionSet FORM FIELDS START =============================-->
+        <div class="row mb-3 gy-3">
+            <label for="{{ checklistform.type.id_for_label }}" class="required col-md-2">Type:</label>
+            <div class="col-md-4">
+                {{ checklistform.type }}
+                {{ checklistform.type.errors }}
+            </div>
+            <!--Qusetion Set Name Start-->
+
+            <label for="{{ checklistform.qsetname.id_for_label }}" class="required col-md-2 col-sm-2">Name:</label>
+            <div class="col-md-4 col-sm-4">
+                {{ checklistform.qsetname }}
+                {{ checklistform.qsetname.errors }}
+            </div>
+            <!--Qusetion Set Name End-->
+
+                <!--Site Includes Start-->
+                <label for="{{ checklistform.buincludes.id_for_label }}"
+                    class="required col-md-2 col-sm-2">Site Includes:</label>
+                <div class="col-md-4 col-sm-4">
+                    {{ checklistform.buincludes }}
+                    {{ checklistform.buincludes.errors }}
+                </div>
+                <!--Site Includes End-->
+                
+                <!--Site Group Includes Start-->
+                <label for="{{ checklistform.site_grp_includes.id_for_label }}"
+                    class="required col-md-2 col-sm-2">Site Group Includes:</label>
+                <div class="col-md-4 col-sm-4">
+                    {{ checklistform.site_grp_includes }}
+                    {{ checklistform.site_grp_includes.errors }}
+                </div>
+                <!--Site Group Includes End-->
+                <!--Site Type Includes Start-->
+                <label for="{{ checklistform.site_type_includes.id_for_label }}"
+                    class="required col-md-2 col-sm-2">Site Type Includes:</label>
+                <div class="col-md-4 col-sm-4">
+                    {{ checklistform.site_type_includes }}
+                    {{ checklistform.site_type_includes.errors }}
+                </div>
+                <!--Site Type Includes End-->
+            
+            <!-- Asset Includes Start -->
+            <label for="{{ checklistform.assetincludes.id_for_label }}" class="col-md-2 required col-sm-2">Asset Includes:</label>
+            <div class="col-md-4 col-sm-4">
+                {{ checklistform.assetincludes }}
+                {{ checklistform.assetincludes.errors }}
+            </div>
+            <!-- Asset Includes End -->
+
+
+            <!-- Enable Start -->
+            <div class="booleans col-md-4 col-sm-4 d-flex justify-content-sm-between mt-5
+            form-check form-switch form-check-custom form-check-solid">
+                <label for="{{ checklistform.enable.id_for_label }}"
+                    class="form-check-label bool col-form-label me-5 text-sm-right">
+                    {{ checklistform.enable.label }}: &nbsp; {{ checklistform.enable }}
+                </label>
+                <label for="{{ checklistform.show_to_all_sites.id_for_label }}"
+                    class="form-check-label bool col-form-label me-5 text-sm-right">
+                    {{ checklistform.show_to_all_sites.label }}: &nbsp; {{ checklistform.show_to_all_sites }}
+                </label>
+            </div>
+            <!-- Enable End -->
+
+
+            <div class="d-flex justify-content-end">
+                {% if checklistform.instance.id %}
+                <button type="submit" id="submit" form="id_qsetform" class="btn btn-sm btn-primary2 me-2 btn-hover-scale">
+                    Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+                </button>
+
+                <button type="button" onclick="deleteChecklist(this)" data-id="{{ checklistform.instance.id }}" id="deleteAttd"
+                    class="btn btn-sm me-2 btn-danger btn-hover-scale">
+                    Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+                </button>
+                {% else %}
+                <button type="submit" form="id_qsetform" class="btn btn-sm me-2 btn-primary2 btn-hover-scale">
+                    Save&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+                </button>
+                {% endif %}
+                <button type="button" id="newform" class="btn btn-sm me-2 btn-secondary btn-hover-scale">
+                    Clear&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+                </button>
+            </div>
+        </div>
+    </form> <br><hr><br>
+{% endblock form %}
+
+    <!--============================== QuestionSet FORM FIELDS END ============================-->
+
+{% block extras %}
+<div class="row report_section" style="display:none;">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="ch4 sections">List Of Sections</h4>
+            <table id="tabSitereports" class="display sections cell-border compact hover">
+            </table>
+            <br>
+            <h4 class="ch4 ">#Assigned Questions</h4>
+            <table id="tabchildReport" class="display compact hover"></table>
+        </div>
+    </div>
+</div>
+{% endblock extras %}
+
+{% block extra_scripts %}
+{{ checklistform.media.js }}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/editor.select2.js') }}" type="text/javascript"></script>
+
+<script>
+    //$('.optionGrp').hide()
+    $('form').find("label").addClass("col-md-1 col-sm-1")
+    var childTable = null
+    var selectedType = null
+    var childEditor = null
+    var template_id=null
+    var seqno = 0
+    const templates = ['SITEREPORT', 'INCIDENTREPORT', 'WORKPERMIT', 'RETURN_WORK_PERMIT','SLA_TEMPLATE']
+
+    //delete typeassist 
+    function deleteChecklist(elemt){
+        var id = "{{ checklistform.instance.pk }}"
+        var viewname = 'Site Report Template'
+        show_alert_before_delete(viewname)
+        .then((result) => {
+            if(result.isConfirmed){ //delete requested by user
+                let urlname = "{{ url('activity:checklist') }}"
+                const params = {url:`${urlname}?action=delete&id=${id}`}
+                fire_ajax_get(params)
+                .done((data, status, xhr) => {
+                    show_successful_delete_alert() //defined in customjs
+                    window.setTimeout(function() {
+                        window.location.href = "{{ url('activity:checklist') }}?template=true";
+                    }, 2000);
+                })
+                .fail((xhr, status, error) => {
+                    let err = typeof xhr.responseJSON.errors == 'string' ? xhr.responseJSON.errors : 'Something went wrong!'
+                    show_error_alert(err) //defined in custom.js
+                })
+            }
+        })
+    }
+
+    function clearSelection(id){
+        //$(id).val(null).trigger('change');
+        $(id).empty().trigger("change");
+    }
+
+
+    function showSectionConfiguration(){
+        let show_to_all_sites = $('#id_show_to_all_sites').is(':checked')
+        //editor section table
+        parentEditor = new $.fn.dataTable.Editor({
+            table: "#tabSitereports",
+            ajax: {
+                url:"{{ url('activity:qset_qsetblng') }}",
+                data:function(d){
+                    let currentRow = getCurrentEditingRow(parentEditor, parentTable)
+                    console.log(currentRow)
+                    d.parent_id = template_id
+                    d.questionset = true
+                    d.csrfmiddlewaretoken = '{{ csrf_token }}'
+                    d.ctzoffset = $("#id_ctzoffset").val()
+                    d.pk = currentRow !== 'None' ? currentRow['id'] : currentRow
+                    console.log(d.pk)
+                    d.qsetname = $('#DTE_Field_qsetname').val()
+                    d.type = 'SITEREPORTTEMPLATE'
+                    d.seqno = $('#DTE_Field_seqno').val()
+                    d.show_to_all_sites = show_to_all_sites
+                }
+            },
+            idSrc:  'id',
+            fields:[
+                {label: 'SNo', name: "seqno", type:"text"},
+                {label: 'Section', name: "qsetname"}
+            ]
+        });
+
+        //PARENT EDITOR ON OPEN EVENT
+        parentEditor.on('open', function(e, mode, action){
+            $(".DTE_Field").addClass('p-1') // add required classes
+            if(action == 'create'){
+                parentEditor.field('seqno').set(parentTable.data().count() + 1)
+            }
+            
+        })
+
+        parentEditor.on('opened', function(e, moed, action){
+            $('.DTED_Lightbox_Content').draggable()
+        })
+
+        //datatable configuration tabSiteReports       
+            parentTable = $("#tabSitereports").DataTable({
+                ajax:{
+                    url: `{{ url('reports:config_sitereport_template') }}?action=get_sections&parent_id=${template_id}`,
+                },
+                responsive: true,
+                searching:false,
+                order:[[1, 'asc']],
+                paging:false,
+                dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                columns     : [
+                    {data: 'id', defaultContent:null, visible:false},
+                    {title: "SNo", data: 'seqno', width:"5%"},
+                    {title: "Section", data: 'qsetname'},
+                    {title: "Count", width: "15%", defaultContent:null, data:'qcount'},
+                ],
+                buttons:[
+                    {text:'<i class="fas text-white fa-sync-alt text-dark"></i>', titleAttr:'Refresh Data', className:'refreshBtnParent'},
+                    { extend: "create", editor: parentEditor },
+                    { extend: "edit",   editor: parentEditor },
+                    { extend: "remove", editor: parentEditor }
+                ],
+                select: {
+                    style: 'single'
+                }
+            })
+
+            parentTable.on('select', function () {
+                childTable.ajax.reload();
+                $("#tabchildReport_wrapper .buttons-create").removeClass('disabled')
+                $("#tabchildReport_wrapper .refreshBtn").removeClass('disabled')
+            } );
+            
+            parentTable.on( 'deselect', function () {
+                childTable.ajax.reload();
+                $("#tabchildReport_wrapper .buttons-create").addClass('disabled')
+                $("#tabchildReport_wrapper .refreshBtn").addClass('disabled')
+                $("#tabchildReport_wrapper .buttons-create").attr({'data-toggle':"tooltip", 'data-placement':"top", 'title':"Select Section First"})
+            } );
+
+            $('.refreshBtnParent').click(() => {
+                parentTable.ajax.reload();
+            })
+
+
+    }
+
+    $(document).ready(() => {
+        console.log($("#pk").val())
+        
+        $("#newform").click(() => {
+            location.href = "{{ url('activity:checklist') }}?action=form"
+        })
+
+        //sets closeonSelect to false for multiple-select fields
+        $("select[multiple]").select2({
+            closeOnSelect:false 
+        })
+
+        if ($("#pk").val() === "None"){
+            //$(".report_section").hide()   
+        }else{
+            $(".report_section").show()
+            template_id = $("#pk").val() //update global variable
+            $("#id_type").select2({"disabled": 'readonly'})
+            selectedType = getSelectedValue("#id_type", val=true)
+            if ([...templates].includes(selectedType)){
+                $(".report_section .sections").show()
+                showSectionConfiguration()
+
+            }else{$(".report_section .sections").hide()}
+            
+        }
+        
+        //remove class to label which was added from above
+        $('.booleans label').removeClass('col-md-1 col-sm-1')
+
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        //Qset Belonging ("List of Assigned Questions")
+        // Datatable configuration 
+        childEditor = new $.fn.dataTable.Editor({
+            table: '#tabchildReport',
+            ajax: {
+                url:"{{ url('activity:qset_qsetblng') }}",
+                data:function(d){
+                    if([...templates].includes(selectedType)){
+                        var selected = parentTable.row( {selected:true} )
+                        var qset_id = selected.data() ? selected.data().id : null
+                    }else{
+                        var qset_id = '{{ checklistform.instance.id }}'
+                    }
+                    editorAjaxData(d, childEditor, childTable, qset_id, '{{ csrf_token }}')
+                }
+            },
+            idSrc:  'pk',
+            fields:[
+                ...editorFieldsConfig()
+            ],
+            formOptions:{
+                main:{
+                    onReturn:false
+                }
+            }
+        })
+
+        childTable = $("#tabchildReport").DataTable({
+                ajax:{
+                    url:"{{ url('activity:qset_qsetblng') }}?action=get_questions_of_qset",
+                    type:'get',
+                    data:function(d){
+                        if([...templates].includes(selectedType)){
+                        var selected = parentTable.row( {selected:true} )
+                        d.qset_id = selected.data() ? selected.data().id : null
+                        }else{
+                            d.qset_id = '{{ checklistform.instance.id }}'
+                        }
+                    }
+                },
+                order: [[0, "asc"]],
+                ordering: true,
+                //rowReorder:true,
+                responsive:true,
+                searching:false,
+                dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                columns:[
+                    ...QSBTableColumnsConfig()
+                ],
+                buttons:[
+                {text:'<i class="fas text-white fa-sync-alt text-dark"></i>', titleAttr:'Refresh Data', className:'refreshBtn'},
+                    { extend: "create", editor: childEditor },
+                    { extend: "edit",   editor: childEditor },
+                    { extend: "remove", editor: childEditor }
+                ],
+                select:{
+                    style:'single',
+                    selector: "td:not(:first-child)"
+                },
+            })
+        
+        childEditor.on('open', function(e, mode, action){
+            // on change options set alerton
+            editorOnOpenActions('{{ url("activity:qset_qsetblng") }}', childEditor, childTable, action)
+        })
+
+        childEditor.on('opened', function(e, mode, action){
+            editorOnOpenedActions()
+            $('.DTED_Lightbox_Content').draggable()
+        })
+
+        childEditor.on('preSubmit', function(e, o, action){
+            if(action !== 'remove' && this.field('answertype').val() == 'NUMERIC'){
+                let min = this.field('min')
+                let max = this.field('max')
+                let alertbelow = this.field('alertbelow')
+                let alertabove = this.field('alertabove')
+                console.log(!min.isMultiValue(), isNaN(parseInt(min.val(), 10)) == NaN)
+
+                if(!(min.isMultiValue()) && isNaN(parseInt(min.val(), 10))) {min.error('value of min must be number')}
+                if(!(max.isMultiValue()) && isNaN(parseInt(max.val(), 10))) {max.error('value of max must be number')}
+                if(alertbelow.val() && isNaN(parseInt(alertbelow.val()))) {alertbelow.error('value of alert below must be number')}
+                if(alertabove.val() && isNaN(parseInt(alertabove.val()))) {alertabove.error('value of alert above must be number')}
+
+                if(!(min.isMultiValue() && max.isMultiValue()) && (parseInt(min.val(), 10) > parseInt(max.val(), 10)) ){
+                    min.error('Min value must be smaller than Max value')
+                }
+                if(!(min.isMultiValue() && alertbelow.isMultiValue()) && (parseInt(alertbelow.val(), 10) < parseInt(min.val(), 10)) ){
+                    alertbelow.error('Alert Below value must be greater than Min value')
+                }
+                if(!(max.isMultiValue() && alertabove.isMultiValue()) && (parseInt(alertabove.val())  > parseInt(max.val(), 10)) ){
+                    max.error('Alert Above value must be smaller than Max value')
+                }
+                if(!(alertbelow.isMultiValue() && alertabove.isMultiValue()) && (parseInt(alertbelow.val(), 10) > parseInt(alertabove.val(), 10)) ){
+                    alertabove.error('Alert Below value must be smaller than Alert Above value')
+                }
+                // If any error was reported, cancel the submission so it can be corrected
+                if ( this.inError() ) {
+                    return false;
+                }
+            }else if(this.field('answertype').val() == 'DROPDOWN' || this.field('answertype').val() == 'CHECKBOX'){
+                let alerton = this.field('alerton')
+                let options = this.field('options')
+                if(!options.isMultiValue() && !options.val()){options.error('options must be given')}
+                if ( this.inError() ) {
+                    return false;
+                }
+            }
+        })
+
+        //on submit form post request
+        $("#id_qsetform").submit((e) => {
+            e.preventDefault()
+            var form = $("#id_qsetform");
+            let formAction = form.attr("action")
+            const params   = { url: formAction, modal: false }
+            console.log("Params: ",params)
+            const id = $("#pk").val() //form instance id
+            var   payLoad  = {formData:$("#id_qsetform").serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'} 
+            if(id != 'None'){
+                var newPayLoad = {...payLoad, 'pk':id}
+                payLoad = newPayLoad
+            }
+            fire_ajax_form_post(params, payLoad)
+            .done((data, status, xhr) => {
+                let url = "{{ url('activity:checklist') }}"
+                show_successful_save_alert(update= id != 'None' ? true : false)
+                window.setTimeout(function() {
+                    window.location.href = `${url}?id=${data.parent_id}`;
+                }, 2000);
+            })
+        })
+
+         
+            $('.refreshBtn').click(() => {
+                var selected = childTable.rows().data();
+                console.log(selected)
+                if(selected.count()){
+                    childTable.ajax.reload();
+                }
+            })
+            if([...templates].includes(selectedType)){
+                $("#tabchildReport_wrapper .buttons-create").addClass('disabled')//on page load disable new button of child table
+                $("#tabchildReport_wrapper .buttons-create").attr({'data-toggle':"tooltip", 'data-placement':"top", 'title':"Select Section First"})
+
+            }
+
+
+    }) //DOCUMENT.READY END
+</script>
+{% endblock extra_scripts %}

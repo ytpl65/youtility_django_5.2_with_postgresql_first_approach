@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+    table {
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+    td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+        color: #202124;
+    }
+    .bgy {
+        background-color: #eaf1fb !important;
+        font-weight: normal;
+    }
+</style>
+</head>
+<body>
+    <p>{{ subject }}</p>
+    <table>
+        <tbody>
+            <tr>
+                <td class="bgy">Description</td>
+                <td>{{ desc }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Template</td>
+                <td>{{ template }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Priority</td>
+                <td>{{ priority }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Status</td>
+                <td>{{ status }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Created On</td>
+                <td>{{ createdon }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Modified By</td>
+                <td>{{ modifiedby }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Modified On</td>
+                <td>{{ modifiedon }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Assigned To</td>
+                <td>{{ assignedto }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Comments</td>
+                <td>{{ comments }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Level</td>
+                <td>{{ level }}</td>
+            </tr>
+            {% if isescalated is defined and isescalated == 'True' %}
+            <tr>
+                <td class="bgy">Escalated In</td>
+                <td>{{ escin }}</td>
+            </tr>
+            <tr>
+                <td class="bgy">Next Escalation</td>
+                <td>{{ next_esc }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</body>
+</html>

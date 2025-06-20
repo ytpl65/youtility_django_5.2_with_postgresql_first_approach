@@ -1,0 +1,84 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Scheduled Tasks
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Scheduled Tasks
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Scheduled Tasks</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+{% block table %}
+<table id='editorTa' class="display cell-border compact hover" style="width:100%">
+<thead class="fw-bold fs-6">
+<th>Code</th>
+<th>Name</th>
+<th>Type</th>
+<th>Created user</th>
+</thead>
+</table>
+{% endblock table %}
+
+{% block extra_scripts %}
+<script>
+var table = null;
+$(document).ready(() => {
+    var editor = new $.fn.dataTable.Editor( {
+        "ajax": {
+            "url": "{{ url('onboarding:editortypeassist') }}?action=formeditor",
+            "data":{
+                "csrfmiddlewaretoken": "{{ csrf_token }}"
+            }
+        },
+        "idSrc": "id",
+        "table": "#editorTa",
+        "fields": [ {
+                "label": "Code: ",
+                "name": "tacode"
+            }, {
+                "label": "Name: ",
+                "name": "taname"
+            }, {
+                "label": "Type: ",
+                "name": "tatype__tacode"
+            }, 
+        ],
+    } );
+
+$('#editorTa').DataTable( {
+        dom: "Bfrtip",
+        ajax: {
+            url: "{{ url('onboarding:editortypeassist') }}?action=list",
+            type: "POST",
+            data:{"csrfmiddlewaretoken": "{{ csrf_token }}" }
+        },
+        serverSide: true,
+        columns: [
+            { data: "tacode" },
+            { data: "taname" },
+            { data: "tatype__tacode" },
+            { data: "cuser__peoplecode" },
+        ],
+        select: true,
+        buttons: [
+            { extend: "create", editor: editor },
+            { extend: "edit",   editor: editor },
+            { extend: "remove", editor: editor }
+        ]
+    } );
+
+} );
+
+</script>
+{% endblock extra_scripts %}

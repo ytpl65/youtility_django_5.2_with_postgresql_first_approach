@@ -1,0 +1,114 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+{% block inline_css %}
+<style>
+@media print{
+    @page {
+        size: A3 landscape;
+    }
+}
+thead tr th, tbody tr td {
+    font-size: 0.4rem;
+}
+thead tr th {
+    align-content: center;
+}
+
+.logos{
+    width: 2.75rem;
+    height: 2.75rem;
+}
+</style>
+{% endblock inline_css %}
+
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+{% block header_end %}
+<div>
+    <img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+
+{% endblock header_end %}
+
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block table %}
+<table id="sitereport" style="width: 100%;">
+    <thead>
+        <tr>
+            <th>SOL ID</th>
+            <th>SITE CODE</th>
+            <th>SITE NAME</th>
+            <th>ROUTE NAME</th>
+            <th>DATE OF VISIT</th>
+            <th>TIME OF VISIT</th>
+            <th>LONGITUDE</th>
+            <th>LATITUDE</th>
+            <th>RP ID</th>
+            <th>RP OFFICER</th>
+            <th>CONTACT</th>
+            <th>SITE ADDRESS</th>
+            <th>STATE</th>
+            <th>FASCIA WORKING</th>
+            <th>LOLLY POP WORKING</th>
+            <th>ATM MACHINE COUNT</th>
+            <th>AC IN ATM COOLING</th>
+            <th>ATM BACK ROOM LOCKED</th>
+            <th>UPS ROOM BEHIND ATM LOBBY ALL SAFE</th>
+            <th>BRANCH SHUTTER DAMAGED</th>
+            <th>BRANCH PHERIPHERI ROUND TAKEN</th>
+            <th>AC ODU AND COPPER PIPE INTACT</th>
+            <th>ANY WATER LOGGING OR FIRE IN VICINITY</th>
+            <th>FE AVAILABLE IN ATM LOBBY</th>
+            <th>DG DOOR LOCKED</th>
+            <th>DAMAGE TO ATM LOBBY</th>
+            <th>ANY OTHER OBSERVATION</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['SOL ID'] }}</td>
+            <td>{{ row['SITE CODE'] }}</td>
+            <td>{{ row['SITE NAME'] }}</td>
+            <td>{{ row['ROUTE NAME'] }}</td>
+            <td>{{ row['DATE OF VISIT'] }}</td>
+            <td>{{ row['TIME OF VISIT'] }}</td>
+            <td>{{ row['LONGITUDE'] }}</td>
+            <td>{{ row['LATITUDE'] }}</td>
+            <td>{{ row['RP ID'] }}</td>
+            <td>{{ row['RP OFFICER'] }}</td>
+            <td>{{ row['CONTACT'] }}</td>
+            <td>{{ row['SITE ADDRESS'] }}</td>
+            <td>{{ row['STATE'] }}</td>
+            <td>{{ row['FASCIA WORKING'] }}</td>
+            <td>{{ row['LOLLY POP WORKING'] }}</td>
+            <td>{{ row['ATM MACHINE COUNT'] }}</td>
+            <td>{{ row['AC IN ATM COOLING'] }}</td>
+            <td>{{ row['ATM BACK ROOM LOCKED'] }}</td>
+            <td>{{ row['UPS ROOM BEHIND ATM LOBBY ALL SAFE'] }}</td>
+            <td>{{ row['BRANCH SHUTTER DAMAGED'] }}</td>
+            <td>{{ row['BRANCH PERIPHERY ROUND TAKEN'] }}</td>
+            <td>{{ row['AC ODU AND COPPER PIPE INTACT'] }}</td>
+            <td>{{ row['ANY WATER LOGGING OR FIRE IN VICINITY'] }}</td>
+            <td>{{ row['FE AVAILABLE IN ATM LOBBY'] }}</td>
+            <td>{{ row['DG DOOR LOCKED'] }}</td>
+            <td>{{ row['DAMAGE TO ATM LOBBY'] }}</td>
+            <td>{{ row['ANY OTHER OBSERVATION'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}

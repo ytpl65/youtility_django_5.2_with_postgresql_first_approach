@@ -1,0 +1,85 @@
+var barChartOptions = {
+    series: _assetChartSeries,
+    chart: {
+    type: 'bar',
+    height: '350px',
+    width:"100%",
+    stacked: true,
+    toolbar: {
+      show: true,
+      customIcons:[{
+icon: '<img src="{{ static('assets/media/images/logo.png') }}" width="20">',
+index: 4,
+title: 'tooltip of the icon',
+class: 'custom-icon',
+click: function (chart, options, e) {
+  console.log("clicked custom-icon")
+}
+}],
+    },
+    zoom: {
+      enabled: true
+    },
+    events: {
+                dataPointSelection: function(event, chartContext, config) {
+                let filters = {'AssetType':config.dataPointIndex, 'AssetStatus':config.seriesIndex}
+                localStorage.setItem('assetFilters', JSON.stringify(filters))
+                switch(config.dataPointIndex){
+                  case 0:
+                  window.open('{{ url("activity:asset") }}?template=true', '_blank');
+                  break;
+                  case 1:
+                  window.open('{{ url("activity:checkpoint") }}?template=true', '_blank');
+                  break;
+                  case 2:
+                  window.open('{{ url("activity:location") }}?template=true', '_blank');
+                  break;
+
+                }
+                }
+  }
+  },
+  responsive: [{
+    breakpoint: 480,
+    options: {
+      legend: {
+        position: 'bottom',
+        offsetX: -10,
+        offsetY: 0
+      }
+    }
+  }],
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      borderRadius: 2,
+      columnWidth:"50%",
+      dataLabels: {
+        total: {
+          enabled: true,
+          style: {
+            fontSize: '13px',
+            fontWeight: 900
+          }
+        }
+      },
+    },
+  },
+  colors: [  '#2ed8b6',  '#FF5370','#FFB64D', '#B0B0B0'], 
+  xaxis: {
+    type: 'string',
+    categories: ['Assets', 'Checkpoints', 'Locations'],
+    formatter:function(v, timestamp, opts){
+      if(v === "Assets"){ `<a href="{{ url('activity:asset') }}?template=true" target="_blank">${v}</a>` }
+      if(v === "Checkpoints"){ `<a href="{{ url('activity:checkpoint') }}?template=true" target="_blank">${v}</a>` }
+      if(v === "Locations"){ `<a href="{{ url('activity:location') }}?template=true" target="_blank">${v}</a>` }
+    }
+  },
+  legend: {
+    position: 'right',
+    offsetY: 40
+  },
+  fill: {
+    opacity: 1
+  }
+  };

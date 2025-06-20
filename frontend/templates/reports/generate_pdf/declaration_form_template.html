@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Full and Final Settlement</title>
+    <style>
+        body {
+            font-family: Calibri, sans-serif;
+            font-size: 7.5pt;
+            line-height: 1.5;
+        }
+        .container {
+            width: 100%;
+            padding: 0px;
+            position: relative;
+        }
+        .header {
+            text-align: center;
+            font-weight: bold;
+        }
+        .underline {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            width: 220px;
+        }
+        .underline-add {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            width: 580px;
+        }
+        .underline-lst {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            width: 80px;
+        }
+        .underline-add-comp {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            width: 500px;
+        }
+        .underline-comp-name {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            width: 250px;
+        }
+        .underline-company-add {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            width: 300px;
+        }
+        .section {
+            margin: 10px 0;
+            line-height: 1;
+        }
+        .background-yellow {
+            background-color: yellow;
+        }
+        .photo-box {
+            width: 60px;
+            height: 80px;
+            border: 2px solid black;
+            text-align: center;
+            font-family: Calibri, sans-serif;
+            font-size: 12px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            float: right; 
+            margin-left: 20px; 
+        }
+        ul {
+            list-style-type: disc; 
+        }
+        .details-line {
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="photo-box">
+            <b>Employee<br>Photo</b>
+            <span style="font-size: 10px;">कर्मचारी फोटो</span>
+        </div>
+        <div><span class="background-yellow"><b>By contracted staff<b></span><br>
+            (अनुबंधित कर्मचारियों द्वारा) <br> 
+            TO WHOM SO EVER IT MAY CONCERN (जो कोई भी इससे संबंधित है उसके लिए)</div>
+        <div class="header">No pending dues declaration/FULL AND FINAL SETTLEMENT OF DUES RECEIPT (कोई लम्बित देय घोषणा/बकाया रसीद का पूर्ण और अंतिम निपटान नहीं)</div>
+        <p>I, SHRI मैं, श्री <span class="underline">{{ FullName }}</span> S/O SHRI पुत्र श्री <span class="underline">{{ FatherName }}</span> RESIDING AT (में रहना) <span class="underline-add">{{ CurrentAddress }}</span>, HEREBY CONFIRMS (हर्बी पुष्टि करताहै)
+           <br> I HAVE RECEIVED below mentioned dues from contractor (प्राप्त हो रहा है) – below mentioned <span class="background-yellow">DOCUMENTS /Evidence are attached with forms. </span></p>
+        <ul>
+            <li><div class="section">RS <span class="underline-lst">{{ NetPay }}</span> Pending salary AS WAGES UPTO duty date (मजदूरी के रूप में) <span class="underline-lst">{{ "31/12/2024" }}</span></div></li>
+            <li><div class="section">RS <span class="underline-lst">{{ Bonus }}</span> AS PRORATA BONUS UPTO (प्रोराटा बोनस के रूप में) <span class="underline">{{ "DEC-24 will be paid on Diwali-2025" }}</span></div></li>
+            <li><div class="section">RS <span class="underline-lst">{{ Leave }}</span> AS LEAVE ENCASHMENT UPTO (छुट्टी नकदीकरण के रूप में) <span class="">{{ "Aug-24 To Dec-24 is paid monthly" }}</span></div></li>
+            <li><div class="section">RS <span class="underline-lst">{{ "NILL" }}</span> AS NOTICE PAY UPTO (नोटिस के रूप में भुगतान करे) <span class="underline-lst">{{ "NILL" }}</span>AND तथा</div></li>
+            <li><div class="section">RS <span class="underline-lst">{{ "NILL" }}</span> AS GRATUITY (ग्रेच्युटी के रूप में) [IF APPLICABLE]. [यदि लागू हो]</div></li>
+            <li><div class="section">RS <span class="underline-lst">{{ PFAMT }}</span> PF with damages + interest paid. </div></li>
+            <li><div class="section">RS <span class="underline-lst">{{ "WC Coverage" }}</span> ESIC/WC contribution paid </div></li>
+            <li><div class="section">RS <span class="underline-lst">{{ MLWF }}</span> MLWF contribution paid. </div></li>
+        </ul>
+        <p>I HAVE RECEIVED ALL MY DUES FOR MY PERIOD OF SERVICE which are transferred in my Bank account (मुझे अपनी सेवा की अवधि के लिए मेरे सभी बकाया प्राप्त हो गए हैं)</p>
+        
+        <div class="section">[CONTRACTOR] [ठेकेदार]: <span class="underline">Security & Personnel Services Pvt Ltd</span></div>
+        <div class="section">Bank Account No: <span class="underline">{{ BankACNo }}</span></div>
+        <div class="section">Bank Address: <span claFullNames="underline">{{ BankBranch }}</span></div>
+        <div class="section">IFSC Code: <span class="underline">{{ BankIFSCCode }}</span></div>
+        <div class="section"><span class="underline-lst">{{ FromDate }}</span>From: से  <span class="underline-lst">{{ ToDate }}</span> To: प्रति <span class="underline-comp-name">{{ CompanyName }}</span>
+            <span class="details-line">WHICH IS TOWARDS MY FULL AND FINAL SETTLEMENT. THERE IS NO FURTHER CLAIM DUE POSTS THE FULL & FINAL SETTLEMENT FROM (जो मेरे पूर्ण और अंतिम निपटान की ओर है। से पूर्ण और अंतिम निपटान के बाद कोई और दावा देय नहीं है)
+            <br>M/s Security & Personnel Services Pvt Ltd  Contractor, FOR MY SERVICE PERIOD AS MENTIONED ABOVE. No dues pending with contractor, and I do not have any objection regarding my dues (ठेकेदार, मेरी सेवा अवधि के लिए जैसा कि ऊपर बताया गया है। ठेकेदार के पास कोई बकाया नहीं है और मुझे अपने बकाया के संबंध में कोई आपत्ति नहीं है)</span>
+        </div>
+        
+        <div class="section">NAME of the WORKER: (कार्यकर्ता का नाम) <span class="underline">{{ FullName }}</span></div>
+        <div class="section">ADDRESS: (पता) <span class="underline-add-comp">{{ CurrentAddress }}</span></div>
+        <div class="section">SIGNATURE & Contact number: (हस्ताक्षर और संपर्क नंबर) {{ "__________________________________" }} DATE: (दिनांक) {{ "________________" }}</div>
+        
+        <div class="section">WITNESS: (Name, signature & contact No) साक्षी; (नाम, हस्ताक्षर और संपर्क नंबर)</div>
+        <div class="section">Name: (नाम) <span class="underline-comp-name">{{ "Akshay Bhagat 9892847730" }}</span></div>
+        
+        <div class="section">Authority Person Signature & Contractor Seal/Stamp (प्राधिकरण व्यक्ति के हस्ताक्षर और ठेकेदार की मुहर/स्टाम्प)</div>
+        <div class="section">Name: (नाम) <span class="underline">Mr. Sameer Mhatre</span></div>
+        <div class="section">Permanent Address of Contractor: (ठेकेदार का स्थाई पता) <span class="underline-company-add">{{ "SPS House,135/7, Kolshet Road, Thane (W)-400607" }}</span></div>
+        <div class="section">Contact Number: (संपर्क संख्या) <span class="underline">{{ "+91 70456 91498" }}</span></div>
+    </div>
+</body>
+</html>

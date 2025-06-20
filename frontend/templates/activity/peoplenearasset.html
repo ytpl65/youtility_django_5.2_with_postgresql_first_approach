@@ -1,0 +1,76 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+People Near Assets
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+People Near Assets
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{# <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"> #}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">People Near Asset List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN Schedhuled Tour TABLE ------------------------------------------->
+{% block table %}
+
+<table id="people_nearasset" class="display compact cell-border" style="width:100%" >
+
+</table>
+{% endblock table %}
+
+{% block extra_scripts %}
+<script>
+var table = null;
+$(document).ready(function(){
+    table = $("#people_nearasset").DataTable({
+        ajax:{
+            url: '{{ url("activity:peoplenearasset") }}?action=list',
+        },
+        pageLength:500,
+        lengthMenu:[250,500,750,1000],
+        columns     : [
+            { "data": "id", visible:false },
+            { "data": "assetcode" , title: "Code"},
+            { "data": "assetname" , title: 'Name'},
+            { "data": "identifier", 'title': 'Type'},
+            { "data": "gps", title: 'GPS'},
+        ],
+
+        deferRender: true,
+        responsive : true,
+        columnDefs:[
+            {targets:2, data: 'jobdesc',
+            render:function(data, type, row, meta){
+                var url= "{{ url('activity:peoplenearasset') }}?template=true&id=" + row['id'];
+                return `<a href=${url}>${data}</a>`
+            }
+            }
+        ],
+        dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        responsive : true,
+        buttons:[
+            {
+                text:`Add New &nbsp;<i class='fas text-dark fa-plus'></i></a>`,
+                action: function(e, dt, node, config){
+                    window.location.href = "{{ url('activity:peoplenearasset') }}?action=form";
+                }
+            }
+        ]
+    })
+})
+</script>
+{% endblock extra_scripts %}

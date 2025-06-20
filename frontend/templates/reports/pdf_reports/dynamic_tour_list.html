@@ -1,0 +1,75 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+
+{% block header_start %}
+<img src="{{ client_logo }}" width="0.25rem" height="0.25rem" alt="" class="logos">
+{% endblock header_start %}
+
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+{% endblock header_end %}
+
+{% block inline_css %}
+<style>
+thead tr th, tbody tr td {
+    font-size:0.5rem;
+}
+
+
+</style>
+{% endblock inline_css %}
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block table %}
+<table id="listoftours" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Client</th>
+            <th scope="col">Site</th>
+            <th scope="col">Tour/Route</th>
+            <th scope="col">Planned Datetime</th>
+            <th scope="col">Expiry Datetime</th>
+            <th scope="col">Assigned To</th>
+            <th scope="col">Jobtype</th>
+            <th scope="col">Status</th>
+            <th scope="col">Performed On</th>
+            <th scope="col">Performed By</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['Client'] }}</td>
+            <td>{{ row['Site'] }}</td>
+            <td>{{ row['Tour/Route'] }}</td>
+            <td>{{ row['Planned Datetime'] }}</td>
+            <td>{{ row['Expiry Datetime'] }}</td>
+            <td>{{ row['Assigned To'] }}</td>
+            <td>{{ row['JobType'] }}</td>
+            <td>{{ row['Status'] }}</td>
+            <td>{{ row['Performed On'] }}</td>
+            <td>{{ row['Performed By'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>    
+</table>
+{% endblock table %}
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

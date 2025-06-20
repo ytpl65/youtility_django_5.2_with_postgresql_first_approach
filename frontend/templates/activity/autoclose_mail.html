@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        #notification,
+        #ticketdetails {
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        td{
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+            color: #202124;
+        }
+
+        .titlecase {
+            text-transform: capitalize;
+        }
+
+        .bgy {
+            background-color: #eaf1fb !important;
+            font-weight: normal;
+        }
+
+    </style>
+</head>
+
+<body>
+    <p>The server did not receive a completion report of this <span id="titlecase">{{ identifier }}</span> in time.</p>
+    <table id="notification">
+        <tbody>
+            <tr>
+                <td class="bgy">Site</td>
+                <td><strong>{{ buname }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Description</td>
+                <td><strong>{{ jobdesc }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Planned on</td>
+                <td><strong>{{ plan_dt }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Created by</td>
+                <td><strong>{{ creatorname }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Assigned to</td>
+                <td><strong>{{ assignedto }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Expired at</td>
+                <td><strong>{{ exp_dt }}</strong></td>
+            </tr>
+        </tbody>
+
+    </table>
+    {% if show_ticket_body  %}
+    <br><br>
+    <p>Below are the ticket details created for above autoclose <span id="titlecase">{{ identifier }}</span></p>
+    <table id="ticketdetails">
+        <tbody>
+            <tr>
+                <td class="bgy">Ticket #</td>
+                <td><strong>{{ ticketno }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Description</td>
+                <td><strong>{{ tjobdesc }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Category</td>
+                <td><strong>{{ categoryname }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Priority</td>
+                <td><strong>{{ priority }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Status</td>
+                <td><strong>{{ status }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Created by</td>
+                <td><strong>{{ tcreatedby }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Created on</td>
+                <td><strong>{{ created_at }}</strong></td>
+            </tr>
+            <tr>
+                <td class="bgy">Assigned to</td>
+                <td><strong>{{ tkt_assignedto }}</strong></td>
+            </tr>
+            {% if escalation is defined %}<tr>
+                <td class="bgy">Next Escalation</td>
+                <td><strong>{{ next_escalation }}</strong></td>
+            </tr>{% endif %}
+        </tbody>
+    </table>
+    {% endif %}
+</body>
+
+</html>

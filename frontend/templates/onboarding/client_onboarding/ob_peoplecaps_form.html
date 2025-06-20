@@ -1,0 +1,108 @@
+{% extends "onboarding/client_onboarding/base_wizard_form.html" %}
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Assign Permissions and other info.
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+	{% if wizard.form.non_field_errors() %}
+	<div id="non_field_error" class="alert alert-danger" style="width: 73%;">
+		{% for error in wizard.form.non_field_errors() %}
+		{{ error }}
+		{% endfor %}
+		<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% endif %}
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+<!----------- BEGIN FORM MESSGES --------------->
+{% block form_msgs %}
+	{% for msg in get_msgs(request) %}
+	<div class="alert {% if msg.tags %} {{ msg.tags }} {% endif %} " id="alert_msg" style="width:73%;">
+		{{ msg }}
+		<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% endfor %}
+{% endblock form_msgs %}
+<!----------- END FORM MESSGES ----------------->
+
+<!-------------- BEGIN FORM ------------------->
+{% block custom_form %}
+    <div class="mb-4 row">
+        <section>
+            <h6 class="mb-6">Capability Information</h6>
+            <div class="mb-3 row g-3 gx-6">
+                <!--webcapability-->
+                <label for="id_peoplecaps_form-webcapability" class="col-form-label col-md-2 col-sm-2 text-sm-right">Web
+                    Capability:
+                    <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+
+                        info
+
+                    </span>
+                </label>
+                <div class="col-md-4">
+                    {{ wizard.form.webcapability }}
+                    {{ wizard.form.webcapability.errors }}
+                </div>
+                <!--mobilecapability-->
+                {# {{ wizard.form.mobilecapability.label_tag() }} #}
+
+                <label for="id_peoplecaps_form-mobilecapability"
+                    class="col-form-label col-md-2 col-sm-2 text-sm-right">Mobile Capability:
+
+                    <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+
+                        info
+
+                    </span>
+                </label>
+                <div class="col-md-4">
+                    {{ wizard.form.mobilecapability }}
+                    {{ wizard.form.mobilecapability.errors }}
+                </div>
+                <!--portletcapability-->
+                {# {{ wizard.form.portletcapability.label_tag() }} #}
+
+                <label for="id_peoplecaps_form-portletcapability"
+                    class="col-form-label col-md-2 col-sm-2 text-sm-right">Portlet Capability:
+
+                    <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+
+                        info
+
+                    </span>
+
+                </label>
+                <div class="col-md-4">
+                    {{ wizard.form.portletcapability }}
+                    {{ wizard.form.portletcapability.errors }}
+                </div>
+                <!--reportcapability-->
+                {# {{ wizard.form.reportcapability.label_tag() }} #}
+
+                <label for="id_peoplecaps_form-reportcapability"
+                    class="col-form-label col-md-2 col-sm-2 text-sm-right">Report Capability:
+
+                    <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+
+                        info
+
+                    </span>
+
+                </label>
+                <div class="col-md-4">
+                    {{ wizard.form.reportcapability }}
+                    {{ wizard.form.reportcapability.errors }}
+                </div>
+            </div>
+        </section>
+    </div>
+    <input type="submit" value="Next" class="btn btn-sm btn-success">
+{% endblock custom_form %}
+<!-------------- END FORM ------------------->

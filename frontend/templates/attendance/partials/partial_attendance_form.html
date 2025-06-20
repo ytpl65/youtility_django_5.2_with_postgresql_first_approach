@@ -1,0 +1,132 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ attd_form.media.css }}
+{% endblock head %}
+
+{% block body %}
+<form action="" method="post" id="attd_form">
+<input type="hidden" name="{{ attd_form.ctzoffset.name }}" id = "{{ attd_form.ctzoffset.auto_id }}" value="-1">
+    <div class="modal-header border-0">
+		<h3 class="modal-title modal-heading" id="exampleModalLabel">Create Attendance <i class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+		<button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	</div>
+
+    <div class="modal-body" id="partial">
+		<div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors"role="alert" style="display:none">
+			<strong>Error</strong> <span></span>
+			<button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.people.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.people }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.datefor.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.datefor }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.peventtype.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.peventtype }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.verifiedby.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.verifiedby }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.remarks.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.remarks }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.punchintime.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.punchintime }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.punchouttime.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.punchouttime }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.ctzoffset.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.ctzoffset }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-3">
+                        {{ attd_form.shift.label_tag() }}
+                    </div>
+                    <div class="col-md-9">
+                        {{ attd_form.shift }}
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+
+    <div class="modal-footer border-0 pt-0">
+		<button type="button" class="btn btn-sm btn-secondary closeit" data-bs-dismiss="modal">Close <i class="fas  fa-times"></i></button>
+		{% if attd_form.instance.id %}
+		<button type="submit" id="submit" class="btn btn-sm btn-primary2">Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		<button type="button" onclick="deleteAttendance(this)" data-id="{{ attd_form.instance.id }}" id="deleteAttd" class="btn btn-sm btn-danger">Delete&nbsp;<i class="fas text-white fa-trash-alt"></i></button>
+		{% else %}
+		<button type="submit" class="btn btn-sm btn-primary2">Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		{% endif %}
+	</div>
+</form>
+{% endblock body %}
+
+{% block js %}
+{{ attd_form.media.js }}
+<script>
+$(document).ready(() => {
+    //set ctzoffset
+  	$("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+    
+    $('.django-select2').djangoSelect2({
+    dropdownParent: $('#modal-attd')
+    })
+    // add classes to checkboxes.
+    $(".booleans").addClass("form-check form-switch form-check-custom form-check-solid") 
+
+    //datatime widge
+    $("#attd_form").find("#id_punchintime, #id_punchouttime", '#id_datefor').prop('readonly', true)
+
+    $(".modal").removeAttr("tabindex");
+})
+</script>
+{% endblock js %}
+

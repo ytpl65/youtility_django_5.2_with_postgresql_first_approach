@@ -1,0 +1,164 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+PPM List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+PPM List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">PPM List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN TABLE ------------------------------------------->
+{% block table %}
+<table id="ppmtask_table_jobneed" class="display cell-border" style="width:100%">
+</table>
+{% endblock table %}
+<!-------------------------------------------- END TABLE ------------------------------------------->
+
+{% block extra_scripts %}
+<script>
+    var table = null;
+    const table_id = '#ppmtask_table_jobneed'
+    const urlname = "{{ url('activity:ppmjobneed') }}"
+    //if you want to modifiy here, then modify in custom.js initDateRange also
+    var params = null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    var current_sel_jobstatus = 'NONE';
+    params = {from:from_pd, to:to_pd, jobstatus:current_sel_jobstatus}
+
+    const table_filters = localStorage.getItem('ppmstats_filter') ? localStorage.getItem('ppmstats_filter') : localStorage.getItem('alertsFilters')
+    if(table_filters){
+        console.log(table_filters)
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+
+
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+
+    function initSelectField(){
+        let html = 
+                `<label>Status:&nbsp;</label>
+                <select name="choice" id="custom_jobstatus" style="width:100%" class="form-select">
+                <option value="NONE">-------------------</option>
+                {% for opt in status_options %}
+                <option value="{{ opt[0] }}">{{ opt[1] }}</option>
+                {% endfor %}
+                </select>`
+        $("div.jobstatusSelect").append(html)
+    }
+    
+    $(document).ready(function (){
+        //datatable initialization
+        table = $(table_id).DataTable({
+            ajax:{
+                url:"{{ url('activity:ppmjobneed') }}?action=jobneed_ppmlist",
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+            },
+            deferRenderer:true,
+            search      : {return: true},
+            language: {
+                search:"",
+                searchPlaceholder: 'Enter search term here...'
+            },
+            lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'jobstatusSelect d-flex align-items-center mt-2 me-2'><'customfields'>f>  <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns:[
+                {data:'id', visible:false, className:"noVis"},
+                {data:'plandatetime', title:'Plandatetime'},
+                {data:'jobdesc', title:'Description', visible:false},
+                {data:'jobstatus', title:'Status'},
+                {title: 'People/Group', data:'assignedto'},
+                {data: 'performedby__peoplename', title: 'Performed By'},
+                {data: 'asset__assetname', title: 'Asset/Checkpoint'},
+                {data: 'qset__qsetname', title: 'Questionset'},
+                {data:'job__frequency', title:"Frequency"},
+                {data:'expirydatetime', title:"Exp Datetime"},
+                {data:'gracetime', title:"Gracetime"},
+                {data:'ctzoffset', visible:false, className:'noVis'},
+                {data:'bu__buname', title:'Site'},
+                {data:'bu__bucode', visible:false, title:"Site Code"}
+            ],
+            columnDefs:[
+                {targets:[1], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+                {targets:[9], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+                {targets:[4], render:function(data, type, row, meta){
+                    let url = `{{ url('activity:ppmjobneed') }}?action=getppm_jobneedform&id=${row['id']}`
+                    return `<a href="${url}">${data}</a>`
+                }
+                },
+                {targets:3, data: 'jobstatus',  render:function(data, type, row, meta){
+					if(data === 'AUTOCLOSED'){return `<span class="badge badge-danger">${data}</span>`}
+					if(data === 'ASSIGNED'){return `<span class="badge badge-primary">${data}</span>`}
+					if(data === 'INPROGRESS'){return `<span class="badge badge-orange">${data}</span>`}
+					if(data === 'COMPLETED'){return `<span class="badge badge-success">${data}</span>`}
+				}
+                },
+            ],
+            buttons:[
+                "searchBuilder",
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n PPM List`,
+                    columns = ':visible',
+                    filename = 'ppm_list'
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n PPM List`,
+                    columns = ':visible',
+                    filename = 'ppm_list'
+                ),
+                dataTablesColumnVisibilityConfig()
+            ],       
+            initComplete:function(){
+                //populate dropdown field
+                $("#custom_jobstatus").change(() => {
+                    var jobstatus = $("#custom_jobstatus").val()
+                    if(jobstatus !=  current_sel_jobstatus){
+                        current_sel_jobstatus = jobstatus
+                        table.ajax.reload()
+                    }
+                })
+            } 
+        })
+        //table.ajax.data = {'action':'list', "pd1":from_pd, "pd2":to_pd}
+        //table.ajax.reload()
+
+         //add input field to the datatables dom
+        initDateRangeHtml()
+        initSelectField()
+        initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+        from_pd = picker.startDate.format('YYYY-MM-DD');
+        to_pd = picker.endDate.format('YYYY-MM-DD');
+        let filters = {from:from_pd, to:to_pd, jobstatus:current_sel_jobstatus}
+        reloadTable(table, filters)
+        })
+		//END STYLING DATATABLE
+
+    })
+</script>
+{% endblock extra_scripts %}

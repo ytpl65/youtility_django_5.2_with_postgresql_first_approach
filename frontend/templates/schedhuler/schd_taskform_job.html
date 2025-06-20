@@ -1,0 +1,587 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Schedule Task Setup
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ schdtaskform.media.css }}
+<link rel="stylesheet" href="{{ static('assets/css/jqCron.css') }}" type="text/css">
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('schedhuler:jobschdtasks') }}?template=true" class="pe-3">Scheduled Tasks</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Schedule Task Setup</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Schedule Task
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+{% block form %}
+<form action="{{ url('schedhuler:create_task') }}" method="post" id="schdtaskform">
+<input type="hidden" name="{{ schdtaskform.ctzoffset.name }}" id = "{{ schdtaskform.ctzoffset.auto_id }}" value="-1">
+        {{ schdtaskform.identifier }}
+        {{ schdtaskform.starttime }}
+        {{ schdtaskform.frequency }}
+        {{ schdtaskform.endtime }}
+
+    <input type="hidden" name="{{ schdtaskform.seqno.name }}" id="{{ schdtaskform.seqno.auto_id }}" value="1">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <div class="row gy-3">
+        
+        <!--JOBNAME-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.jobname.id_for_label }}
+                class="required">{{ schdtaskform.jobname.label }}:</label>
+        </div>
+        <div class="col-md-4 fv-row">
+            {{ schdtaskform.jobname }}
+            {{ schdtaskform.jobname.errors }}
+        </div>
+        
+        <!--PLANDURATION-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.planduration.id_for_label }}
+                class=" required">{{ schdtaskform.planduration.label }}:</label>
+        </div>
+        <div class="col-md-2">
+            {{ schdtaskform.planduration_type }}
+        </div>
+        <div class="col-md-2">
+            {{ schdtaskform.planduration }}
+            <div id="error_planduration" class="mt-3 d-none"></div>
+            {{ schdtaskform.planduration.errors }}
+        </div>
+
+        
+        <!--JOBDESCRIPTION-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.jobdesc.id_for_label }}
+                class="">{{ schdtaskform.jobdesc.label }}:</label>
+        </div>
+        <div class="col-md-4 fv-row">
+            {{ schdtaskform.jobdesc }}
+            {{ schdtaskform.jobdesc.errors }}
+        </div>
+        
+        <!--GRACETIME-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.gracetime.id_for_label }}
+                class=" required">{{ schdtaskform.gracetime.label }}:</label>
+        </div>
+        <div class="col-md-2">
+            {{ schdtaskform.gracetime_type }}
+        </div>
+        <div class="col-md-2">
+            {{ schdtaskform.gracetime }}
+            <div id="error_gracetime" class="mt-3 d-none"></div>
+            {{ schdtaskform.gracetime.errors }}
+        </div>
+
+        
+        <!--ASSET-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.asset.id_for_label }}
+                class="required">{{ schdtaskform.asset.label }}:</label>
+        </div>
+        <div class="col-md-4 fv-row">
+            {{ schdtaskform.asset }}
+            {{ schdtaskform.asset.errors }}
+        </div>
+        
+        <!--EXPIRYTIME-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.expirytime.id_for_label }}
+                class=" required">{{ schdtaskform.expirytime.label }}:</label>
+        </div>
+        <div class="col-md-2">
+            {{ schdtaskform.expirytime_type }}
+        </div>
+        <div class="col-md-2">
+            {{ schdtaskform.expirytime }}
+            <div id="error_expirytime" class="mt-3 d-none"></div>
+            {{ schdtaskform.expirytime.errors }}
+        </div>
+        
+        <!--QUESTIONSET-->
+        <div class="col-md-2 fv-row">
+            <label for={{ schdtaskform.qset.id_for_label }}
+                class=" required">{{ schdtaskform.qset.label }}:</label>
+        </div>
+        <div class="col-md-4 fv-row">
+            {{ schdtaskform.qset }}
+            {{ schdtaskform.qset.errors }}
+        </div>
+        
+        <!--CRON-->
+        <div class="col-md-2">
+            <label for="{{ schdtaskform.cron.id_for_label }}" class="required">{{ schdtaskform.cron.label }}:</label>
+        </div>
+        <div class="col-md-4 fv-row">
+            <div class="d-flex">
+                <input type="text" name="{{ schdtaskform.cron.name }}" value="{{ schdtaskform.cron.value() }}" id="id_cron"
+                readonly required class="form-control d-none form-control-solid" maxlength="250"/>
+                {{ schdtaskform.cronstrue }}
+                <a  class="btn btn-circle btn-icon-only btn-default " id="cron_selector">
+                    <i class="fa fa-clock fs-4 text-primary" aria-hidden="true"></i>
+                </a>
+            </div>
+            {{ schdtaskform.cron.errors }}
+        </div>
+        
+        <!--ASSIGNTO-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.assign_to.id_for_label }}
+                class="required">{{ schdtaskform.assign_to.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" name={{ schdtaskform.assign_to.name }}
+                    id="id_peopleradio" value="PEOPLE"
+                    onchange="showHideSelectField('PEOPLE')">
+                <label class="form-check-label" for="{{ schdtaskform.assign_to.auto_id }}">People</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" name={{ schdtaskform.assign_to.name }}
+                    id="id_groupradio" value="GROUP" onchange="showHideSelectField('GROUP')">
+                <label class="form-check-label" for="{{ schdtaskform.assign_to.auto_id }}">Group</label>
+            </div>
+        </div>
+        
+        
+        <!--FROM DATE-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.fromdate.id_for_label }}
+                class=" required">{{ schdtaskform.fromdate.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ schdtaskform.fromdate }}
+            {{ schdtaskform.fromdate.errors }}
+        </div>
+        
+
+        <!--PEOPLEID-->
+        <div class="col-md-2 people">
+            <label for={{ schdtaskform.people.id_for_label }}
+                class="required">{{ schdtaskform.people.label }}:</label>
+        </div>
+        <div class="col-md-4 people">
+            {{ schdtaskform.people }}
+            {{ schdtaskform.people.errors }}
+        </div>
+
+        <!-- ASSIGN TO GROUP --->
+        <div class="col-md-2 pgroup">
+            <label for={{ schdtaskform.pgroup.id_for_label }} class="">{{ schdtaskform.pgroup.label }}:</label>
+        </div>
+        <div class="col-md-4 pgroup">
+            {{ schdtaskform.pgroup }}
+            {{ schdtaskform.pgroup.errors }}
+        </div>
+        
+        
+        <!--UPTO DATE-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.uptodate.id_for_label }}
+                class=" required">{{ schdtaskform.uptodate.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ schdtaskform.uptodate }}
+            {{ schdtaskform.uptodate.errors }}
+        </div>
+        
+
+        <!--PRIORITY-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.priority.id_for_label }}
+                class="required">{{ schdtaskform.priority.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ schdtaskform.priority }}
+            {{ schdtaskform.priority.errors }}
+        </div>
+        
+        <!--SCANTYPE-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.scantype.id_for_label }}
+                class="required">{{ schdtaskform.scantype.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ schdtaskform.scantype }}
+            {{ schdtaskform.scantype.errors }}
+        </div>
+        
+        <!--TICKET CATEGORY-->
+        <div class="col-md-2">
+            <label for={{ schdtaskform.ticketcategory.id_for_label }}
+                class=" required">{{ schdtaskform.ticketcategory.label }}:</label>
+        </div>
+        <div class="col-md-4 fv-row">
+            {{ schdtaskform.ticketcategory }}
+            {{ schdtaskform.ticketcategory.errors }}
+        </div>
+    </div>
+</form>
+<br><br>
+
+{% endblock form %}
+
+{% block popup_alerts %}
+    {% call general_popup(popup_id = "cron_scheduler", title="Cron Scheduler <i class='fas text-white fa-clock'></i>", modal_size='modal-lg') %}
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet-body form">
+                        <div class="jqCronEditor"></div><br><br>
+                        <div>
+                            <p>Cron Value : <input type="text" id="cron_selected_val" readonly class="form-control input-inline input-large"/></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" id="btnSetCron"  class="btn btn-sm  btn-success rounded-1">Set</button>
+        </div>
+    {% endcall %}
+{% endblock popup_alerts %}
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    {% if schdtaskform.instance.id %}
+    <button type="button" id="runScheduler"  class="btn btn-sm btn-info btn-hover-scale">
+        Run Scheduler&nbsp;<i class="far text-white fa-clock"></i>
+    </button>
+    
+    <button type="submit" id="submitTour" form="schdtaskform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Update Task&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+
+    {% else %}
+    <button type="submit" form="schdtaskform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Save&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    {% endif %}
+    <button type="button" id="btn_clear" class="btn btn-sm btn-secondary btn-hover-scale">
+        Clear&nbsp;<i class="fas  fa-times"></i>
+    </button>
+</div>
+{% endblock ajax_page_actions %}
+
+{% block extra_scripts %}
+{{ schdtaskform.media.js }}
+<script src="{{ static('assets/js/jqCron.js') }}"></script>
+<script src="{{ static('assets/js/jqCron.en.js') }}"></script>
+<script src="{{ static('assets/js/local/cronstrue.min.js') }}"></script>
+
+<script>
+//////////////////////// form validations /////////////////////////////
+var formValidator = FormValidation.formValidation(
+    document.getElementById('schdtaskform'), {
+        fields:{
+            'jobname':{
+                validators:{
+                    notEmpty:{
+                        message:"This field is required"
+                    }
+                }
+            },
+            'asset':{
+                validators:{
+                     notEmpty: {
+                        message: 'Please select an option'
+                    },
+                }
+            },
+            'qset':{
+                validators:{
+                     notEmpty: {
+                        message: 'Please select an option'
+                    },
+
+                }
+            },
+            'ticketcategory':{
+                validators:{
+                    notEmpty: {
+                        message: 'Please select an option'
+                    },
+                }
+            },
+            'cron':{
+                validators:{
+                    callback:{
+                        callback:function(input){
+                            if(input.value == '* * * * *' || input.value == ""){
+                                return {valid:false, message:"This field is required"}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        plugins:{
+            ...pluginsForFormValidations()
+        }
+    })
+
+
+</script>
+
+
+<script>
+    // add classes to label tags.
+    $('label').removeClass("col-form-label col-md-2 col-sm-2 text-sm-right")
+
+    function properCron(cron){
+    return cron === '* * * * *' ? false :true
+}
+
+function isValidPositiveNumber(value) {
+    if (value === '') {
+        return true;
+    }
+    // Check if the value is a string that matches the pattern for a positive number
+    // with no 'e', no special characters, and no alphabets.
+    const regex = /^[0-9]*[.,]?[0-9]+$/;
+
+    // Check if the value is a string, then match against the regex
+    if (typeof value === 'string' && regex.test(value)) {
+        // Convert string to number
+        const number = parseFloat(value);
+        // Check if the number is greater than 0
+        return number >= 0 && !isNaN(number);
+    }
+
+    // Return false for non-string values
+    return false;
+}
+
+function handleChange(inputId, errorId) {
+    $(inputId).change(function() {
+        var inputValue = $(this).val();
+        var errorDiv = document.getElementById(errorId);
+        
+        if (!isValidPositiveNumber(inputValue)) {
+            errorDiv.innerHTML = '';
+            var newChild = document.createElement('div');
+            newChild.className = 'text-danger';
+            newChild.textContent = "Enter Positive Integer Number Only";
+            errorDiv.appendChild(newChild);
+            errorDiv.classList.remove('d-none');
+        } else {
+            errorDiv.classList.add('d-none');
+            errorDiv.innerHTML = '';
+        }
+    });
+}
+
+// Call the function for each ID pair
+handleChange('#id_planduration', 'error_planduration');
+handleChange('#id_gracetime', 'error_gracetime');
+handleChange('#id_expirytime', 'error_expirytime');
+
+    function showHideSelectField(val) {
+        if (val == "PEOPLE") {
+            //$("#aatopdiv").show();
+            $(".people").show();
+            $("#id_peopleradio").attr('checked', 'checked')
+            $(".pgroup").hide();
+            $("#id_pgroup").val(1)
+            toggleRequiredAttribute("id_people")
+            toggleRequiredAttribute("id_pgroup", set=false)
+        } else {
+            //$("#aatopdiv").hide();
+            $(".pgroup").show();
+            $("#id_groupradio").attr('checked', 'checked')
+            $(".people").hide();
+            $("#id_people").val(1)
+            toggleRequiredAttribute("id_pgroup")
+            toggleRequiredAttribute("id_people", set=false)
+        }
+    }
+    var formSaved = false;
+
+    $(document).ready(function(){
+
+
+        //set ctzoffset
+  	    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        formSaved = true
+        //toggle people and pgroup field based on radio button value
+        if ('{{schdtaskform.instance.id}}' === 'None') {
+            showHideSelectField('PEOPLE')
+        }else{
+            var assignto = ['1', 'None'].includes('{{schdtaskform.instance.people_id }}') ? "GROUP" : "PEOPLE"
+            showHideSelectField(assignto)
+            //cron to readable format
+            $("#id_cronstrue").val(cronstrue.toString($("#id_cron").val()))
+        }
+
+        //hide the delete button when instance is not saved yet.
+        if ('{{schdtaskform.instance.id}}' in ['None', ""]) {
+            $("#btn_del").hide()
+        }
+
+        //ADD CALENDER TO DATE FIELDS WITH FLAT-PICKR PLUGIN
+        $("#id_fromdate, #id_uptodate").flatpickr({
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: 'Y-m-d:H:S'
+        })
+
+        //initDatetimes("#id_fromdate, #id_uptodate");
+
+        //after cron set hide the modal
+        $("#btnSetCron").click(function(){
+            var cron_val= $("#cron_selected_val").val();
+            $("#id_cron").val(cron_val);
+            if(!properCron(cron_val)){
+                show_error_alert( "Please change your cron expression and update the job record.", "Problematic Cron")
+                return
+            }
+            $('#cron_scheduler').modal('hide');
+        });
+
+        //JQCRON CONFIGURATION
+        $("#cron_selector").click(function(){
+            var old_cron_val= $("#id_cron").val();
+            $('#cron_selected_val').val(old_cron_val);
+            if(old_cron_val == '') old_cron_val="* * * * *";
+            console.log("@@@@",old_cron_val);
+            if(old_cron_val != ''){
+                $(function(){
+                    $('.jqCronEditor').html('');
+                    $('.jqCronEditor').jqCron({
+                        multiple_dom: true,
+                        enabled_hour:false,
+                        multiple_month: true,
+                        multiple_mins: true,
+                        multiple_dow: true,
+                        multiple_time_hours: true,
+                        multiple_time_minutes: true,
+                        default_period: 'week',
+                        default_value: old_cron_val,
+                        no_reset_button: false,
+                        lang: 'en',
+                        numeric_zero_pad: true,
+                        bind_to: $('#cron_selected_val'),
+                        bind_method: {
+                            set: function($element, value) {
+                                $element.val(value);
+                                //cron to readable format
+                                $("#id_cronstrue").val(cronstrue.toString(value))
+                            }
+                        }
+                    });
+                });
+            }
+            $('#cron_scheduler').modal('show');
+        });
+
+        //on submit form post request
+        $("#schdtaskform").submit((e) => {
+            e.preventDefault()
+            if(isValidPositiveNumber($('#id_planduration').val()) &&  isValidPositiveNumber($('#id_expirytime').val()) && isValidPositiveNumber($('#id_gracetime').val())){
+                formValidator.validate().then(function (status){
+                    console.log("form is ", status)
+                    if(status === 'Valid'){
+                        var form = $(this);
+                        const params   = { url: "{{ url('schedhuler:jobschdtasks') }}", modal: false }
+                        const formtype = '{{schdtaskform.instance.id}}' == 'None' ? "create" : "update"         
+                        const id       = '{{schdtaskform.instance.id}}'                                          
+                        var   payLoad  = { formData: $("#schdtaskform").serialize(),csrfmiddlewaretoken: '{{ csrf_token }}' }
+                        
+                        if (formtype === 'update') {
+                            var newPayLoad = { ...payLoad, 'pk': id }
+                                payLoad    = newPayLoad
+                        }
+                        submit_form_alert().then((res) => {
+                            if(res.isConfirmed){
+                                console.log(payLoad, "payload")
+                                fire_ajax_form_post(params, payLoad)
+                                .done((data, status, xhr) => {
+                                    Swal.fire(
+                                        `Task Form saved`,
+                                        `Task Form with this name <strong>${data.jobname}</strong> has been saved successfully`,
+                                        'success'
+                                    ).then(function () {
+                                        formSaved = true
+                                        window.location.replace(data.url);
+                                    })
+                                })
+                                .fail((xhr, status, error) => {
+                                    console.log(xhr)
+                                    if(!typeof(xhr.responseJSON.errors) === 'object'){
+                                        show_error_alert(xhr.responseJSON.errors, "Failed to save!")
+                                    }else{}
+                                    
+                                })
+                            }
+                        })
+                    }
+                    
+                })
+            }
+            
+        })
+
+        $("#schdtaskform").change(() => {
+            formSaved = false;
+        })
+
+        //RUN-JOB SCHEDULER DEFINITION
+        $("#runScheduler").click(function() {
+            if(!formSaved){
+                alertuser_to_saveform({fs: "17px", cl: "red"})
+            }else{
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "Run Task Scheduler, you won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton:true,
+                    confirmButtonText: "Schedule it!"
+                }).then((result) => {
+                    if(result.isConfirmed){
+                        const params = {url: "{{ url('schedhuler:runJob') }}"}
+                        var payLoad = {job_id: '{{ schdtaskform.instance.id }}',
+                        csrfmiddlewaretoken: '{{ csrf_token }}'}
+                        fire_ajax_form_post(params, payLoad)
+                        .done((data, status, xhr) => {
+                            Swal.fire({
+                                showConfirmButton:false,
+                                timer:1500,
+                                icon: 'success',
+                                title:data['msg']
+                            })
+                            $('#lblIsRTour').html('No');
+                        })
+                        .fail((xhr, status, error) => {
+                            Swal.fire({
+                                showConfirmButton:false,
+                                icon: "error",
+                                timer:1500,
+                                title: "Failed to schedhule!"
+                            })
+                        })
+                    }
+                })
+            }
+        })
+
+        $("#btn_clear").click(() => {
+            location.href = "{{ url('schedhuler:jobschdtasks') }}?action=form"
+        })
+    })
+</script>
+{% endblock extra_scripts %}

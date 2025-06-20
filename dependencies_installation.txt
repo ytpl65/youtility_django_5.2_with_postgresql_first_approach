@@ -1,0 +1,25 @@
+While installing weasyprint make sure you install the system level dependencies for linux
+
+sudo apt update
+sudo apt install libpangocairo-1.0-0 libpangoft2-1.0-0 libcairo2 libffi-dev libjpeg-dev libxml2 libgdk-pixbuf2.0-0 libxslt1.1 libssl-dev
+
+
+
+Installing google depenedencies
+
+pip install google-api-python-client
+pip install google-auth google-auth-oauthlib google-auth-httplib2
+pip install google-cloud-storage google-cloud-core
+
+
+git clone https://github.com/frappe/frappe-client
+pip install -e frappe-client
+
+
+
+Following warning came while installing keep it in mind when working with the frappecode
+Installing collected packages: pure-eval, ptyprocess, traitlets, stack_data, pexpect, parso, ipython-pygments-lexers, decorator, matplotlib-inline, jedi, ipython, frappeclient
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╺━━━━━━ 10/12 [ipython]  DEPRECATION: Legacy editable install of frappeclient==0.1.0.dev0 from file:///home/satyam/Documents/YOUTILITY-MIGRATION-FROM-4-5/YOUTILITY3/frappe-client (setup.py develop) is deprecated. pip 25.3 will enforce this behaviour change. A possible replacement is to add a pyproject.toml or enable --use-pep517, and use setuptools >= 64. If the resulting installation is not behaving as expected, try using --config-settings editable_mode=compat. Please consult the setuptools documentation for more information. Discussion can be found at https://github.com/pypa/pip/issues/11457
+  Running setup.py develop for frappeclient
+Successfully installed decorator-5.2.1 frappeclient-0.1.0.dev0 ipython-9.2.0 ipython-pygments-lexers-1.1.1 jedi-0.19.2 matplotlib-inline-0.1.7 parso-0.8.4 pexpect-4.9.0 ptyprocess-0.7.0 pure-eval-0.2.3 stack_data-0.6.3 traitlets-5.14.3
+(env) satyam@satyam:~/Documents/YOUTILITY-MIGRATION-FROM-4-5/YOUTILITY3$ 

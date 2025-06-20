@@ -1,0 +1,409 @@
+{% extends "reports/pdf_reports/workpermit_base.html" %}
+
+{% block inline_css %}
+
+<style>
+    .logos{
+        width: 5.8rem;
+        height: 3.8;
+    }
+    #subtitle{
+    background-color: #01579b;
+    color:white;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 25px;
+    font-size: 20px;
+    text-align: center;
+    white-space: nowrap;
+    display:flex;
+    justify-content: center;
+    }   
+    .spaced-row-after td {
+                position: relative;
+            }
+
+    .spaced-row-before td {
+                position: relative;
+            }
+    .spaced-row-before td::before {
+        content: '';
+        display: block;
+        height: 10px; /* Adjust this value to increase/decrease space */
+    }
+
+    .spaced-row-after td::after {
+        content: '';
+        display: block;
+        height: 10px; /* Adjust this value to increase/decrease space */
+    }
+    li {
+        font-size: small;
+    }
+    .color-red {
+            color: red;
+            font-weight: bolder;
+        }
+        .vendor-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin: 15px 0;
+}
+
+.permit-number {
+    position: absolute;
+    right: 0;
+}
+</style>
+
+{% endblock  %}
+
+
+
+{% block header_start %}
+<span style="font-size: large; font-weight: bold;">CAPGEMINI</span>
+{% endblock header_start %}
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ main_title }}</p>
+        <p id="subtitle">Entry Request</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block wp_info %}
+    <div style="margin-left: 100px;">
+        <b>
+            <p style="display: flex; justify-content: space-evenly; width: 100%;">
+                <span></span>
+                <span>Vendor Name: {{ vendor_name }}</span>
+                <span style="margin-left: auto;">NO: {{ workpermit_no }}</span>
+            </p>
+        </b>
+    </div>
+    <div class="mr ">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>
+                        Document Type:
+                    </th>
+                    <th>
+                        {{ report_subtitle }}
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    {% if wp_info %}
+    <table>
+        {% for info in wp_info['questions'] %}
+        {% if info['question__quesname'] != 'Name Of Personnel' %}
+        <div class="mr">
+            <tr>
+                <td>
+                    <span>{{ info['question__quesname'] }}:</span>{{ "&nbsp;"*5 }}
+                </td>
+                <td>
+                    <span class="subtle-black " style="width: 100%;">{{ info['answer'] }}</span>
+                </td>
+            </tr>
+        </div>
+        {% else %}
+        {% set peoples = info['answer'].split(',') %}
+        <tr class="spaced-row-before">
+            <td>
+                <span>Name of People Working:</span>{{ "&nbsp;"*5 }}
+            </td>
+            <td>
+                <span class="subtle-black">1. &nbsp;{{ peoples[0] }}</span>
+            </td>
+        </tr>
+        {% for i in range(1, peoples|count) %}
+        <tr>
+            <td></td>
+            <td class="subtle-black">{{ loop.index + 1 }}. &nbsp;{{ peoples[i].strip() }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="spaced-row-after">
+            <td></td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+    {% endif %}
+
+{% endblock %}
+
+
+{% block wp_sections %}
+<br>
+<table id="wp_sections">
+    {% for section in wp_sections %}
+    <thead>
+        <tr>
+            <th>{{ section['section'] }}</th>
+            <th>OPTIONS</th>
+            <th>ANSWER</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for question in section['questions'] %}
+        <tr>
+            <td>{{ question['question__quesname'] }}</td>
+            {% set current_options = question['options'].replace(',', ' / ') %}
+            <td>{{ current_options }}</td>
+            <td>{{ question['answer'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+{% endblock wp_sections %}
+<br>
+{% block rwp_section %}
+<br>
+{% if verifiers_status=='APPROVED' and approvers_status=='APPROVED' %}
+<table border="1">
+    {% for section in rwp_info %}
+    <thead>
+        <tr>
+            <th>{{ section['section'] }}</th>
+            <th>Answer</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for question in rwp_info[0]['questions'] %}
+        <tr>
+            <td>{{ question['question__quesname'] }}</td>
+            <td>{{ question['answer'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% endfor %}
+</table>
+{% endif %}
+</table>
+
+<br>
+<br>
+{% if approvers and verifiers %}
+<div style="display: flex; justify-content: space-between; gap: 20px;">
+    <div id="approved-by-table" style="flex: 1;">
+        <table style="width: 100%; border-collapse: collapse;text-align: center;">
+            <thead>
+                <tr>
+                    <th>Approved By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for approver in approvers %}
+                <tr>
+                    <td>{{ approver }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="verified-by-table" style="flex: 1;">
+        <table style="width: 100%; border-collapse: collapse;text-align: center;">
+            <thead>
+                <tr>
+                    <th>Verified By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for verifier in verifiers %}
+                <tr>
+                    <td>{{ verifier }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock rwp_section %}
+
+{% block static_content %}
+
+<div class="border-class">
+    <br>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>HSEQ Guidelines/ Instructions:</th>
+            </tr>
+        </thead>
+    </table>
+    <div style="font-family: 'Times New Roman', Times, serif;">
+    <h4>General:</h4>
+    <ol>
+        <li>This work permit is intended primarily to safeguard people and property of the company.</li>
+        <li>The work permit is required to work in all areas of the company.</li>
+        <li>Risk assessment should be carried out at site by initiator and executor before starting the work</li>
+        <li>In case of emergency the executor to stop the job and intimate the initiator and wait for further instruction.</li>
+        <li>Work at height /work alone activities are not permitted during night shifts.</li>
+        <li>This permit is valid up to the time mentioned and any extension of the work permit should be duly authorized by
+            responsible person only.</li>
+        <li>Executor of this permit should have awareness of the PPE requirement to carryout assigned work.</li>
+        <li>Executor should report all the incidents/ hazards to the initiator.</li>
+        <li>Executor to carry a copy of the work permit during working hours and ensure the proper closing of the work permit.
+        </li>
+        <li>Executor to ensure work area is clear and returned to safe condition, appropriate storage and avoid dumping of
+            wastages in site</li>
+        <li>Ensure all debris are cleared and kept at the designated areas <span style="text-decoration: underline;"></span> on
+            a daily basis.</li>
+    </ol>
+
+    <h4>Personal Protection Equipment (PPEs):</h4>
+    <ol>
+        <li>All personnel deployed for the work should have the appropriate PPEs as required for the job</li>
+        <li>All Persons should be provided with Safety Shoes, Safety Goggles, gloves and Helmet as a basic
+            minimum and not only restricted to these.</li>
+        <li>All PPEs should be as per the IS / EN standards as applicable, as it is required to meet the basic
+            Safety standard to protect the individual in case of any accident</li>
+        <li>Electrical tools should have proper insulation and test certificate.</li>
+        <li>All Electrical PPEs should be as per the rating required – e.g. Insulated gloves, face shield, aprons
+            etc</li>
+        <li>All tools and tackles should be checked before every use and stored properly in a safe manner.</li>
+        <li>Where the sound level exposure is high then appropriate ear plug / earmuff to be used.</li>
+    </ol>
+
+    <h4>Work at height:</h4>
+    <ol>
+        <li>Work performed at and above 6 ft or 1.8 Meters will be considered as height work</li>
+        <li>It is mandatory to carry out the review of the risk assessment prior to approving the work permit</li>
+        <li>All safety full body harness to be inspected before use and stored safely.</li>
+        <li>Double lanyard full body harness shall be used for all WAH activity.</li>
+        <li>Use of appropriate ladders to be ensured for electrical and other work.</li>
+        <li>Initiator should inspect and verify all the equipment’ that are used for height work.</li>
+        <li>Ensure the area is barricaded / enclosed and fall risk if any isolated.</li>
+        <li>Ladders, harness, anchoring points to be checked for any damages before start of work.</li>
+        <li>Scaffolding to be erected as per IS 3696 and dismantled under proper supervision and trained staff
+            should carry out the task.</li>
+        <li>No Person should be on scaffold while it has been moved/shifted from one place to another.</li>
+        <li>Mobile elevated work platform (MEWP- scissor lift, boom lift/cherry picker and cradles) should be
+            operated by trained and competent staff. Equipment’s to be used as per OEM’s guidelines.</li>
+        <li>It is preferred to use ‘A’ type ladders for activities that are for short duration.</li>
+    </ol>
+
+    <h4>Hot Work</h4>
+    <ol>
+        <li>Ensure the welding machine, gas cutting machine, drilling machine, grinding machines are in good
+            condition before starting the job</li>
+        <li>Welding machine connection to be inspected/checked for proper fitting of lugs and sleeves,
+            connection and earthing</li>
+        <li>Loose cable joints are not allowed for welding and other portable machines</li>
+        <li>In gas cutting machine flash back arrestor is mandatory in both sides.</li>
+        <li>Only trained and competent personnel allowed to carry out welding and gas cutting jobs.</li>
+        <li>Area should be cleared of all flammable /combustible material around the Hot work area, or ensure
+            that the material is safely covered / protected using Fire retardant sheet/ blanket (11 mtr radius)</li>
+        <li>PPEs like welding shield, mask, Apron, welding googles, leather gloves should be available.</li>
+        <li>Fire Watcher should be deployed during the hot work activity.</li>
+        <li>Fire blanket / sheet to be utilized along with hard barricading as applicable to avoid property damage.</li>
+        <li>Appropriate fire extinguisher to be available at point of work.</li>
+    </ol>
+
+    <h4>Confined space work:</h4>
+    <ol>
+        <li>Work inside any vessel, reactor, kettles, storage tanks, underground water tanks, ducts, drainage
+            sewer septic tanks, sumps are categorized as confined workplaces.</li>
+        <li>Confined place work to be carried out only in the daytime and under complete supervision.</li>
+        <li>Full body harness with extended rope shall be provided to the person performing the work.</li>
+        <li>One stand by person shall be available to watch and respond in case of any emergency.</li>
+        <li>Use of hand lamp / torch shall not exceed 12V inside the confined place.</li>
+        <li>Ventilate the area for at least 2 hrs. Before starting the activity.</li>
+        <li>Check for O2, H2s, Ammonia &amp; other toxic and flammable gas by using multi gas detector before
+            entering the confined space.</li>
+        <li>Appropriate respiratory mask to be worn as per the risk level in the activity.</li>
+        <li>Any hot work activity inside confined space must be properly assessed for the activity.</li>
+        <li>Check the weather conditions if work carrying out in open space.</li>
+    </ol>
+    <h4>Electrical work:</h4>
+    <ol>
+        <li>Ensure to take approval from site Supervisor / Site Lead and Client.</li>
+        <li>Supervisory level should have electrical valid license (as applicable) and verified by approving
+            authority.</li>
+        <li>Appropriate Electrical PPE is to be ensured before carrying out any electrical related work at the
+            premises.</li>
+        <li>LOTO procedure should be ensured before commencing any maintenance work at the site and to be
+            validated by the Electrical Supervisor / FM and to be verified before start of activity.</li>
+        <li>Documents like manual, work instructions, Standard operating procedure, operator license etc. to be
+            checked in advance.</li>
+        <li>Check for Service partners /sub- contractor licenses and competency for Electrical high voltage
+            activity.</li>
+        <li>Check for Calibration certificates of electronic equipment and tools inspection.</li>
+        <li>PTW and LOTO details to be cross referenced for ease of identification.</li>       
+    </ol>
+<h4>Working with flammable liquids/gases:</h4>
+<ol>
+    <li>Follow safe working procedures and advice from Material Safety Data Sheets and Safety Labels
+        when transporting, storing, using and disposing chemicals.</li>
+    <li>Keep flammable chemical away from any heat source.</li>
+    <li>Do not mix / store with other chemicals – segregate and store separately the flammable and
+        corrosive chemicals.</li>
+    <li>Emergency response plan must be available and understood by all in case of inadvertent spill/
+        release of gases.</li>
+    <li>All gas cylinders should be stored in a safe manner and anchored to avoid any inadvertent fall
+        risk.</li>
+    <li>All cylinders to have the safety cap on when not in use.</li>
+    <li>Flame proof/ intrinsically safe equipment to be used to avoid any spark.</li>
+    <li>Wear the correct Personal Protective Equipment for the job and follow safety norms and ensure
+        signages for ease of understanding is available and displayed on site.</li>
+    <li>Segregate the cylinders and store them in upright condition in a ventilated area - with correct
+        labels.</li>
+    <li>Report any leaks or any spills immediately.</li>
+    <li>Have a proper secondary containment area to arrest any leaks or spills.</li>
+</ol>
+<h4>Working with Chemicals:</h4>
+<ol>
+    <li>Use only approved chemicals you have been trained to use – if you don’t know it, don’t use it!</li>
+    <li>Wear the correct Personal Protective Equipment for the job and follow safety instructions.</li>
+    <li>Only use chemicals from containers or bottles with correct labels.</li>
+    <li>All Chemicals should be identified for hazards and assessed for risk.</li>
+    <li>Follow safe working procedures and advice from Material Safety Data Sheets and Safety Labels
+        when Transporting, storing, using and disposing chemicals.</li>
+    <li>Keep flammable chemical away from any heat source.</li>
+    <li>Use trays as secondary containment to contain any leaks and spills.</li>
+    <li>Clean up or report any chemical spills immediately.</li>
+    <li>Only use original containers/bottles/cans for storage and keep them closed when not in use.</li>
+</ol>
+<h4>Late Night work:</h4>
+<ol>
+    <li>Try to avoid critical activities during late hours in the premises and site.</li>
+    <li>If required need to take special permission from all concern department.</li>
+    <li>The person must be experienced, trained and competent to do the job.</li>
+    <li>Sufficient arrangement of light/ illumination to be available at the work area.</li>
+    <li>Need to follow all procedures/ SOPs for all critical activities as applicable.</li>
+    <li>Lone person working to be avoided at site as far as possible have a buddy system.</li>
+    <li>Appropriate PPE is to be ensured before carrying out any work at the premises.</li>
+    <li>LOTO procedure should be ensured before commencing any maintenance work at the site and to be
+        validated by the Electrical Supervisor / FM and to be verified before start of activity.</li>
+</ol>
+    <h4 class="color-red">Please Note:</h4>
+    <p style="font-family: 'Times New Roman', Times, serif;">Kindly report to your Supervisor/Site Lead/HSE Manager:</p>
+    <ol>
+        <li>Any Hazards observed.</li>
+        <li>Incident / Near miss incident happen/ observed.</li>
+        <li>Any unsafe Act / Unsafe conditions observed.</li>
+        <li>In case of any doubt – STOP WORK and assess the risk before continuing with the activity.</li>
+        <li>Damaged equipment etc.</li>
+        <li>Any spills or leak observed.</li>
+    </ol>
+</div>
+</div>
+
+{% endblock static_content %}

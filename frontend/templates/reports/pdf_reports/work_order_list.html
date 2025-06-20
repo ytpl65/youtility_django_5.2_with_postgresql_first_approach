@@ -1,0 +1,77 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+
+{% endblock header_end %}
+
+
+{% block inline_css%}
+<style>
+    thead tr th, tbody tr td{
+        font-size:0.7rem;
+    }
+</style>
+
+{%endblock inline_css%}
+
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+
+{% block table %}
+<table id="WorkOrderList" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Created On</th>
+            <th scope="col">Created By</th>
+            <th scope="col">Planned Date Time</th>
+            <th scope="col">Description</th>
+            <th scope="col">Completed On</th>
+            <th scope="col">Priority</th>
+            <th scope="col">Status</th>
+            <th scope="col">Site</th>
+            <th scope="col">Vendor Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['wo_id'] }}</td>
+            <td>{{ row['Created On'] }}</td>
+            <td>{{ row['Created By'] }}</td>
+            <td>{{ row['Planned Date Time'] }}</td>
+            <td>{{ row['Description'] }}</td>
+            <td>{{ row['Completed On'] }}</td>
+            <td>{{ row['Priority'] }}</td>
+            <td>{{ row['Status'] }}</td>
+            <td>{{ row['Site'] }}</td>
+            <td>{{ row['Vendor Name'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}
+
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

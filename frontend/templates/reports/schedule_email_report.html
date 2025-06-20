@@ -1,0 +1,437 @@
+{% extends "globals/base_form.html" %}
+
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+Schedule Report Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Schedule Report Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ form.media.css }}
+{{ popup_form.media.css }}
+<link rel="stylesheet" href="{{ static('assets/css/jqCron.css') }}" type="text/css">
+{% endblock extra_css %}
+
+
+{% block form_title %}
+Schedule Report Form
+{% endblock form_title %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('reports:schedule_email_report') }}?template=true" class="pe-3">Scheduled Report List
+    </a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Schedule Report Form
+    </a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error:&nbsp;</strong> <span></span>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert {{ msg.tags }} w-100 alert-dismissible fade show" role="alert">
+    {{ msg }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock nonfield_errors %}
+
+
+{% block form %}
+<form action="" method="post" class="validate" id="report_schedule_form">
+    <input type="hidden" name="{{ form.ctzoffset.name }}" id="{{ form.ctzoffset.auto_id }}" value="-1">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="pk" id="pk" value="{{ form.instance.pk }}">
+    <div class="row">
+        <div class="input-group mb-3">
+            <div class="col-2">
+                {{ form.report_type.label_tag() }}
+            </div>
+            <div class="col-5">
+                {{ form.report_type }}
+                <a class="ms-2 d-none" href="javascript:void(0)" id="see_parameters">see parameters</a>
+            </div>
+        </div>
+        <div class="input-group mb-3">
+            <div class="col-2">
+                {{ form.report_name.label_tag() }}
+            </div>
+            <div class="col-5">
+                {{ form.report_name }}
+            </div>
+        </div>
+        
+        <div class="input-group mb-3">
+            <div class="col-md-2">
+            <label for={{ form.frequencytype.id_for_label }}
+                    class="required">{{ form.frequencytype.label }}:</label>
+            </div>
+            <div class="col-md-5">
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" name={{ form.frequencytype.name }}
+                        id="id_workingdaysradio" value="workingdays" onchange="showHideSelectField('workingdays')">
+                    <label class="form-check-label" for="{{ form.frequencytype.auto_id }}">Working Days</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" name={{ form.frequencytype.name }}
+                        id="id_cronradio" value="somethingelse"
+                        onchange="showHideSelectField('somethingelse')">
+                    <label class="form-check-label" for="{{ form.frequencytype.auto_id }}">Something Else</label>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+        <div class="input-group mb-3 workingdays">
+            <div class="col-md-2">
+                <label for="{{ form.workingdays.id_for_label }}" class="required">{{ form.workingdays.label }}:</label>
+            </div>
+            <div class="col-md-5 mb-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.workingdays }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.workingperiod }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--CRON-->
+        <div class="input-group mb-3 somethingelse">
+            <div class="col-md-2">
+                <label for="{{ form.cron.id_for_label }}" class="required">{{ form.cron.label }}:</label>
+            </div>
+            <div class="col-md-5 fv-row mb-3">
+                <div class="d-flex">
+                    <input type="text" name="{{ form.cron.name }}" value="{{ form.instance.cron }}" id="id_cron"
+                    readonly required class="form-control d-none form-control-solid" maxlength="250"/>
+                    {{ form.cronstrue }}
+                    <a  class="btn btn-circle btn-icon-only btn-default" id="cron_selector">
+                        <i class="fa fa-clock fs-4 text-primary"></i>
+                    </a>
+                </div>
+                {{ form.cron.errors }}
+            </div>
+        </div>
+        <div class="input-group mb-3">
+            <div class="col-2">
+                {{ form.report_sendtime.label_tag() }}
+            </div>
+            <div class="col-1 d-flex">
+                {{ form.report_sendtime }} <h5 class="mt-4">&nbsp;&nbsp;Hrs.</h5>
+            </div>
+        </div>
+        <div class="input-group mb-3">
+            <div class="col-2">
+                {{ form.cc.label_tag() }}
+            </div>
+            <div class="col-5">
+                {{ form.cc }}
+            </div>
+        </div>
+        <div class="input-group mb-3">
+            <div class="col-2">
+                {{ form.to_addr.label_tag() }}
+            </div>
+            <div class="col-5">
+                {{ form.to_addr }}
+            </div>
+        </div>
+        <div class="input-group mb-6 col-md-2  form-check form-switch form-check-solid">
+            <label for="{{ form.enable.id_for_label }}" 
+            class="form-check-label bool text-sm-right">{{ form.enable.label }}&nbsp;&nbsp;{{ form.enable }}</label>
+        </div>
+    </div>
+    <div class="form-actions">
+        <button type="submit" id="btnFormSubmit" form="report_schedule_form" class="btn btn-sm btn-primary2 btn-hover-scale">
+            <span>Submit</span> &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+        </button>
+
+        <button type="button" id="btn_clear" class="btn btn-sm btn-secondary btn-hover-scale">
+            Clear&nbsp;<i class="fas  fa-times"></i>
+        </button>
+    </div>
+</form>
+{% endblock form %}
+
+
+{% block popup_alerts %}
+    {% call general_popup(popup_id = "cron_scheduler", title="Scheduler <i class='fas text-white fa-clock'></i>", modal_size='modal-lg') %}
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet-body form">
+                        <div class="jqCronEditor"></div><br><br>
+                        <div>
+                            <p>Cron Value : <input type="text" id="cron_selected_val" readonly class="form-control input-inline input-large"/></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" id="btnSetCron"  class="btn btn-sm  btn-success rounded-1">Set</button>
+        </div>
+    {% endcall %}
+
+    {% call general_popup(popup_id='parameters_form', title="Set Report Parameters", modal_size="modal-lg") %}
+        <div class="modal-body">
+        <form action="#" id="form_parameters">
+            {{ report_parameters_form(popup_form) }}
+        </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" id="btnClearParams">Clear</button>
+            <button type="button" id="btnSetParams"  data-bs-dismiss="modal" class="btn btn-sm  btn-success rounded-1">Set Parameters</button>
+        </div>
+    {% endcall %}   
+{% endblock popup_alerts %}
+
+
+{% block extra_scripts %}
+{{ form.media.js }}
+{{ popup_form.media.js }}
+<script src="{{ static('assets/js/jqCron.js') }}"></script>
+<script src="{{ static('assets/js/jqCron.en.js') }}"></script>
+<script src="{{ static('assets/js/local/cronstrue.min.js') }}"></script>
+<script>
+    const urlname = "{{ url('reports:schedule_email_report') }}"
+    function properCron(cron){
+        return cron === '* * * * *' ? false :true
+    }
+    function showHideSelectField(val) {
+        if (val == "workingdays") {
+            $(".workingdays").show()
+            $("#id_workingdaysradio").attr('checked', 'checked')
+            $(".somethingelse").hide()
+            $("#id_cronsrtue").val("")
+            toggleRequiredAttribute("id_workingdays")
+            toggleRequiredAttribute("id_workingperiod")
+            toggleRequiredAttribute("id_cronstrue", set=false)
+        } else {
+            //$("#aatopdiv").hide();
+            $(".somethingelse").show();
+            $("#id_cronradio").attr('checked', 'checked')
+            $(".workingdays").hide();
+            $("#id_workingdays").val(null)
+            toggleRequiredAttribute("id_cronsrtue")
+            toggleRequiredAttribute("id_workingdays", set=false)
+        }
+    }
+    $(document).ready(() => {
+        //toggle people and pgroup field based on radio button value
+
+        if("{{ form.instance.id }}" !== "None"){
+            //cron to readable format
+            $("#id_cronstrue").val(cronstrue.toString($("#id_cron").val()))
+            $("#see_parameters").removeClass('d-none')
+            $("#btnFormSubmit span").html("Update")
+            var assignto = ['1', 'None', null, ""].includes('{{form.instance.workingdays }}') ? "somethingelse" : "workingdays"
+            showHideSelectField(assignto)
+            if($('#id_workingdaysradio').val() == "workingdays"){
+                let timeArr  = $("#id_cron").val().split(" ")
+                let workingperiod = `${timeArr[1]}:${timeArr[0]}`
+                $("#id_workingperiod").val(workingperiod)
+            }
+            
+
+        }else{
+            showHideSelectField('workingdays')
+        }
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+        $("#btn_clear").click(() => {
+            location.href = `${urlname}?template=true`
+        })
+        $("#parameters_form").find("select").select2({
+            dropdownParent: $('#parameters_form')
+        })
+        
+
+        $('#btnClearParams').click(function() {
+            // Clear all Select2 fields
+            $('#parameters_form select').each(function() {
+                $(this).val(null).trigger('change')
+            });
+
+            // Clear all text fields
+            $('#parameters_form input[type="text"]').val(null);
+        });
+
+        //after cron set hide the modal
+        $("#btnSetCron").click(function(){
+            var cron_val= $("#cron_selected_val").val();
+            $("#id_cron").val(cron_val);
+            if(!properCron(cron_val)){
+                show_error_alert( "Please change your cron expression and update the job record.", "Problematic Cron")
+                return
+            }
+            $('#cron_scheduler').modal('hide');
+        });
+
+        //JQCRON CONFIGURATION
+        $("#cron_selector").click(function(){
+            var old_cron_val= $("#id_cron").val();
+            $('#cron_selected_val').val(old_cron_val);
+            if(old_cron_val == '') old_cron_val="* * * *";
+            if(old_cron_val != ''){
+                $(function(){
+                    $('.jqCronEditor').html('');
+                    $('.jqCronEditor').jqCron({
+                        multiple_dom: true,
+                        enabled_hour:false,
+                        enabled_year:false,
+                        multiple_month: false,
+                        multiple_mins: false,
+                        multiple_dow: false,
+                        multiple_time_hours: false,
+                        multiple_time_minutes: false,
+                        default_period: 'week',
+                        default_value: "* * * *",
+                        no_reset_button: false,
+                        lang: 'en',
+                        numeric_zero_pad: true,
+                        bind_to: $('#cron_selected_val'),
+                        bind_method: {
+                            set: function($element, value) {
+                                $element.val(value);
+                                //cron to readable format
+                                $("#id_cronstrue").val(cronstrue.toString(value))
+                            }
+                        }
+                    });
+                });
+            }
+            $('#cron_scheduler').modal('show');
+        });
+
+        $("#id_cc, #id_to_addr").djangoSelect2({
+            closeOnSelect:false
+        })
+        //if selected to dont show in cc
+        function onSelectionChanged(e) {
+            const currentSelect = e.target.id;
+            const otherSelect = currentSelect === 'id_cc' ? 'id_to_addr' : 'id_cc';
+            const otherSelectElement = $(`#${otherSelect}`);
+            const currentSelectElement = $(`#${currentSelect}`);
+
+            if (e.type === 'select2:select') {
+                // Hide the selected option from the other dropdown
+                otherSelectElement.find(`option[value="${e.params.data.id}"]`).hide();
+            } else {
+                // Show the deselected option in the other dropdown
+                otherSelectElement.find(`option[value="${e.params.data.id}"]`).show();
+            }
+
+            // If you still want to update the other select based on the current select
+            otherSelectElement.find(`option[value="${e.params.data.id}"]`).prop('selected', false);
+
+            // Trigger the change event to update the other dropdown
+            otherSelectElement.trigger('change');
+        }
+
+        // Attach the event listeners
+        $('#id_cc, #id_to_addr').on('select2:select select2:unselect', onSelectionChanged);
+
+        //hide some report types which are not appropriate for scheduling
+            $("#id_report_type option").each(function() {
+                const optionValue = $(this).val();
+                const report_types = ['PEOPLEQR', 'ASSETQR', 'CHECKPOINTQR' ]
+                if (optionValue && report_types.includes(optionValue)) {
+                    $(this).prop('disabled', true);
+                }
+            });
+
+        $("#parameters_form").on('shown.bs.modal', function(e) {
+            let selected = $("#id_report_type").val()
+            //fire ajax
+            fire_ajax_get({
+                url:"{{ url('reports:exportreports') }}",
+                data: {'action':'form_behaviour', 'report_name':selected}
+            }).done((data, status, error) => {
+                if(selected === 'PEOPLEQR'){
+                    showHideSelectField('SITE')
+                }
+                dynamicFormBehaviour(data)
+            })
+        })
+
+        //on report type selected show parameters form
+        $("#id_report_type").change((e) => {
+            let selected = $("#id_report_type").val()
+            console.log("event triggered", selected)
+            if (!["", null, undefined].includes(selected)){
+                //show popup
+                $('#parameters_form').modal('show');
+                $("#see_parameters").removeClass('d-none')
+            }else{
+                $("#see_parameters").addClass('d-none')
+            }
+        })
+
+        //on click see parameters show pop up
+        $("#see_parameters").click(() => {
+            $("#parameters_form").modal("show")
+        })
+
+        $('#id_report_sendtime, #id_workingperiod').flatpickr({
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+        })
+
+        //submit post request
+        $("#report_schedule_form").on("submit", (e) => {
+            const params  = { url: urlname, modal: false }
+            var   payLoad = {
+                formData           : $("#report_schedule_form").serialize(),
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                report_params      : $("#form_parameters").serialize()
+            }
+            
+            const id = $("#pk").val()
+            e.preventDefault()
+            if(id != 'None'){
+                var newPayLoad = {...payLoad, 'pk':id}
+                payLoad = newPayLoad
+            }
+            fire_ajax_form_post(params, payLoad)
+            .done((data, status, xhr) => {
+                show_successful_save_alert(update= id != 'None' ? true : false)
+                window.setTimeout(function() {
+                    window.location.href = `${urlname}?id=${data.pk}`;
+                }, 2000);
+            })
+        })
+        $("#id_workingperiod").change((e) => {
+            console.log("changed")
+            let time = $("#id_workingperiod").val()
+            if($("#id_workingadays").val() != ""){
+                let workingdays = $("#id_workingdays").val()
+                const timeArr = time.split(':')
+                let cronexp = `${timeArr[1]} ${timeArr[0]} * * 1,${workingdays}`
+                $("#id_cron").val(cronexp)
+            }
+        })
+    })
+</script>
+{% endblock extra_scripts %}

@@ -1,0 +1,176 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ shift_form.media.css }}
+{% endblock head %}
+
+{% block body %}
+<form action="" method="post" id="id_shiftform">
+    <input type="hidden" name="{{ shift_form.ctzoffset.name }}" id = "{{ shift_form.ctzoffset.auto_id }}" value="-1">
+    <div class="modal-header border-0">
+        <h3 class="modal-title modal-heading" id="exampleModalLabel">Create Shift <i
+                class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+        <button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body" id="partial">
+        <div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors" role="alert"
+            style="display:none">
+            <strong>Error</strong> <span></span>
+            <button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <!-------------------------- CSRF MIDDLEWARE TOKEN --------------------->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <input type="hidden" name="pk" id="pk" value="{{ shift_form.instance.pk }}">
+    <div class="modal-header border-0">
+        <div class="mb-3 row g-3 gx-6">
+                <div class="col-md-2 pt-2">
+                    {{ shift_form.shiftname.label_tag() }}
+                </div>
+                <div class="col-md-4">
+                    {{ shift_form.shiftname }}
+                </div>
+                <div class="col-md-2 pt-2">
+                    {{ shift_form.designation.label_tag() }}
+                </div>
+                <div class="col-md-4">
+                    {{ shift_form.designation }}
+                </div>
+            
+                <div class="col-md-2 pt-2">
+                    {{ shift_form.starttime.label_tag() }}
+                </div>
+                <div class="col-md-4">
+                    {{ shift_form.starttime }}
+                </div>
+                <div class="col-md-2 pt-2">
+                    {{ shift_form.endtime.label_tag() }}
+                </div>
+                <div class="col-md-4">
+                    {{ shift_form.endtime }}
+                </div>
+            
+                <div class="col-md-1 pt-2">
+                    {{ shift_form.shiftduration.label_tag() }}
+                </div>
+                <div class="col-md-2">
+                    {{ shift_form.shiftduration }}
+                </div>
+                <div class="col-md-1 pt-2">
+                    {{ shift_form.peoplecount.label_tag() }}
+                </div>
+                <div class="col-md-2">
+                    {{ shift_form.peoplecount }}
+                </div>
+                <div class="col-md-1 pt-2">
+                    {{ shift_form.captchafreq.label_tag() }}
+                </div>
+                <div class="col-md-2">
+                    {{ shift_form.captchafreq }}
+                </div>
+                 <div class="booleans form-check col-md-4 d-flex justify-content-sm-between mt-5">
+                <label for={{ shift_form.nightshiftappicable.id_for_label }}
+                    class="form-check-label bool col-form-label me-5 text-sm-right">{{ shift_form.nightshiftappicable }}
+                    &nbsp{{ shift_form.nightshiftappicable.label }}</label>
+            </div>
+        </div>
+    </div>
+</form>
+<div class="modal-footer border-0 pt-0">
+    <button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">Close <i
+            class="fas  fa-times"></i></button>
+    {% if shift_form.instance.id %}
+    <button type="submit" id="submit" form="id_shiftform" class="btn btn-sm btn-primary2 btn-hover-scale">Update&nbsp;<i
+            class="fas text-white fa-cloud-upload-alt"></i></button>
+    <button type="button" onclick="deleteShift(this)" data-id="{{ shift_form.instance.id }}" id="deleteCap"
+        class="btn btn-sm btn-hover-scale btn-danger">Delete&nbsp;<i class="fas text-white fa-trash-alt"></i></button>
+    {% else %}
+    <button type="submit" form="id_shiftform" class="btn btn-sm btn-primary2 btn-hover-scale">Add&nbsp;<i
+            class="fas text-white fa-cloud-upload-alt"></i></button>
+    {% endif %}
+</div>
+{% endblock body %}
+
+{% block js %}
+{{ shift_form.media.js }}
+<script>
+    function formatMins(duration){
+        return Math.floor(duration / 60) + 'Hrs, ' + duration % 60 + "min";
+    }
+    //format mins to readable format
+    var val = $("#id_shiftduration").val()
+    if (val != "") {
+        let mins = parseInt(val, 10);
+        $("#id_shiftduration").val(formatMins(mins))
+    }
+    var nightshiftWarn = false;
+    
+
+    $(document).ready(function () {
+        
+        //for select2 search work in bootstrap modals
+        $("#partial").find("select[name = designation]").select2({
+            dropdownParent: $('#partial')
+        })
+        //set ctzoffset
+  	    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        //hide the delete button when instance is not saved yet.
+        if ('{{shift_form.instance.id}}' == 'None') {
+            $("#btn_del").hide()
+        }
+        //adding time widget to starttime and endtime
+        $('#id_starttime, #id_endtime').flatpickr({
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            //llowInput = true
+        })
+        //hide next btn if instance is not saved yet
+        if (session['wizard_data'] && session['wizard_data']['shiftids'].length == 0) {
+            $('#next_btn').hide()
+        }
+
+        //alert user about night shift
+        const nightShiftAlert = {
+            title: "Night shift alert",
+            text: `According to Start time & End Time do you want to create a 'Night Shift',
+                then the checkbox 'Night Shift Applicable will be enabled by default'`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: 'Go for it!',
+            allowOutsideClick: false
+        }
+        const alertUser = () => {
+            Swal.fire(nightShiftAlert).then((res) => {
+                if (res.isConfirmed) {
+                    $("#id_nightshiftappicable").prop('checked', true)
+                } else {
+                    $("#id_starttime, #id_endtime, #id_shiftduration").val("")
+                    $("#id_nightshiftappicable").prop('checked', false)
+                }
+            })
+            nightshiftWarn=true;
+        }
+
+        //total shift duration
+        $("#id_starttime, #id_endtime").change(() => {
+            var st = moment($("#id_starttime").val(), "HH:mm")
+            var et = moment($("#id_endtime").val(), "HH:mm")
+            var duration = moment.duration(et.diff(st)).asMinutes()
+            if (duration < 0) {
+                duration = 1440 + duration
+                nightshiftWarn === false ? alertUser() : {}
+            } else {
+                $("#id_nightshiftappicable").prop('checked', false)
+            }
+            var totalhrs = formatMins(duration)
+            console.log("totalhrs", totalhrs)
+            if (totalhrs !== 'NaNHrs, NaNmin') {
+                $("#id_shiftduration").val(totalhrs)
+            }
+        })
+
+    })
+</script>
+{% endblock js %}

@@ -1,0 +1,310 @@
+{% extends "globals/layout.html" %}
+
+{% block extra_css %}
+<style>
+    .mt-1>ul.w-100 {
+        width: 100%;
+    }
+    .event-cols{
+        width: 7.5rem;
+    }
+    .eventdetails .d-flex {
+        border: 1px solid rgb(219, 219, 219);
+        border-radius: 4px;
+    }
+    .center-div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    .fc-more-popover {
+    max-height: 400px; /* Adjust as needed */
+    overflow-y: auto;
+}
+</style>
+{% endblock extra_css %}
+
+{% block pagebreadcumb %}
+
+{% endblock pagebreadcumb %}
+
+
+{% block breadcumbactions %}
+<div class="d-flex">
+    <span class="align-self-center">Event:&nbsp; </span>
+    <select class="form-select" id="event-category" aria-label="Default select example">
+        <option selected value="Tasks">Tasks</option>
+        <option value="Tours">Tours</option>
+        <option value="PPM">PPM</option>
+        <option value="Route Plan">Route Plan</option>
+        <option value="Attendance">Attendance</option>
+        <option value="Work Orders">Work Orders</option>
+        <option value="Tickets">Tickets</option>
+        <option value="Work Permits">Work Permits</option>
+    </select>
+</div>
+
+
+{% endblock breadcumbactions %}
+
+{% block pagebody_container %}
+<div class="row h-100">
+    <div class="col-sm-12 col-md-8">
+        <div id="calendar" class="w-100 h-100 mx-4 mb-4  p-3 rounded-2 border border-1 bg-white"></div>
+    </div>
+    <div class="col-sm-12 col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="no_event d-none">
+                    <div class="card-title ch4">
+                        No Event Details
+                    </div>
+                    <img src="{{ static('assets/media/images/no_event.png') }}" class="responsive-image" alt="">
+                </div>
+                    <div class="center-div multipleevents d-none">
+                         <p>Multiple events found today, click on certain event to see its details</p>
+                    </div>
+                <div class="event_details ">
+                    <div class="d-flex justify-content-between card-title ch4">
+                        <div class="ch4">Event Details&nbsp;<i class="bi bi-list-ul ch4 fs-5"></i></div>
+                        <img id="user_img"src="{{ static('assets/media/images/blank.png') }}"
+                             width="65px" height="65px"
+                            class="rounded-circle float-end" alt="Image here">
+                    </div>
+                    <div class="mt-1 eventdetails">
+                        <div>
+                            <div class="d-flex">
+                                <span class="event-cols p-1">Description</span><span class="w-75 p-1" id="desc_value">Check Rest Rooms Daily</span>
+                            </div>
+                            <div class="d-flex">
+                                <span class="event-cols p-1">Assigned To</span><span class="w-75 p-1" id="assignedto_value">Naveen C Sargam</span>
+                            </div>
+                            <div class="d-flex">
+                                <span class="event-cols p-1">Performed By</span><span class="w-75 p-1" id="performedby_value">Naveen C Sargam</span>
+                            </div>
+                            <div class="d-flex">
+                                <span class="event-cols p-1">Place</span><span class="w-75 p-1">
+                                    <p  class="m-0 p-0 text-primary" style="cursor:pointer"
+                                        onclick="openGoogleMaps(this)"id="gps_value"></p>
+                                </span>
+                            </div>
+                            <div class="d-flex">
+                                <span class="event-cols p-1">Site</span><span class="w-75 p-1" id="site_value">Capgemint Hinjewadi</span>
+                            </div>
+                            <div class="d-flex">
+                                <span class="event-cols p-1">Asset</span><span class="w-75 p-1" id="asset_value">None</span>
+                            </div>
+                            <div class="d-flex">
+                                <span class="event-cols p-1">Location</span><span class="w-75 p-1" id="location_value">1st Floor Rest Room</span>   
+                            </div>
+                            <div class="d-flex">
+                                <span class="event-cols p-1">Question Set</span><span class="w-75 p-1" id="qset_value">Check Rest Rool Daily</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <div class="d-flex justify-content-between mt-3">
+                            <span class="ExternalTour WorkOrder Task WorkPermit PPM Tours"><i class="bi bi-circle-fill fs-9 me-1 pt-1" style="color: #0080FF;"></i>Assigned</span>
+                            <span class="ExternalTour Task  PPM Tours"><i class="bi bi-circle-fill fs-9 me-1 pt-1" style="color: #ff6161;"></i>Autoclosed</span>
+                            <span class="ExternalTour Task WorkOrder WorkPermit PPM Tours"><i class="bi bi-circle-fill fs-9 me-1 pt-1" style="color: #779f6f;"></i>Completed</span>
+                            <span class="ExternalTour Tours"><i class="bi bi-circle-fill fs-9 me-1 pt-1" style="color: #009C94;"></i>Partially Completed</span>
+                            <span class="ExternalTour WorkOrder"><i class="bi bi-circle-fill fs-9 me-1 pt-1 ExternalTour" style="color: #ffcc27;"></i>In Progress</span>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <span class="me-3 WorkOrder WorkPermit"><i class="bi bi-circle-fill fs-9 me-1 pt-1" style="color: #727272;"></i>Cancelled</span>
+                            <span class="me-3 WorkOrder"><i class="bi bi-circle-fill fs-9 me-1 pt-1" style="color: #004679;"></i>Re-Assigned</span>
+                            <span class="me-3 WorkOrder"><i class="bi bi-circle-fill fs-9 me-1 pt-1" style="color: #13780e;"></i>Closed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock pagebody_container %}
+
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+    function openGoogleMaps(element) {
+        let coordinates = element.textContent.split(", ").map(Number);
+        let lat = coordinates[0]
+        let lng = coordinates[1]
+        if (lat && lng){    
+            var url = 'https://www.google.com/maps?q=' + lat + ',' + lng;
+            window.open(url, '_blank');
+        }
+        
+    }
+    //some events for testing
+    const events = [{
+            id: '1',
+            title: 'Daily Standup',
+            start: '2023-06-01T09:00:00',
+            end: '2023-06-01T09:15:00',
+
+        },
+        {
+            id: '2',
+            title: 'Backlog Grooming',
+            start: '2023-06-01T14:00:00',
+            end: '2023-06-01T15:00:00'
+        },
+        {
+            id: '3',
+            title: 'Sprint Planning',
+            start: '2023-06-02T10:00:00',
+            end: '2023-06-02T11:00:00'
+        },
+        {
+            id: '4',
+            title: 'Client Meeting',
+            start: '2023-06-02T13:30:00',
+            end: '2023-06-02T14:30:00'
+        },
+        {
+            id: '5',
+            title: 'Team Building Activity',
+            start: '2023-06-03T16:00:00',
+            end: '2023-06-03T18:00:00'
+        },
+        {
+            id: '6',
+            title: 'Code Review Session',
+            start: '2023-06-06T11:00:00',
+            end: '2023-06-06T12:00:00'
+        },
+        {
+            id: '7',
+            title: 'Database Maintenance',
+            start: '2023-06-06T03:00:00',
+            end: '2023-06-06T04:00:00'
+        },
+        {
+            id: '8',
+            title: 'Server Upgrade',
+            start: '2023-06-06T01:00:00',
+            end: '2023-06-06T03:00:00'
+        },
+        {
+            id: '9',
+            title: 'HR Meeting',
+            start: '2023-06-06T14:00:00',
+            end: '2023-06-06T15:00:00'
+        },
+        {
+            id: '10',
+            title: 'Networking Workshop',
+            start: '2023-06-06T11:00:00',
+            end: '2023-06-06T13:00:00'
+        },
+    ]
+
+    const eventsByAjax = {
+        url: '{{ url("activity:calendar") }}',
+        method: 'GET',
+        extraParams: function () {
+            // You could add extra parameters to the request here
+            return {
+                eventType: $("#event-category").val(),
+            };
+        },
+        failure: function () {
+            alert('there was an error while fetching events!');
+        },
+    }
+
+    function populateEventDetailsCard(data){
+        let eventMap = {
+            'Tasks':'Tasks', 'Tours':'Tours', 'PPM':'PPM', 'Route Plan':'ExternalTour', 'Work Orders':'WorkOrder', 
+            'Work Permits':'WorkPermit'
+        }
+        let event = $("#event-category").val()
+        let eventClass = eventMap[event]
+        $("")
+        let link = '<a href=%s target="_blank">%s</a>'
+        $(".no_event, .multipleevents").addClass('d-none')
+        $('.event_details').removeClass('d-none')
+        //set image
+        let imageurl = data.performedby__peopleimg.endsWith('blank.png') ? "{{ static('assets/media/images/blank.png') }}" : `{{MEDIA_URL}}${data.performedby__peopleimg}`
+        $("#user_img").attr('src', imageurl)
+        //set assignedto
+        $("#assignedto_value").html(data.assignto)
+        //description
+        $("#desc_value").html(data.desc)
+        //performedby
+        $("#performedby_value").html(data.performedby_name)
+        //place
+        let place_json = JSON.parse(data.place)
+        let lat = place_json['coordinates'][1]
+        let lng = place_json['coordinates'][0]
+        let text = lat && lng ? `${lat}, ${lng}` : 'None'
+        $("#gps_value").text(text)
+        //asset
+        $("#asset_value").html(`<a href="{{ url('activity:asset') }}?id=${data.asset_id}"  target='_blank'>${data.assetname}</a>`)
+        //qset
+        $("#qset_value").html(`<a href="{{ url('activity:checklist') }}?id=${data.qset_id}"  target='_blank'>${data.qsetname}</a>`)
+        //location
+        $("#location_value").html(`<a href="{{ url('activity:location') }}?id=${data.location_id}"  target='_blank'>${data.location}</a>`)
+        //site
+        $("#site_value").html(`<a href="{{ url('onboarding:bu')  }}?id=${data.bu_id}" target='_blank'>${data.site}</a>`)
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            //timeZone:'UTC',
+            selectable: true,
+            dayMaxEvents:2,
+            dateClick: function (info) {
+                
+            },
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+            },
+            events: eventsByAjax,
+            eventClick: function (info) {
+                let eventType = $("#event-category").val()
+                fire_ajax_get({url:`{{ url('activity:calendar') }}?id=${info.event.id}&eventType=${eventType}&action=ED`}) 
+                .done((data, status, xhr) => {
+                    populateEventDetailsCard(data)
+                })
+                info.jsEvent.preventDefault();
+            },
+            eventsSet: function(events) {
+                console.log("events Loaded")
+                let currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0); // start of the day
+
+                const eventsOnCurrentDate = events.filter(event => {
+                    // Returns true if the event is on the current date
+                    const eventStart = new Date(event.start).setHours(0, 0, 0, 0);
+                    const eventEnd = event.end ? new Date(event.end).setHours(0, 0, 0, 0) : eventStart;
+
+                    return eventStart <= currentDate && eventEnd >= currentDate;
+                });
+
+                if (eventsOnCurrentDate.length > 0) {
+                    $(".multipleevents").removeClass('d-none')
+                    $('.event_details, .no_event').addClass('d-none')
+                } else {
+                    $('.multipleevents, .event_details').addClass('d-none')
+                    $('.no_event').removeClass('d-none')
+                }
+            }
+        });
+        calendar.render();
+        //on change event type
+        $("#event-category").change(() => {
+            calendar.refetchEvents();
+        })
+
+    });
+</script>
+{% endblock extra_scripts %}

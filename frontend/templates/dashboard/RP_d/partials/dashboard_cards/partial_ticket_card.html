@@ -1,0 +1,84 @@
+var ticketoptions = {
+series: _tktChartSeries,
+chart: {
+height: '300px',
+width:"100%",
+type: 'pie',
+toolbar: {
+show: true
+},
+events:{
+dataPointSelection: function(event, chartContext, config) {
+console.log(config)
+let filters = {from:_from_pd, to:_to_pd}
+switch(config.dataPointIndex){
+case 0:
+window.open('{{ url("helpdesk:ticket") }}?template=true', '_blank');
+filters['status']='NEW'
+break;
+case 1:
+window.open('{{ url("helpdesk:ticket") }}?template=true', '_blank');
+filters['status'] = 'RESOLVED'
+break;
+case 2:
+window.open('{{ url("helpdesk:ticket") }}?template=true', '_blank');
+filters['status'] = 'OPEN'
+break;
+case 3:
+window.open('{{ url("helpdesk:ticket") }}?template=true', '_blank');
+filters['status'] = 'CANCELLED'
+break;
+case 4:
+window.open('{{ url("helpdesk:ticket") }}?template=true', '_blank');
+filters['status'] = 'CLOSED'
+break;
+case 5:
+window.open('{{ url("helpdesk:ticket") }}?template=true', '_blank');
+filters['status'] = 'ONHOLD'
+break;
+case 6:
+window.open('{{ url("helpdesk:ticket") }}?template=true', '_blank');
+filters['status'] = 'SYSTEMGENERATED'
+break;
+
+}
+localStorage.setItem('ticketstats_filter', JSON.stringify(filters))
+}
+}
+},
+colors: ['#2E93fA', '#66DA26', '#00BFA8', '#E91E63', '#A9A9A9', '#ECD302', '#01579b'],
+responsive: [{
+breakpoint: 480,
+options: {
+legend: {
+position: 'bottom',
+offsetX: -10,
+offsetY: 0
+}
+}
+}],
+labels: ['New', 'Resolved', 'Open', 'Cancelled', 'Closed', 'On Hold', 'System Generated'],
+fill: {
+opacity: 1
+},
+stroke: {
+width: 1,
+colors: undefined
+},
+yaxis: {
+show: false
+},
+legend: {
+position: 'right'
+},
+plotOptions: {
+polarArea: {
+rings: {
+strokeWidth: 0
+},
+spokes: {
+strokeWidth: 0
+},
+}
+},
+};

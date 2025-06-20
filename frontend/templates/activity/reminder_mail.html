@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+        color: #202124;
+    }
+    .bgy {
+        background-color: #eaf1fb !important;
+        font-weight: normal;
+    }
+</style>
+</head>
+<body>
+    <p>{{ subject }}</p>
+    <br>
+    <table>
+        <tr>
+        <td class="bgy">Reminder For</td><td>{{ job }}</td>
+        </tr>
+        <tr>
+        <td class="bgy">Scheduled Date</td><td>{{ plandatetime }}</td>
+        </tr>
+        <tr>
+        <td class="bgy">Site</td><td>{{ sitename }}</td>
+        </tr>
+        <tr>
+        <td class="bgy">Description</td><td>{{ jobdesc }}</td>
+        </tr>
+        <tr>
+        <td class="bgy">Created By</td><td>{{ creator }}</td>
+        </tr>
+        <tr>
+        <td class="bgy">Last Modified By</td><td>{{ modifier }}</td>
+        </tr>
+    </table>
+    <br>
+    <p class="text-muted"><i>This is an auto-generated email. Please do not reply.</i></p>
+</body>
+</html>

@@ -1,0 +1,245 @@
+{% extends "globals/base_list.html" %}
+
+{% block extra_css %}
+<style>
+td.selected { background-color: yellow; }
+td:not(:last-child) { cursor: pointer; }
+td { padding: 6px; border: 1px solid #CCC; }
+tr{
+    font-size: 11px;
+}
+</style> 
+
+{% endblock extra_css %}
+
+{% block popup_alerts %}
+    {% call general_popup(title='List of Peoples', popup_id='id_people_list', modal_size='modal-md') %}
+            <div class="modal-body">
+                <table class="display cell-border" style="width:100%" id="tabListOfPeoples"></table>
+            </div>
+    {% endcall %}
+{% endblock popup_alerts %}
+
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Task List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Task List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Task List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN TABLE ------------------------------------------->
+{% block table %}
+<table id="task_table_jobneed" class="display compact cell-border" style="width:100%">
+</table>
+{% endblock table %}
+<!-------------------------------------------- END TABLE ------------------------------------------->
+
+{% block extra_scripts %}
+<script>
+    var table = null;
+    var peopleList = null;
+    var ajaxData = {}
+    const formFilter = '#task_filter_jobneed'
+    const table_id = '#task_table_jobneed'
+    const urlname = "{{ url('schedhuler:jobneedtasks') }}"
+    //if you want to modifiy here, then modify in custom.js initDateRange also
+    var params = null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+
+    var table_filters = localStorage.getItem('taskstats_filter') ? localStorage.getItem('taskstats_filter') : localStorage.getItem('alertsFilters')
+
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+    
+
+
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+
+    function acknowdgeAutocloseTask(indexes){
+        var rowData = table.rows(indexes).data();
+        fire_ajax_get(
+            { url:`${urlname}?action=acknowledgeAutoCloseTask&id=${rowData[0]['id']}`}
+        ).done((data, status, xhr) => {
+            console.info("Row Achnkowledged")
+            table.rows(indexes).data(data.row)  
+        })
+    }
+
+    function alertOnAcknowledgement(){
+        return Swal.fire({
+            icon:'warning',
+            title:"Are you sure!",
+            text:`By selecting this row, you are acknowledging 
+                        that you have reviewed and understand the details contained
+                        within it. Are you sure you want to proceed?`,
+            showCancelButton:true
+        })
+    }
+
+    function showListOfPeoples(id, from){
+        $('#id_people_list').modal('show')
+        ajaxData.id=id
+        ajaxData.model = from
+        peopleList.ajax.reload()
+    }
+    
+    $(document).ready(function (){
+        //datatable initialization
+        table = $(table_id).DataTable({
+            ajax:{
+                url:`${urlname}?action=list`,
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+            },
+            serverSide: true,
+            responsive:true,
+            lengthMenu: [250,500,750,1000],
+            pageLength: 250,
+            initComplete:function(){
+                const input = $(`${table_id}_filter input`);
+                input.off();
+                input.on('keypress',function(e){
+                    if (e.which === 13) {
+                        table.search(this.value).draw();
+                    }
+                }) 
+            },
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns:[
+                {data: 'id', className:"noVis"},
+                {data: 'plandatetime', title: "Plan Datetime"},
+                {data: 'jobdesc', title: 'Description'},
+                {data: 'jobstatus', title: 'Status'},
+                {data: 'jobtype', title: 'Type'},
+                {data: 'ticketcategory__taname', title: 'Notify Category'},
+                {title: 'People/Group', data:'assignedto', render:function(data, type, row, meta){
+                    if(data.includes('[GROUP]')){
+                        return `<a href="javascript:void(0)"  onClick='showListOfPeoples(${row['id']}, "Jobneed")'>${data}</a>`
+                    }else{
+                        return data
+                    }
+                }
+                },
+                {title:"Asset/Checkpoint", data:"asset__assetname"},
+                {data: 'performedby__peoplename', title: 'Performed By'},
+                {data: 'gracetime', title: "Grace Time"},
+                {data: 'expirydatetime', title: "Expiry Datetime"},
+                {visible:false, className:'noVis', data:'other_info__isAcknowledged'},
+                {data:'bu__buname', title:"Site"},
+                {data:'bu__bucode', title:'Site Code', visible:false},
+                {data:null, width:'4%',defaultContent:'', title:'Seen', className:'select-checkbox noVis'},
+            ],
+            columnDefs:[
+                {targets:0, data: 'id', visible:false, searchable:false},
+                {targets:1, data: 'plandatetime', render:function(data, type, row, meta){
+                    return `<a href="${urlname}?id=${row['id']}">${convert_to_local(type, data, row)}</a>`
+                }
+                },
+                {targets:[1], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+                {targets:[10], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+                {targets:9, render:function(data, type, row, meta){
+                    return `${data} mins`
+                }
+                },
+            ],
+            createdRow:function(row, data, dataIndex){
+                if(!['AUTOCLOSED', 'Auto Closed'].includes(data['jobstatus'])){
+                    $(row).find('td.select-checkbox').removeClass('select-checkbox');
+                }
+                if(data['other_info__isAcknowledged']){
+                    $(row).addClass('selected')
+                }
+            },
+            select:{
+                style:'multi',
+                selector: 'td:last-child'
+            },
+            order:[[1, 'desc']],
+            buttons:[
+                "searchBuilder",
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Task List`,
+                    columns = ':visible',
+                    filename="task_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Task List`,
+                    columns = ':visible',
+                    filename="task_list" 
+                ),
+                dataTablesColumnVisibilityConfig()
+			],
+        })
+        //table.ajax.data = {'action':'list', "pd1":from_pd, "pd2":to_pd}
+        //table.ajax.reload()
+
+         //add input field to the datatables dom
+         initDateRangeHtml()
+         initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            let filters = {from:from_pd, to:to_pd}
+            reloadTable(table, filters)
+         })
+		//END STYLING DATATABLE
+
+        // Flag to check if the deselection is being done programmatically
+        var alreadyAsked = false;
+        table.on('deselect', function(e, dt, type, indexes){
+            var rowData = table.rows(indexes).data();
+            if(rowData[0]['other_info__isAcknowledged'] === true){
+                table.rows(indexes).select();
+            }
+        })
+
+        table.on('select', function(e, dt, type, indexes) {
+            var rowData = table.rows(indexes).data()
+            console.log(rowData[0]["other_info__isAcknowledged"])
+            if(rowData[0]["other_info__isAcknowledged"] === true){return}
+            if (!alreadyAsked) {
+                alertOnAcknowledgement()
+                .then((res) => {
+                    if(!res.isConfirmed){
+                        table.rows(indexes).deselect();
+                    }else{
+                        acknowdgeAutocloseTask(indexes)
+                        alreadyAsked = true
+                    }
+                })
+            }else {
+                acknowdgeAutocloseTask(indexes)
+            }
+        });
+
+        initializeListOfPeoplesModal(ajaxData, "{{ url('onboarding:list_of_peoples') }}")
+    })
+</script>
+{% endblock extra_scripts %}

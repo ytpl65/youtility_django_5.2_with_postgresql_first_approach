@@ -1,0 +1,161 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Incident Report List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Incident Report List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ load_leaflet_tags() }}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Incident Report List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN TABLE ------------------------------------------->
+{% block table %}
+<table id="incidentreport_table" class="display compact cell-border" style="width:100%">
+</table>
+{% endblock table %}
+<!-------------------------------------------- END TABLE ------------------------------------------->
+
+{% block popup_alerts %}
+    <!--Render Location on Leaflet Map -->
+    {% call general_popup(popup_id = "leafletmap_modal", title="GPS Location") %}
+        <div class="modal-body">
+            <h4 class="ch4">Location where sitereport filled!</h4>
+            <div id="map" style="height: 400px;"></div>
+        </div>
+    {% endcall %}
+{% endblock popup_alerts %}
+
+{% block extra_scripts %}
+
+{{ load_google_maps() }}
+
+<script>
+var table = null;
+var lat, lng, addr;
+var map;
+//const geocoder = new google.maps.Geocoder();
+const formFilter = '#sitereport_filter'
+const table_id   = "#incidentreport_table"
+var params = null
+var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+var to_pd = moment().format('YYYY-MM-DD')
+params = {from:from_pd, to:to_pd}
+
+    //show point on map
+    function showMap(longititude, latitude, address){
+        lat = latitude
+        lng = longititude
+        addr = address
+        $('#leafletmap_modal').modal('show');
+    }
+
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+
+    $(document).ready(function (){
+        //datatable initialization
+        table = $(table_id).DataTable({
+            ajax:{
+                url: "{{ url('reports:incidentreport_list') }}?action=list",
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+            },
+			deferRender: true,
+			responsive : true,
+            search      : {return: true},
+            lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns     : [
+                { data: "id", visible:false, searchable:false, className:'noVis' },
+                { data: "plandatetime", title:'Plan Datetime' },
+                { data: "jobdesc", title:'Site Report' },
+                { data: "performedby__peoplename", title:'Surveyor' },
+                { data: "buname", title:'SiteName' },
+                { data: "jobstatus", title:'Status' },
+                { data: "gps" , title:'GPS', render:function(data, type, row, meta){
+                    let gps = JSON.parse(data)
+                    let coords = gps.coordinates == '0,0' ? '' : gps.coordinates
+                    return `<a href="javascript:void(0)" onclick="showMap(${coords}, ${row['geojson__gpslocation']})">${coords}</a>`}
+                },
+                { data: "remarks", title:'Remarks' },
+                { data: "geojson__gpslocation", visible:false, defaultContent:null},
+            ],
+            order:[[1, 'desc']],
+            columnDefs:[
+                {targets:1, render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)}
+                },
+            ],
+            buttons:[
+                "searchBuilder",
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Incident Report List`,
+                    columns = ':visible',
+                    filename = "incident_report_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Incident Report List`,
+                    columns = ':visible',
+                    filename = "incident_report_list"
+                ),
+                dataTablesColumnVisibilityConfig()    
+            ],
+            initComplete:function(settings, json){
+                const table_filters = localStorage.getItem('incident_reports_filter')
+                if(table_filters){
+                    reloadTable(table, JSON.parse(table_filters))
+                    localStorage.clear()
+                }
+            }
+        })
+
+        //on modal shown render map
+        $("#leafletmap_modal").on("shown.bs.modal", function(e){
+            
+            if(map !== undefined){
+                map.remove()
+                map = L.map('map').setView([lat, lng], 19);
+            }else{
+                map = L.map('map').setView([lat, lng], 19);
+            }
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+            }).addTo(map); // Add a tile layer to the map
+            
+            //try to get readable address from db is not fetch from google maps
+            L.marker([lat, lng]).addTo(map).bindPopup(addr)
+            .openPopup();; // Add a marker to the map at the desired point
+        })
+        
+        //add input field to the datatables dom
+        initDateRangeHtml()
+        initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            let filters = {from:from_pd, to:to_pd}
+            reloadTable(table, filters)
+        })
+    })
+
+</script>
+{% endblock extra_scripts %}

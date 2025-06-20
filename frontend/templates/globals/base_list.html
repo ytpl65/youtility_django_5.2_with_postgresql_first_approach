@@ -1,0 +1,62 @@
+{% extends "globals/layout.html" %}
+
+<!----FOR BASE_LEVEL ---->
+{% block base_head %}
+<link  href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css"/>
+<link  href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet" type="text/css"/>
+<link  href="{{ static('assets/css/daterangepicker.css') }}" rel="stylesheet" type="text/css"/>
+<title>{% block page_title %}{% endblock page_title %}</title>
+{% endblock base_head %}
+<!----END FOR BASE_LEVEL ---->
+
+
+{% block pagebody_container %}
+<div class="container-fluid m-0 p-0">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card col-sm-12">
+                <!-- BEGIN CARD-BODY-->
+                <div class="card-body border pt-0">
+                    <!--BEGIN CARD-HEADER-->
+                    <div class="card-header ps-0 mb-0 d-flex justify-content-md-between"
+                    style="border: 0;">
+                            <h4 class="card-title ch4">
+                                {% block card_title %}
+                                {% endblock card_title %}
+                            &nbsp;<i class="fas text-white fa-th-list ch4 fa-sm"></i>
+                            </h4>
+                            <!--keep empty -->
+                            <div></div>
+
+                            {% block page_actions %}
+                            
+                            {% endblock page_actions %}
+                    </div>
+                    <!--END CARD-HEADER-->
+                    <div class="filters">
+                        
+                    </div>
+                    {% block table %}
+                
+                    {% endblock table %}
+
+                </div>
+                <!--END CARD-BODY-->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock pagebody_container %}
+
+{% block base_script %}
+{{ super() }}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/js/daterangepicker.js') }}" type="text/javascript"></script>
+<script>
+$(document).ready(() => {
+    $("th > input").css("border-radius", 0)
+})
+</script>
+{% endblock base_script %}
+

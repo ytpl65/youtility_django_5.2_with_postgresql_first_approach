@@ -1,0 +1,77 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+
+{% endblock header_end %}
+
+{% block inline_css %}
+<style>
+thead tr th, tbody tr td {
+    font-size: 0.7rem;
+}
+
+</style>
+{% endblock inline_css %}
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+
+{% block table %}
+<table id="staticdetailedtoursummary" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Client</th>
+            <th scope="col">Site</th>
+            <th scope="col">Tour</th>
+            <th scope="col">Planned Date Time</th>
+            <th scope="col">Expiry Date Time</th>
+            <th scope="col">Checkpoint</th>
+            <th scope="col">Completed</th>
+            <th scope="col">Missed</th>
+            <th scope="col">Percentage</th>
+            <th scope="col">Comments Type</th>
+            <th scope="col">Comments</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['Client Name'] }}</td>
+            <td>{{ row['Site Name'] }}</td>
+            <td>{{ row['Description'] }}</td>
+            <td>{{ row['Start Time'] }}</td>
+            <td>{{ row['End Time'] }}</td>
+            <td>{{ row['No of Checkpoints'] }}</td>
+            <td>{{ row['Completed'] }}</td>
+            <td>{{ row['Missed'] }}</td>
+            <td>{{ row['Percentage'] }}</td>
+            <td>{{ row['Comments Type'] }}</td>
+            <td>{{ row['Comments'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}
+
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

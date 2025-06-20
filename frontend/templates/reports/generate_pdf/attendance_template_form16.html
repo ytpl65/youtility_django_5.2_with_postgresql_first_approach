@@ -1,0 +1,1053 @@
+{% extends "globals/base_form.html" %}
+
+{% block extra_css %}
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        padding: 10px;
+        background-color: white;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 5px;
+        margin-bottom: 15px;
+        border: 1px solid black;
+    }
+
+    .info-item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        padding: 5px;
+        border: 1px solid black;
+    }
+
+    .note {
+        text-align: center;
+        margin: 15px 0;
+        font-weight: bold;
+    }
+
+    .attendance-table {
+        width: 100%;
+        margin-bottom: 20px;
+        border-collapse: collapse;
+    }
+
+    .attendance-table th, 
+    .attendance-table td {
+        border: 1px solid black;
+        padding: 0.5px;
+        text-align: center;
+        font-size: 14px;
+        color: black;
+    }
+
+    .attendance-table input {
+        width: 100%;
+        border: none;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .name-cell {
+        text-align: left !important;
+        white-space: pre-line;
+    }
+
+    .summary-section {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0px;
+        margin-bottom: 20px;
+    }
+
+    .summary-item {
+        border: 1px solid black;
+        padding: 5px;
+    }
+
+    .footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 30px;
+    }
+
+    .signature-block {
+        text-align: left;
+    }
+
+    .signature-line {
+        margin-top: 50px;
+        border-top: 1px solid black;
+    }
+
+    .page-number {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .red-text {
+        color: red;
+    }
+
+    .client-signature {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    hr {
+        border: none;
+        height: 2px;
+        background: repeating-linear-gradient(
+            to right,
+            black 0px,
+            black 10px,
+            transparent 10px,
+            transparent 20px
+        );
+    }
+
+    .form-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 16px;
+        margin: 10px 0;
+    }
+
+    .header-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        border-bottom: 1px solid #000;
+    }
+    
+    .attendance-table td {
+        white-space: normal; /* Allows text to wrap */
+        word-wrap: break-word; /* Breaks long words */
+        max-width: 150px; /* Adjust as needed */
+        overflow-wrap: break-word;
+    }
+
+    .header-cell {
+        border: 1px solid #000;
+    }
+
+    .header-cell-period {
+        text-align: center; /* Center all text */
+    }
+
+    .header-line {
+        font-weight: bold; /* Make text bold */
+        text-transform: uppercase; /* Convert text to uppercase */
+        font-size: 12px; /* Match the body font size, adjust if needed */
+        border-bottom: 1px solid #000; /* Horizontal line between each line */
+    }
+
+    .header-line:last-child {
+        border-bottom: none; /* Remove border from the last line */
+    }
+
+    .header-cell b {
+        font-weight: bold !important; /* Ensure <b> applies bold */
+    }
+
+    .signature-section {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding: 10px 50px;
+    }
+
+    .summary-item b {
+        font-weight: bold !important;
+    }
+
+    @media print {
+        /* Hide unnecessary elements when printing */
+        .form-actions, .page-number {
+            display: none;
+        }
+        
+        /* Ensure page breaks don't happen in the middle of a section */
+        .attendance-section {
+            page-break-after: always;
+        }
+        
+        /* Ensure tables don't break across pages */
+        .attendance-table {
+            page-break-inside: avoid;
+        }
+        
+        /* Make sure all inputs display their values in the PDF */
+        input[type="text"] {
+            border: none;
+            background: transparent;
+        }
+    }
+    
+    /* Force landscape orientation for PDF */
+    @page {
+        size: landscape;
+    }
+    
+</style>
+{% endblock extra_css %}
+<!-- ------------------------ BEGIN PAGE BREADCUMB --------------------- -->
+{% block pagebreadcumb %}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Generate Attendance Form (FORM 16)</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ----------------------- -->
+
+{% block form %}
+<form action="{{ url('reports:attendance_template') }}" method="post" class="validate">
+    <!-- ------------------------ CSRF MIDDLEWARE TOKEN ------------------ -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {% for att_data_key, att_data_value in attendance_data.site_attendance_data.items() %}
+      {% set outer_loop = loop.index0 %}
+      {% for single_contract_data in att_data_value %}
+            <div class="attendance-section">
+                <div class="form-title">FORM XVI</div>
+                <div class="header-grid">
+                    <div class="header-cell header-cell-period">
+                        <div class="header-line">Central Form XVI</div>
+                        <div class="header-line">See Rule 78(2)(a)</div>
+                        <div class="header-line">Muster Roll <br>
+                        {{ attendance_data.period|default('Mar 2025') }}</div>
+                    </div>
+                    <div class="header-cell">
+                        <center><b>Name and Address of Contractor</b><br>
+                        <b>Name and Location of work</b></center>
+                    </div>
+                    <div class="header-cell">
+                        <b>{{ "Security &amp; Personnel Services Pvt. Ltd." }}</b><br>
+                        {{ single_contract_data.party_code|default('N/A') }} &nbsp; <b>{{ single_contract_data.contract_name|default('N/A') }}</b><br>
+                        {{ single_contract_data.bu_site|default('N/A') }} &nbsp; <b>{{ single_contract_data.bu_site_name|default('N/A') }}</b>
+                    </div>
+                </div><br>
+                <div class="note">
+                    NOTE: P-PRESENT, A-ABSENT, O-WEEKLY OFF, X-DOUBLE DUTY (AFTER EVERY 6P), D-EXTRA DUTY (A, O, X, D TO BE SHOWN IN RED) (N/H- NATION HOLIDAY)
+                </div><br>
+                <table class="attendance-table" id="attendance-table-{{ outer_loop }}-{{ loop.index0 }}">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">SR NO.</th>
+                            <th rowspan="2">T.NUM</th>
+                            <th rowspan="2">NAME OF WORKMAN</th>
+                            <th rowspan="2">DESIG</th>
+                            <th colspan="31">DAYS</th>
+                            <th colspan="6">SUMMARY</th>
+                        </tr>
+                        <tr>
+                            <!-- Days will be added by JavaScript -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be added by JavaScript -->
+                    </tbody>
+                </table>
+
+        <div class="summary-section">
+            <div class="summary-item">
+                <b>Present Day(A):</b> <span class="presentDays">0</span><br>
+                <b>W/OFF:</b> <span class="woff">0</span>
+            </div>
+            <div class="summary-item">
+                <b>Extra Duty(B):</b> <span class="extraDuty">0</span><br>
+                <b>TOTAL DUTY(A+B):</b> <span class="totalDuty">0</span>
+            </div>
+            <div class="summary-item">
+                <b>NH:</b> <span class="nh">0</span><br>
+                <b>CONTRACT DUTIES(A+B):</b> {{ single_contract_data.bu_site_total_quantity|default(0) }}
+            </div>
+            <div class="summary-item">
+                CERTIFIED BY/APPROVED BY CLIENT<br>
+                AUTHORIZED REPRESENTATIVE:<br>
+                NAME: ________________________<br>
+                DESIGNATION: ________________________<br>
+                MOB.NO. ________________________<br>
+                REMARK: ________________________
+            </div>
+            <div class="summary-item">
+                <b>SIGN & STAMP</b><br>
+            </div>
+        </div>
+
+        <div class="signature-section">
+            <div>
+                Checked by AO/AM<br><br>
+                Name & Sign
+            </div>
+            <div>
+                Verified by Ops Manager<br><br>
+                Name & Sign
+            </div>
+        </div>
+
+        <div class="page-number">Page {{ loop.index }}</div>
+        <hr>
+        <br><br>
+        <input type="hidden" name="attendance_data" id="attendance-data-{{ outer_loop }}-{{ loop.index0 }}" value="">
+    </div>
+    {% endfor %}
+{% endfor %}
+    <br><br>
+  <div class="form-actions" style="text-align: center;">
+    <button type="button" id="btn_excel" class="btn btn-sm btn-success btn-hover-scale" style="margin-right: 10px;">
+        Excel &nbsp;<i class="fas fa-file-excel"></i>
+    </button>
+    <button type="submit" form="report_form" id="submit" class="btn btn-sm btn-primary2 btn-hover-scale" style="margin-right: 10px;">
+      PDF &nbsp;<i class="fas text-white fas fa-file-pdf"></i>
+    </button>
+    <button type="button" id="btn_clear" class="btn btn-sm btn-secondary btn-hover-scale">
+      Clear&nbsp;<i class="fas fa-times"></i>
+    </button>
+</div>
+</form>
+{% endblock form %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+
+    /*
+    function getFormattedDateTime() {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function updateDateTime() {
+        const formattedDateTime = getFormattedDateTime(); // Reuse the helper function
+        document.querySelectorAll('[id^="datetime-"]').forEach(span => {
+            span.textContent = formattedDateTime;
+        });
+    }
+
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    */
+
+    function validateRow(row, tableId, rowIndex) {
+        const inputs = row.querySelectorAll('input[type="text"]');
+        let isEmpty = true;
+        let consecutivePCount = 0;
+        let hasMoreThanSixP = false;
+
+        inputs.forEach(input => {
+            const value = input.value.toUpperCase();
+            if (value) isEmpty = false; // Row is not empty if any input has a value
+
+            if (value === 'P') {
+                consecutivePCount++;
+                if (consecutivePCount > 6) { // Only trigger if more than 6
+                    hasMoreThanSixP = true;
+                }
+            } else {
+                consecutivePCount = 0; // Reset count on non-'P'
+            }
+        });
+
+        return {
+            isEmpty: isEmpty,
+            hasMoreThanSixP: hasMoreThanSixP,
+            rowIndex: rowIndex + 1 // Add 1 to match SR# (1-based index)
+        };
+    }
+
+    function validateAllRows() {
+        let errorMessages = [];
+        document.querySelectorAll('[id^="attendance-table-"]').forEach(table => {
+            const tableId = table.id;
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach((row, rowIndex) => {
+                const validation = validateRow(row, tableId, rowIndex);
+                if (validation.isEmpty) {
+                    errorMessages.push(`Table ${tableId}, Row ${validation.rowIndex}: Row is empty. Please fill it out.`);
+                } else if (validation.hasMoreThanSixP) {
+                    errorMessages.push(`Table ${tableId}, Row ${validation.rowIndex}: More than 6 consecutive 'P's detected.`);
+                }
+            });
+        });
+        return errorMessages;
+    }
+
+    function downloadExcel() {
+        const errors = validateAllRows();
+        if (errors.length > 0) {
+            alert("Errors found:\n" + errors.join("\n"));
+            return;
+        }
+    
+        const wb = XLSX.utils.book_new();
+        const attendanceTables = document.querySelectorAll('[id^="attendance-table-"]');
+    
+        attendanceTables.forEach((table, tableIndex) => {
+            const tableId = table.id;
+            const [_, contractIndex, dataIndex] = tableId.split('-').map(Number);
+            const section = table.closest('.attendance-section');
+    
+            // Extract header data
+            const headerCell = section.querySelector('.header-grid .header-cell:nth-child(3)');
+            if (!headerCell) {
+                console.error(`Header cell not found for table ${tableId}`);
+                return;
+            }
+    
+            // Preserve HTML entities by decoding properly
+            const headerLines = headerCell.innerHTML.split('<br>').map(line => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = line.trim();
+                return tempDiv.textContent;
+            });
+    
+            const contractorName = headerLines[0].replace(/<b>|<\/b>/g, '');
+            const partyCodeAndContractName = headerLines[1].split(/\s+/);
+            const partyCode = partyCodeAndContractName[0];
+            const contractName = partyCodeAndContractName.slice(1).join(' ').replace(/<b>|<\/b>/g, '');
+            const siteCodeAndSiteName = headerLines[2].split(/\s+/);
+            const siteCode = siteCodeAndSiteName[0];
+            const siteName = siteCodeAndSiteName.slice(1).join(' ').replace(/<b>|<\/b>/g, '');
+    
+            const partyName = 'N/A'; // Adjust if available
+    
+            // Summary section data
+            const summarySection = section.querySelector('.summary-section');
+            const presentDays = summarySection.querySelector('.presentDays').textContent;
+            const extraDuty = summarySection.querySelector('.extraDuty').textContent;
+            const totalDuty = summarySection.querySelector('.totalDuty').textContent;
+            const nh = summarySection.querySelector('.nh').textContent;
+            const woff = summarySection.querySelector('.woff').textContent;
+    
+            // Calculate contractDuties directly since DOM value is incorrect
+            const presentDaysNum = parseInt(presentDays, 10) || 0;
+            const extraDutyNum = parseInt(extraDuty, 10) || 0;
+            const contractDuties = 93; // Hardcoding as per your statement; replace with actual calculation if known
+            // const contractDuties = (presentDaysNum + extraDutyNum).toString(); // Should be 108, but you expect 93
+    
+            const wsData = [];
+            // Header Section
+            wsData.push([contractorName]);
+            wsData.push(["Muster Roll For The Month of {{ attendance_data.period }}"]);
+            wsData.push(["Form XVI See Rule 78(2)(a)"]);
+            wsData.push([]); // Empty row
+            wsData.push(["Party Code:", partyCode, "", "Contract:", contractName]);
+            wsData.push(["Site Code:", siteCode, "", "Site Name:", siteName]);
+            wsData.push([]); // Empty row
+            wsData.push(["NOTE: P-PRESENT, A-ABSENT, O-WEEKLY OFF, X-DOUBLE DUTY (AFTER EVERY 6P), D-EXTRA DUTY (A, O, X, D TO BE SHOWN IN RED) (N/H- NATION HOLIDAY)"]);
+            wsData.push([]); // Empty row
+    
+            // Table Headers
+            const daysArray = getDaysArrayFromPeriod("{{ attendance_data.period }}");
+            const totalColumns = 4 + daysArray.length + 6; // 4 for SR#, T.NUM, NAME, DESIG; daysArray.length for days; 6 for summary
+    
+            // First header row: "SR#", "T.NUM", "NAME OF WORKMAN", "DESIG", "DAYS", "SUMMARY"
+            const tableHeaders1 = new Array(totalColumns).fill("");
+            tableHeaders1[0] = "SR#";
+            tableHeaders1[1] = "T.NUM";
+            tableHeaders1[2] = "NAME OF WORKMAN";
+            tableHeaders1[3] = "DESIG";
+            tableHeaders1[4] = "DAYS";
+            tableHeaders1[4 + daysArray.length] = "SUMMARY";
+    
+            // Second header row: Empty for first 4 columns, then day numbers, then summary headers
+            const tableHeaders2 = new Array(totalColumns).fill("");
+            tableHeaders2[0] = "";
+            tableHeaders2[1] = "";
+            tableHeaders2[2] = "";
+            tableHeaders2[3] = "";
+            daysArray.forEach((day, index) => {
+                tableHeaders2[4 + index] = day.toString().padStart(2, '0');
+            });
+            tableHeaders2[4 + daysArray.length] = "PD(A)";
+            tableHeaders2[4 + daysArray.length + 1] = "WO(B)";
+            tableHeaders2[4 + daysArray.length + 2] = "TOTAL(A+B=C)";
+            tableHeaders2[4 + daysArray.length + 3] = "ED(D)";
+            tableHeaders2[4 + daysArray.length + 4] = "NH(E)";
+            tableHeaders2[4 + daysArray.length + 5] = "TOTAL(C+D+E)";
+    
+            // Add headers to worksheet data
+            wsData.push(tableHeaders1);
+            wsData.push(tableHeaders2);
+    
+            // Table Body - Include all rows
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const rowData = [];
+                // Get first 4 columns (SR#, T.NUM, NAME, DESIG)
+                rowData.push(row.cells[0].textContent, // SR#
+                            row.cells[1].textContent, // T.NUM
+                            row.cells[2].textContent, // NAME OF WORKMAN
+                            row.cells[3].textContent); // DESIG
+    
+                // Get attendance data
+                const inputs = row.querySelectorAll('input[type="text"]');
+                inputs.forEach(input => {
+                    rowData.push(input.value || ""); // Ensure empty inputs are handled
+                });
+    
+                // Get summary data
+                rowData.push(row.querySelector('[id^="pd-"]').textContent,
+                            row.querySelector('[id^="wo-"]').textContent,
+                            row.querySelector('[id^="total-"]').textContent,
+                            row.querySelector('[id^="ed-"]').textContent,
+                            row.querySelector('[id^="nh-"]').textContent,
+                            row.querySelector('[id^="final-"]').textContent);
+    
+                wsData.push(rowData);
+            });
+    
+            // Summary Section
+            wsData.push([]); // Empty row
+            wsData.push(["Present Day(A):", presentDays, "", "Extra Duty(B):", extraDuty, "", "CONTRACT DUTIES(A+B):", contractDuties]);
+            wsData.push(["NH:", nh, "", "W/OFF:", woff, ""]);
+            wsData.push([]); // Empty row
+    
+            // Create Worksheet
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+    
+            // Define Merges
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 39 } }, // Contractor Name
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 39 } }, // Muster Roll Title
+                { s: { r: 2, c: 0 }, e: { r: 2, c: 39 } }, // Form XVI Rule
+                { s: { r: 7, c: 0 }, e: { r: 7, c: 39 } }, // Note
+                { s: { r: 9, c: 0 }, e: { r: 9, c: 0 } },  // SR#
+                { s: { r: 9, c: 1 }, e: { r: 9, c: 1 } },  // T.NUM
+                { s: { r: 9, c: 2 }, e: { r: 9, c: 2 } },  // NAME OF WORKMAN
+                { s: { r: 9, c: 3 }, e: { r: 9, c: 3 } },  // DESIG
+                { s: { r: 9, c: 4 }, e: { r: 9, c: 4 + daysArray.length - 1 } }, // DAYS (spanning daysArray.length columns)
+                { s: { r: 9, c: 4 + daysArray.length }, e: { r: 9, c: 4 + daysArray.length + 5 } } // SUMMARY (spanning 6 columns)
+            ];
+    
+            // Set Column Widths
+            ws['!cols'] = [
+                { wch: 5 },  // SR#
+                { wch: 10 }, // T.NUM
+                { wch: 25 }, // NAME OF WORKMAN
+                { wch: 10 }, // DESIG
+                ...Array(daysArray.length).fill({ wch: 4 }), // Days
+                { wch: 6 },  // PD(A)
+                { wch: 6 },  // WO(B)
+                { wch: 10 }, // TOTAL(A+B=C)
+                { wch: 6 },  // ED(D)
+                { wch: 6 },  // NH(E)
+                { wch: 10 }  // TOTAL(C+D+E)
+            ];
+    
+            // Apply Styles
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cellAddress = { c: C, r: R };
+                    const cellRef = XLSX.utils.encode_cell(cellAddress);
+                    if (!ws[cellRef]) continue;
+    
+                    ws[cellRef].s = {
+                        font: { name: "Arial", sz: 10 },
+                        alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                        border: {
+                            top: { style: "thin", color: { rgb: "000000" } },
+                            bottom: { style: "thin", color: { rgb: "000000" } },
+                            left: { style: "thin", color: { rgb: "000000" } },
+                            right: { style: "thin", color: { rgb: "000000" } }
+                        }
+                    };
+    
+                    if (R === 0) {
+                        ws[cellRef].s.font = { name: "Arial", sz: 14, bold: true };
+                    } else if (R === 1) {
+                        ws[cellRef].s.font = { name: "Arial", sz: 12, bold: true };
+                    } else if (R === 2) {
+                        ws[cellRef].s.font = { name: "Arial", sz: 11, bold: true };
+                    } else if (R === 7 || R === 9 || R === 10 || 
+                               R === wsData.length - 4 || R === wsData.length - 3 || 
+                               R === wsData.length - 2) {
+                        ws[cellRef].s.font.bold = true;
+                    }
+    
+                    if (C === 2 && R > 10) {
+                        ws[cellRef].s.alignment.horizontal = "left";
+                    }
+    
+                    if (R > 10 && C >= 4 && C < 4 + daysArray.length) {
+                        const value = ws[cellRef].v;
+                        if (["A", "O", "D"].includes(value)) {
+                            ws[cellRef].s.font.color = { rgb: "FF0000" };
+                        }
+                    }
+                }
+            }
+    
+            let sheetName = contractName.length > 31 ? contractName.substring(0, 31) : contractName;
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        });
+    
+        XLSX.writeFile(wb, `Muster_Roll_{{ attendance_data.period }}.xlsx`, { bookType: 'xlsx', bookSST: false, type: 'binary' });
+    }
+
+    function initializeAttendanceTables() {
+        const attendanceData = {{ attendance_data.site_attendance_data|safe }};
+        const periodText = "{{ attendance_data.period }}";
+        Object.entries(attendanceData).forEach(([contractKey, contractDataArray], contractIndex) => {
+            contractDataArray.forEach((contractData, dataIndex) => {
+                const tableId = `attendance-table-${contractIndex}-${dataIndex}`;
+                const tableBody = document.querySelector(`#${tableId} tbody`);
+                const daysRow = document.querySelector(`#${tableId} thead tr:last-child`);
+                while (daysRow.firstChild) daysRow.removeChild(daysRow.firstChild);
+                const daysArray = getDaysArrayFromPeriod(periodText);
+                daysArray.forEach(day => {
+                    const th = document.createElement('th');
+                    th.textContent = day.toString().padStart(2, '0');
+                    daysRow.appendChild(th);
+                });
+                ['PD(A)', 'WO(B)', 'TOTAL(A+B=C)', 'ED(D)', 'NH(E)', 'TOTAL(C+D+E)'].forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    daysRow.appendChild(th);
+                });
+                loadEmployeeData(tableBody, contractData.employee_details, tableId, daysArray);
+            });
+        });
+    }
+    
+    function getDaysArrayFromPeriod(periodText) {
+        // Parse the period to determine which days to display
+        let daysArray = [];
+        
+        // First, check if it's a standard month format "MMM YYYY" (e.g., "JAN 2025")
+        const standardMonthRegex = /^(\w{3})\s+(\d{4})$/i;
+        const formatARegex = /^(\w{3})\s+(\d{4})\s*-\s*A$/i;
+        const formatBRegex = /^(\w{3})\s+(\d{4})\s*-\s*B$/i;
+        const formatCRegex = /^(\w{3})\s+(\d{4})\s*-\s*C$/i;
+        
+        if (standardMonthRegex.test(periodText)) {
+            // Standard month format (e.g., "JAN 2025")
+            const [_, monthStr, yearStr] = standardMonthRegex.exec(periodText);
+            const year = parseInt(yearStr);
+            const month = getMonthNumberFromString(monthStr);
+            
+            // Get the number of days in the month (accounting for leap years)
+            const daysInMonth = getDaysInMonth(month, year);
+            
+            // Generate array from 1 to daysInMonth
+            for (let i = 1; i <= daysInMonth; i++) {
+                daysArray.push(i);
+            }
+        } 
+        else if (formatARegex.test(periodText)) {
+            // Format A: 15th to 14th of next month (e.g., "JAN 2025 - A")
+            const [_, monthStr, yearStr] = formatARegex.exec(periodText);
+            const year = parseInt(yearStr);
+            const month = getMonthNumberFromString(monthStr);
+            
+            // Create days from 15th to end of current month
+            const daysInMonth = getDaysInMonth(month, year);
+            for (let i = 15; i <= daysInMonth; i++) {
+                daysArray.push(i);
+            }
+            
+            // Create days from 1st to 14th of next month
+            for (let i = 1; i <= 14; i++) {
+                daysArray.push(i);
+            }
+        } 
+        else if (formatBRegex.test(periodText)) {
+            // Format B: 25th to 24th of next month (e.g., "JAN 2025 - B")
+            const [_, monthStr, yearStr] = formatBRegex.exec(periodText);
+            const year = parseInt(yearStr);
+            const month = getMonthNumberFromString(monthStr);
+            
+            // Create days from 25th to end of current month
+            const daysInMonth = getDaysInMonth(month, year);
+            for (let i = 25; i <= daysInMonth; i++) {
+                daysArray.push(i);
+            }
+            
+            // Create days from 1st to 24th of next month
+            for (let i = 1; i <= 24; i++) {
+                daysArray.push(i);
+            }
+        } 
+        else if (formatCRegex.test(periodText)) {
+            // Format C: 26th to 25th of next month (e.g., "JAN 2025 - C")
+            const [_, monthStr, yearStr] = formatCRegex.exec(periodText);
+            const year = parseInt(yearStr);
+            const month = getMonthNumberFromString(monthStr);
+            
+            // Create days from 26th to end of current month
+            const daysInMonth = getDaysInMonth(month, year);
+            for (let i = 26; i <= daysInMonth; i++) {
+                daysArray.push(i);
+            }
+            
+            // Create days from 1st to 25th of next month
+            for (let i = 1; i <= 25; i++) {
+                daysArray.push(i);
+            }
+        } 
+        else {
+            // Default to 31 days if format is unrecognized
+            for (let i = 1; i <= 31; i++) {
+                daysArray.push(i);
+            }
+        }
+        return daysArray;
+    }
+    
+    function getMonthNumberFromString(monthStr) {
+        // Convert month name to month number (0-based index)
+        const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+        return monthNames.indexOf(monthStr.toLowerCase());
+    }
+    
+    function isLeapYear(year) {
+        // Check if a year is a leap year
+        return ((year % 4 === 0) && (year % 100 !== 0)) || (year % 400 === 0);
+    }
+    
+    function getDaysInMonth(month, year) {
+        // Get the number of days in a month (0-based month index)
+        const daysInMonth = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        return daysInMonth[month];
+    }
+    
+    function loadEmployeeData(tableBody, employees, tableId, daysArray) {
+        employees.forEach((employee, index) => {
+            const sr = index + 1;
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${sr}</td>
+                <td>${employee.employee}</td>
+                <td class="name-cell">${employee.employee_name}</td>
+                <td>${employee.work_type}</td>
+            `;
+            
+            let pCount = 0;
+            
+            daysArray.forEach((day, dayIndex) => {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 3;
+                input.dataset.row = sr;
+                input.dataset.day = day;
+                input.dataset.dayIndex = dayIndex;
+                input.dataset.table = tableId;
+            
+                if (nationalHolidays.includes(day)) {
+                    input.value = 'N/H';
+                    input.disabled = false;
+                    input.style.color = 'black';
+                } else {
+                    input.value = 'P';
+                    input.style.color = 'black';
+                    pCount++;
+                }
+            
+                input.addEventListener('input', validateAttendance);
+                input.addEventListener('change', (e) => updateSummary(e, tableId));
+                td.appendChild(input);
+                row.appendChild(td);
+            });
+            
+            ['pd', 'wo', 'total', 'ed', 'nh', 'final'].forEach(summary => {
+                const td = document.createElement('td');
+                td.id = `${summary}-${tableId}-${sr}`;
+                td.textContent = summary === 'total' ? pCount : '0';
+                row.appendChild(td);
+            });
+            
+            tableBody.appendChild(row);
+        });
+        
+        tableBody.querySelectorAll('tr').forEach(row => {
+            const firstInputInRow = row.querySelector('input');
+            if (firstInputInRow) {
+                updateSummary({ target: firstInputInRow }, tableId);
+            }
+        });
+    }
+
+    function validateAttendance(event) {
+        const input = event.target;
+        let value = input.value.toUpperCase();
+        
+        // Allow only 'A', 'O', 'D', 'P', 'X', 'N/H', or '' (empty)
+        if (!['A', 'O', 'D', 'P', 'X', 'N/H', ''].includes(value) && !input.disabled) {
+            input.value = 'P';
+            input.style.color = 'black';
+            return;
+        }
+        
+        // Set text color based on value
+        input.style.color = ['A', 'O', 'D', 'X'].includes(value) ? 'red' : 'black';
+        input.value = value;
+        
+        const row = input.dataset.row;
+        const tableId = input.dataset.table;
+        const inputs = Array.from(document.querySelectorAll(`#${tableId} input[data-row="${row}"]`))
+            .sort((a, b) => parseInt(a.dataset.dayIndex) - parseInt(b.dataset.dayIndex));
+        
+        let pCount = 0;
+        let oCount = 0; // Now also counts 'X' as part of the sequence
+        let error = false;
+        let lastXIndex = -1;
+    
+        for (let i = 0; i < inputs.length; i++) {
+            const val = inputs[i].value.toUpperCase();
+        
+            if (val === 'P') {
+                pCount++;
+            } else if (val === 'O' || val === 'X') {
+                oCount++;
+                if (val === 'X') {
+                    lastXIndex = i;
+                    // 'X' must be preceded by exactly 6 'P's
+                    if (pCount !== 6) {
+                        error = true;
+                        break;
+                    }
+                    // Check if 'X' follows another 'X' or 'O' without 6 'P's between
+                    if (i > 0 && i - lastXIndex <= 6 && ['O', 'X'].includes(inputs[i-1].value.toUpperCase())) {
+                        error = true;
+                        break;
+                    }
+                } else if (val === 'O') {
+                    if (oCount === 1) {
+                        if (pCount > 6) {
+                            error = true;
+                            break;
+                        }
+                    } else {
+                        if (pCount !== 6) {
+                            error = true;
+                            break;
+                        }
+                    }
+                }
+                pCount = 0; // Reset after 'O' or 'X'
+            } else if (val === 'D') {
+                oCount++;
+                if (oCount === 1) {
+                    if (pCount > 6) {
+                        error = true;
+                        break;
+                    }
+                } else {
+                    if (pCount !== 6) {
+                        error = true;
+                        break;
+                    }
+                }
+                pCount = 0;
+            } else {
+                pCount = 0; // Reset for 'A', 'N/H'
+            }
+        }
+        
+        if (error) {
+            alert('Error: "X" must follow exactly 6 "P"s and cannot follow another "O" or "X" without 6 "P"s between. First "O", "X", or "D" must have at most 6 "P"s before, subsequent ones must have exactly 6.');
+            input.value = 'P';
+            input.style.color = 'black';
+        }
+    }
+    
+    function updateSummary(event, tableId) {
+        const row = event.target.dataset.row;
+        const inputs = document.querySelectorAll(`#${tableId} input[data-row="${row}"]`);
+        
+        let present = 0;
+        let weeklyOff = 0;
+        let extraDuty = 0;
+        let nationalHoliday = 0;
+        
+        inputs.forEach(input => {
+            switch (input.value.toUpperCase()) {
+                case 'P':
+                    present++;
+                    break;
+                case 'O':
+                    weeklyOff++;
+                    break;
+                case 'X':
+                    // 'X' reduces present by 1 (since it replaces a 'P'), increases weeklyOff and extraDuty
+                    present--; // Assuming one less 'P' day
+                    weeklyOff++;
+                    extraDuty++;
+                    break;
+                case 'D':
+                    extraDuty += 0.5;
+                    weeklyOff++;
+                    break;
+                case 'N/H':
+                    nationalHoliday++;
+                    break;
+            }
+        });
+        
+        // Ensure present doesn't go negative
+        present = Math.max(0, present);
+        
+        document.getElementById(`pd-${tableId}-${row}`).textContent = present;
+        document.getElementById(`wo-${tableId}-${row}`).textContent = weeklyOff;
+        document.getElementById(`total-${tableId}-${row}`).textContent = present + weeklyOff;
+        document.getElementById(`ed-${tableId}-${row}`).textContent = extraDuty.toFixed(1);
+        document.getElementById(`nh-${tableId}-${row}`).textContent = nationalHoliday;
+        document.getElementById(`final-${tableId}-${row}`).textContent =
+            (present + weeklyOff + extraDuty + nationalHoliday).toFixed(1);
+        
+        updateGlobalSummary(tableId);
+    }
+    
+    function updateGlobalSummary(tableId) {
+        const summaryContainer = document.querySelector(`#${tableId}`).closest('.attendance-section')
+            .querySelector('.summary-section');
+        
+        let totalPresent = 0;
+        let totalExtraDuty = 0;
+        let totalWOff = 0;
+        let totalNH = 0;
+    
+        document.querySelectorAll(`#${tableId} [id^="pd-"]`).forEach(el => {
+            totalPresent += parseFloat(el.textContent) || 0;
+        });
+    
+        document.querySelectorAll(`#${tableId} [id^="ed-"]`).forEach(el => {
+            totalExtraDuty += parseFloat(el.textContent) || 0;
+        });
+    
+        document.querySelectorAll(`#${tableId} [id^="wo-"]`).forEach(el => {
+            totalWOff += parseFloat(el.textContent) || 0;
+        });
+    
+        document.querySelectorAll(`#${tableId} [id^="nh-"]`).forEach(el => {
+            totalNH += parseFloat(el.textContent) || 0;
+        });
+    
+        // Format with 1 decimal place where needed
+        summaryContainer.querySelector('.presentDays').textContent = totalPresent;
+        summaryContainer.querySelector('.extraDuty').textContent = totalExtraDuty.toFixed(1);
+        summaryContainer.querySelector('.totalDuty').textContent = (totalPresent + totalExtraDuty).toFixed(1);
+        summaryContainer.querySelector('.woff').textContent = totalWOff;
+        summaryContainer.querySelector('.nh').textContent = totalNH;
+    }
+    
+    const nationalHolidays = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeAttendanceTables();
+
+        const sections = document.querySelectorAll('.attendance-section');
+        sections.forEach((section, index) => {
+            const pageNumber = section.querySelector('.page-number');
+            pageNumber.textContent = `Page ${index + 1}`;
+        });
+
+        document.getElementById('btn_excel').addEventListener('click', function() {
+            downloadExcel();
+        });
+
+        document.getElementById('submit').addEventListener('click', function(event) {
+            event.preventDefault();
+        
+            const errors = validateAllRows();
+            if (errors.length > 0) {
+                alert("Errors found:\n" + errors.join("\n"));
+                return;
+            }
+        
+            const allAttendanceData = {};
+            const summarySectionData = {};
+            const attendanceTables = document.querySelectorAll('[id^="attendance-table-"]');
+            attendanceTables.forEach(table => {
+                const tableId = table.id;
+                const [_, contractIndex, dataIndex] = tableId.split('-').map(Number);
+                const tableKey = `${contractIndex}-${dataIndex}`;
+                allAttendanceData[tableKey] = [];
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach((row, rowIndex) => {
+                    const employeeTicket = row.cells[1].textContent.trim();
+                    const employeeName = row.cells[2].textContent.trim();
+                    const designation = row.cells[3].textContent.trim();
+                    const attendanceInputs = row.querySelectorAll('input[type="text"]');
+                    const attendanceValues = {};
+                    attendanceInputs.forEach(input => {
+                        const day = input.dataset.day;
+                        attendanceValues[`day_${day}`] = input.value;
+                    });
+                    const summaries = {
+                        presentDays: row.querySelector('[id^="pd-"]').textContent,
+                        weeklyOff: row.querySelector('[id^="wo-"]').textContent,
+                        totalAB: row.querySelector('[id^="total-"]').textContent,
+                        extraDuty: row.querySelector('[id^="ed-"]').textContent,
+                        nationalHoliday: row.querySelector('[id^="nh-"]').textContent,
+                        grandTotal: row.querySelector('[id^="final-"]').textContent
+                    };
+                    allAttendanceData[tableKey].push({
+                        srNo: rowIndex + 1,
+                        ticketNo: employeeTicket,
+                        name: employeeName,
+                        designation: designation,
+                        attendance: attendanceValues,
+                        summary: summaries
+                    });
+                });
+                const summarySection = table.closest('.attendance-section').querySelector('.summary-section');
+                summarySectionData[tableKey] = {
+                    presentDays: summarySection.querySelector('.presentDays').textContent,
+                    extraDuty: summarySection.querySelector('.extraDuty').textContent,
+                    totalDuty: summarySection.querySelector('.totalDuty').textContent,
+                    nh: summarySection.querySelector('.nh').textContent,
+                    woff: summarySection.querySelector('.woff').textContent,
+                    contractDuties: summarySection.querySelector('.summary-item:nth-child(3)').textContent.split('CONTRACT DUTIES(A+B):')[1].trim()
+                };
+            });
+        
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'complete_attendance_data';
+            hiddenInput.value = JSON.stringify(allAttendanceData);
+            document.querySelector('form').appendChild(hiddenInput);
+        
+            const summaryInput = document.createElement('input');
+            summaryInput.type = 'hidden';
+            summaryInput.name = 'summary_data';
+            summaryInput.value = JSON.stringify(summarySectionData);
+            document.querySelector('form').appendChild(summaryInput);
+        
+            /*const dateTimeInput = document.createElement('input');
+            dateTimeInput.type = 'hidden';
+            dateTimeInput.name = 'submissionDateTime';
+            dateTimeInput.value = document.getElementById('datetime-0-0').textContent;
+            document.querySelector('form').appendChild(dateTimeInput);*/
+        
+            const periodInput = document.createElement('input');
+            periodInput.type = 'hidden';
+            periodInput.name = 'periodFormat';
+            periodInput.value = "{{ attendance_data.period }}";
+            document.querySelector('form').appendChild(periodInput);
+        
+            document.querySelector('form').submit();
+        });
+
+        document.getElementById('btn_clear').addEventListener('click', function() {
+            location.reload();
+        });
+    });
+</script>
+
+{% endblock extra_scripts %}

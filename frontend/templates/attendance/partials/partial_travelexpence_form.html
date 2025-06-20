@@ -1,0 +1,94 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ te_form.media.css }}
+{% endblock head %}
+
+{% block body %}
+<form action="" method="post" id="id_teform">
+	<div class="modal-header border-0">
+		<h3 class="modal-title modal-heading" id="exampleModalLabel">Conveyance <i class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+		<button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	</div>
+	<div class="modal-body" id="partial">
+		<div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors"role="alert" style="display:none">
+			<strong>Error</strong> <span></span>
+			<button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.people.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.people }}</div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.transportmode.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.transportmode }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.expamt.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.expamt }}</div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.duration.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.duration }}</div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.distance.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.distance }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <legend style="font-size:14px;font-weight:bold">Start Location</legend>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.punch_intime.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.punch_intime }}</div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.startlocation.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.startlocation }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <legend style="font-size:14px;font-weight:bold">End Location</legend>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.punch_outtime.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.punch_outtime }}</div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">{{ te_form.endlocation.label_tag() }}</div>
+                    <div class="col-md-8">{{ te_form.endlocation }}</div>
+                </div>
+            </div>
+
+        </div>
+		
+	</div>
+</form>
+	
+	<div class="modal-footer border-0 pt-0">
+		<button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">Close <i class="fas text-white fa-times"></i></button>
+		{% if te_form.instance.tacode %}
+		<button type="submit" id="submit" form="id_taform" class="btn btn-sm btn-primary2 btn-hover-scale">Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		<button type="button" onclick="deleteTe(this)" data-id="{{ te_form.instance.id }}" id="deleteCap" class="btn btn-sm btn-hover-scale btn-danger">Delete&nbsp;<i class="fas text-white fa-trash-alt"></i></button>
+		{% else %}
+		<button type="submit" form="id_taform" class="btn btn-sm btn-primary2 btn-hover-scale">Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		{% endif %}
+	</div>
+
+{% endblock body %}
+
+{% block js %}
+{{ te_form.media.js }}
+<script>
+$(document).ready(() => {
+	$("#modal-te").find("select").djangoSelect2({
+		dropdownParent: $('#modal-te')
+    })
+})
+</script>
+{% endblock js %}

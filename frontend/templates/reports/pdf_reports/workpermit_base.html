@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{{ static('assets/css/local/reports.css') }}?v=2" rel="stylesheet" type="text/css" />
+        <title>Workpermit</title>
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .mr {
+                margin-bottom: 7px;
+            }
+/* 
+            @page {
+                size: A4;
+                margin-bottom: 80px ;
+
+                @bottom-left {
+                    content: "Version 3.0 01st Jan 2024\n{{ current_time }}";
+                    font-size: 10px;
+                    color: #333;
+                    margin-left: 20px;
+                }
+                
+                @bottom-center {
+                    content: "*** This is a computer-generated Work Permit. Signature not required. ***";
+                    font-size: 10px;
+                    color: #333;
+                    white-space: pre-line;
+                }
+                
+                @bottom-right {
+                    content: "Page " counter(page) " of " counter(pages);
+                    font-size: 10px;
+                    color: #333;
+                    margin-right: 20px;
+                }
+            }
+            .new-page{
+                page-break-before:always !important;
+                margin-top: 20px;
+            } */
+
+            @page {
+                size: A4;
+                margin-bottom: 100px; /* Increased margin to accommodate two-line footer */
+                }
+
+                @page {
+                @bottom-left {
+                    content: 
+                    "Version 4.0   27 Jan 2025"
+                    "\A"
+                    "{{ current_time }}";
+                    font-size: 10px;
+                    color: #333;
+                    white-space: pre;
+                    text-align: center;
+                    line-height: 2.5;
+                    margin-right: 20px;
+                }
+                }
+                @page{
+                    @bottom-center{
+                        content:
+                        "*** This is a computer-generated Work Permit. Signature not required. ***"
+                        "\A"
+                        "Powered by Security & Personnel Services PVT LTD";
+                        margin-right: 20px;
+                        white-space:pre;
+                        font-size: 10px;
+                        line-height: 2.5;
+                        color: #333;
+                    }
+                }
+
+                .new-page {
+                page-break-before: always !important;
+                margin-top: 20px;
+                }
+
+            span,
+            th,
+            td,
+            p {
+                font-size: 0.8rem;
+            }
+            .bold-label{
+                color: rgb(47, 47, 47);
+                font-weight: 600;
+            }
+            .subtle-black{
+                color: rgb(47, 47, 47);;
+            }
+
+            #title {
+                margin-right: 0;
+            }
+
+            #wp_sections th,
+            #wp_sections td {
+                padding: 7px;
+                text-align: left;
+                border: 1px solid rgb(146, 146, 146);
+            }
+
+            #peoples  tr {
+                background: none;
+            }
+
+            .dashed-text {
+                border-bottom: 1px dashed;
+            }   
+
+            .footer-note {
+                font-size: 12px;
+                color: #555;
+                border-top: 1px solid #ccc;
+                padding: 8px 16px;
+                display: flex;
+                justify-content: space-between;
+                background-color: #f9f9f9;
+            }
+
+
+
+            .flex-between {
+                display: flex;
+                justify-content: space-between;
+            }
+        </style>
+        {% block inline_css %}
+
+        {% endblock inline_css %}
+
+    </head>
+
+    <body>
+        <header id="page_header">
+            <div>
+                {% block header_start %}
+
+                {% endblock header_start %}
+            </div>
+            <div>
+                {% block header_center %}
+
+                {% endblock header_center %}
+            </div>
+            <div>
+                {% block header_end %}
+
+                {% endblock header_end %}
+            </div>
+        </header>
+
+        <main>
+            <div>
+                {% block wp_info %}
+
+                {% endblock wp_info %}
+            </div>
+
+            <div>
+                {% block wp_sections %}
+
+                {% endblock wp_sections %}
+            </div>
+            <div>
+                {% block rwp_section %}
+
+                {% endblock rwp_section %}
+            </div>
+
+            <div>
+                {% block static_content %}
+
+                {% endblock static_content %}
+            </div>
+        </main>
+    </body>
+
+</html>

@@ -1,0 +1,808 @@
+<div class="menu menu-column menu-title-gray-800 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow text-white mb-1-gray-500"
+    id="kt_aside_menu" data-kt-menu="true">
+    {% if request.session.sitecode not in ["SPSESIC", "SPSPAYROLL", "SPSOPS", "SPSOPERATION", "SPSHR"] %}
+    <!----DASHBOARD---->
+    <div class="menu-item" id="DASHBOARD" style="display:none;">
+        <a class="menu-link" href="{{ url('onboarding:rp_dashboard') }}">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">
+                        home
+                    </span>
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Dashboard</span>
+        </a>
+    </div>
+    <!---Tracking Dropdowm--->
+    <div data-kt-menu-trigger="click" id="TRACKING" class="menu-item menu-accordion" style="display:none;">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">
+                        share_location
+                    </span>
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Tracking</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            <div data-kt-menu-trigger="click" class="menu-item menu-accordion" style="display:none;" id="SITESURVEY">
+                <span class="menu-link">
+                    <span class="menu-icon">
+                        <span class="svg-icon svg-icon-2">
+                            <span class="material-icons">report</span>
+                        </span>
+                    </span>
+                    <span class="menu-title">Site Survey</span>
+                    <span class="menu-arrow text-white mb-1"></span>
+                </span>
+                <div class="menu-sub menu-sub-accordion" kt-hidden-height="116"
+                    style="display: none; overflow: hidden;">
+                    <div class="menu-item" id="TR_SS_SITEVISIT">
+                        <a class="menu-link" href="{{ url('reports:sitereport_list') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Site Visit</span>
+                        </a>
+                    </div>
+                    <div class="menu-item" id="TR_SS_CONVEYANCE">
+                        <a class="menu-link" href="{{ url('attendance:conveyance') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Conveyance</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-item" style="display:none;" id="TR_GEOFENCETRACKING">
+                <a class="menu-link" href="{{ url('attendance:geofencetracking') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">GeoFence Tracking</span>
+                </a>
+            </div>
+            <div class="menu-item" style="display:none;" id="TR_SITETOURTRACKING">
+                <a class="menu-link" href="apps/customers/getting-started.html">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Site Tour Tracking</span>
+                </a>
+            </div>
+            <div class="menu-item" style="display:none;" id="TR_MOBILEUSERLOG">
+                <a class="menu-link" href="{{ url('activity:mobileuserlogs') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Mobile User Log</span>
+                </a>
+            </div>
+            <div class="menu-item" style="display:none;" id="TR_MOBILEUSERDETAILS">
+                <a class="menu-link" href="apps/customers/getting-started.html">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Mobile User Details</span>
+                </a>
+            </div>
+            {# <div class="menu-item" style="display:none;" id="TR_SOS">
+                <a class="menu-link" href="apps/customers/getting-started.html">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">SOS</span>
+                </a>
+            </div>
+            <div class="menu-item" style="display:none;" id="TR_INCIDENTREPORT">
+                <a class="menu-link" href="apps/customers/getting-started.html">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">SOS/ Incident Map Tracking</span>
+                </a>
+            </div> #}
+            <div class="menu-item" style="display:none;" id="TR_PEOPLENEARASSET">
+                <a class="menu-link" href="{{ url('activity:peoplenearasset') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">People Near Asset</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div data-kt-menu-trigger="click" id="COMPARISIONS" class="menu-item menu-accordion" style="display:none;">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">
+                        legend_toggle
+                    </span>    
+                    
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Comparisions</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            {# <div class="menu-item" id="raiseticket">
+                <a class="menu-link" href="apps/customers/getting-started.html">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Raise Ticket</span>
+                </a>
+            </div> #}
+            <div class="menu-item" id="CMP_ASSET">
+                <a class="menu-link" href="{{ url('activity:comparision') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Asset Comparision</span>
+                </a>
+            </div>
+            <div class="menu-item" id="CMP_PARAMETER">
+                <a class="menu-link" href="{{ url('activity:param_comparision') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Parameter Comparsion</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    <div data-kt-menu-trigger="click" id="ONBOARDING" class="menu-item menu-accordion" style="display:none;">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">upload_file</span>
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Onboarding</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="overflow: hidden;">
+            <div data-kt-menu-trigger="click" class="menu-item menu-accordion" style="" id="COMPANYSETUP">
+                <span class="menu-link">
+                    <span class="menu-icon">
+                        <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                        <span class="svg-icon svg-icon-2">
+                            <span class="material-icons">report</span>
+                        </span>
+                        <!--end::Svg Icon-->
+                    </span>
+                    <span class="menu-title">Company Setup</span>
+                    <span class="menu-arrow text-white mb-1"></span>
+                </span>
+                <div class="menu-sub menu-sub-accordion" kt-hidden-height="116"
+                    style="overflow: hidden;">
+                    <div class="menu-item" id="OB_CS_BUSINESSVIEW">
+                        <a class="menu-link" href="{{ url('onboarding:bu') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Business View</span>
+                        </a>
+                    </div>
+                    <div class="menu-item" id="OB_CS_PEOPLE">
+                        <a class="menu-link" href="{{ url('peoples:people') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">People</span>
+                        </a>
+                    </div>
+                    <div class="menu-item" id="OB_GEOFENCE">
+                        <a class="menu-link" href="{{ url('onboarding:geofence') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                          <span class="menu-title">Geofence</span>
+                        </a>
+                    </div>
+                    <div class="menu-item" id="OB_CS_SITEGROUP">
+                        <a class="menu-link" href="{{ url('peoples:sitegroup') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Site Group</span>
+                        </a>
+                    </div>
+                    <div class="menu-item" id="OB_CS_APPROVERS">
+                        <a class="menu-link" href="{{ url('work_order_management:approvers') }}?template=true">
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                            <span class="menu-title">Approvers</span>
+                        </a>
+                    </div>
+                    <div class="menu-item" id="OB_CS_CONTRACTDETAILS" >
+                        <a class="menu-link" href="{{ url('onboarding:contract') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Contract Details</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="overflow: hidden;">
+            <div class="menu-item" id="OB_SHIFT">
+                        <a class="menu-link" href="{{ url('onboarding:shift') }}?template=true&type=QUESTIONSET">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Shift</span>
+                        </a>
+                    </div>
+            <div class="menu-item" id="OB_PEOPLEGROUP">
+                        <a class="menu-link" href="{{ url('peoples:peoplegroup') }}?template=true&type=QUESTIONSET">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">People Group</span>
+                        </a>
+                    </div>
+            <div class="menu-item" id="OB_LOCATION">
+                        <a class="menu-link" href="{{ url('activity:location') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Location</span>
+                        </a>
+                    </div>
+            <div class="menu-item" id="OB_ASSET">
+                        <a class="menu-link" href="{{ url('activity:asset') }}?template=true&type=QUESTIONSET">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Asset</span>
+                        </a>
+                    </div>
+            <div class="menu-item" id="OB_CHECKPOINT">
+                        <a class="menu-link" href="{{ url('activity:checkpoint') }}?template=true&type=QUESTIONSET">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Checkpoint</span>
+                        </a>
+                    </div>
+
+            <div class="menu-item" id="OB_QUESTION">
+                        <a class="menu-link" href="{{ url('activity:question') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Question</span>
+                        </a>
+                    </div>
+
+            <div class="menu-item" id="OB_QUESTIONSET">
+                        <a class="menu-link" href="{{ url('activity:checklist') }}?template=true&type=QUESTIONSET">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Questionset</span>
+                        </a>
+                    </div>
+            <div class="menu-item" id="OB_VENDOR">
+                <a class="menu-link" href="{{ url('work_order_management:vendor') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Vendor</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div data-kt-menu-trigger="click" id="SCHEDULING" class="menu-item menu-accordion" style="display:none;">
+                <span class="menu-link">
+                    <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                        <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">alarm</span>
+                        </span>
+                <!--end::Svg Icon-->
+                    </span>
+            <span class="menu-title">Scheduling</span>
+                    <span class="menu-arrow text-white mb-1"></span>
+                </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            <div class="menu-item" id="SHD_TASK">
+                        <a class="menu-link" href="{{ url('schedhuler:jobschdtasks') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Task</span>
+                        </a>
+                    </div>
+            <div class="menu-item" id="SHD_PPMPLAN">
+                        <a class="menu-link" href="{{ url('activity:ppm') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                    <span class="menu-title">PPM Plan</span>
+                        </a>
+                    </div>
+            <div class="menu-item" id="SHD_TOUR">
+                        <a class="menu-link" href="{{ url('schedhuler:schd_internal_tour') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Tour</span>
+                        </a>
+                    </div>
+            <div class="menu-item" id="SHD_ROUTEPLAN">
+                        <a class="menu-link" href="{{ url('schedhuler:schd_external_tour') }}?template=true">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Route Plan</span>
+                        </a>
+                    </div>
+                </div>
+    </div>
+
+
+    <div data-kt-menu-trigger="click" id="HELPDESK" class="menu-item menu-accordion" style="display: none; overflow: hidden;">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">
+                        live_help
+                    </span>
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Help Desk</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            {# <div class="menu-item" id="raiseticket">
+                <a class="menu-link" href="apps/customers/getting-started.html">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Raise Ticket</span>
+                </a>
+            </div> #}
+            <div class="menu-item" id="HD_TICKETS">
+                <a class="menu-link" href="{{ url('helpdesk:ticket') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Tickets</span>
+                </a>
+            </div>
+            <div class="menu-item" id="HD_TICKETESCALATION">
+                <a class="menu-link" href="{{ url('helpdesk:escalationmatrix') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Ticket Escalation</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+
+        <div data-kt-menu-trigger="click" id="WOM" class="menu-item menu-accordion" style="display:none;">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">receipt_long</span>
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Work Order Management</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            <div class="menu-item" id="WOM_WORKORDER">
+                <a class="menu-link" href="{{ url('work_order_management:workorder') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Work Order</span>
+                </a>
+            </div>
+            <div class="menu-item" id="WOM_WORKPERMIT">
+                <a class="menu-link" href="{{ url('work_order_management:work_permit') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Work Permit</span>
+                </a>
+            </div>
+
+            <div class="menu-item" id="WOM_SLA">
+                <a class="menu-link" href="{{ url('work_order_management:sla') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Vendor Performance</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+        <div data-kt-menu-trigger="click" id="CALENDAR" class="menu-item menu-accordion" style="display: none; overflow: hidden;">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="material-symbols-outlined">
+                    calendar_month
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Calendar</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            <div class="menu-item" id="CALENDAR_CALENDARVIEW">
+                <a class="menu-link" href="{{ url('activity:calendar') }}">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Calendar View</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div data-kt-menu-trigger="click" id="REPORTS" class="menu-item menu-accordion" style="display: none; overflow: hidden;" >
+        <span class="menu-link">
+        <span class="menu-icon">
+            <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+            <span class="svg-icon svg-icon-2">
+            <span class="material-icons">
+                summarize
+            </span>
+            </span>
+            <!--end::Svg Icon-->
+        </span>
+        <span class="menu-title">Reports</span>
+        <span class="menu-arrow"></span>
+        </span>
+        
+    <div class="menu-sub menu-sub-accordion" kt-hidden-height="116">
+      <div class="menu-item" id="RP_DOWNLOAD">
+        <a class="menu-link" href="{{ url('reports:exportreports') }}">
+          <span class="menu-bullet">
+            <span class="bullet bullet-dot"></span>
+          </span>
+          <span class="menu-title">Download Report</span>
+        </a>
+      </div>
+      <div class="menu-item" id="RP_SCHEDULE">
+        <a class="menu-link" href="{{ url('reports:schedule_email_report') }}?template=true">
+          <span class="menu-bullet">
+            <span class="bullet bullet-dot"></span>
+          </span>
+          <span class="menu-title">Schedule Report </span>
+        </a>
+      </div>
+    </div>
+    </div>
+
+    <div data-kt-menu-trigger="click" id="REQUEST" class="menu-item menu-accordion" style="display: none; overflow: hidden;">
+        <span class="menu-link">
+        <span class="menu-icon">
+            <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+            <span class="svg-icon svg-icon-2">
+            <span class="material-icons">
+                summarize
+            </span>
+            </span>
+            <!--end::Svg Icon-->
+        </span>
+        <span class="menu-title">Request</span>
+        <span class="menu-arrow"></span>
+        </span>
+
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116">
+        <div class="menu-item" id="RP_DOWNLOAD">
+            <a class="menu-link" href="{{ url('helpdesk:postingorder') }}?template=true">
+            <span class="menu-bullet">
+                <span class="bullet bullet-dot"></span>
+            </span>
+            <span class="menu-title">Posting Order</span>
+            </a>
+        </div>
+        </div>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116">
+            <div class="menu-item" id="RP_DOWNLOAD">
+                <a class="menu-link" href="{{ url('helpdesk:uniform') }}?template=true">
+                <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                </span>
+                <span class="menu-title">Uniform</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <div data-kt-menu-trigger="click" id="ADMIN" class="menu-item menu-accordion" style="display: none; overflow: hidden;">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">admin_panel_settings</span>
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Admin</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            <div class="menu-item" id="AD_TYPEASSIST">
+                <a class="menu-link" href="{{ url('onboarding:typeassist') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">User Defined Types</span>
+                </a>
+            </div>
+            <div class="menu-item" id="AD_IMPORT">
+                <a class="menu-link" href="{{ url('onboarding:import') }}?action=form">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Bulk Import Data</span>
+                </a>
+            </div>
+            <div class="menu-item" id="AD_IMPORT">
+                <a class="menu-link" href="{{ url('onboarding:import_update') }}?action=form">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Bulk Import Update</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <div data-kt-menu-trigger="click" id="REPORTS" class="menu-item menu-accordion" style="display:none;" >
+    <span class="menu-link">
+      <span class="menu-icon">
+        <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+        <span class="svg-icon svg-icon-2">
+          <span class="material-icons">
+            summarize
+          </span>
+        </span>
+        <!--end::Svg Icon-->
+      </span>
+      <span class="menu-title">Reports</span>
+      <span class="menu-arrow"></span>
+    </span>
+    <div class="menu-sub menu-sub-accordion" kt-hidden-height="116">
+      <div class="menu-item" id="RP_DOWNLOAD">
+        <a class="menu-link" href="{{ url('reports:exportreports') }}">
+          <span class="menu-bullet">
+            <span class="bullet bullet-dot"></span>
+          </span>
+          <span class="menu-title">Download Report</span>
+        </a>
+      </div>
+      <div class="menu-item" id="RP_SCHEDULE">
+        <a class="menu-link" href="{{ url('reports:schedule_email_report') }}?template=true">
+          <span class="menu-bullet">
+            <span class="bullet bullet-dot"></span>
+          </span>
+          <span class="menu-title">Schedule Report </span>
+        </a>
+      </div>
+    </div>
+  </div>
+  
+    {% if request.user.is_superuser %}
+
+    
+    <div data-kt-menu-trigger="click" class="menu-item menu-accordion" style="display:none;" id="superadmin">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">stars</span>
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Super Admin</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            <div class="menu-item" id="capability">
+                <a class="menu-link" href="{{ url('peoples:capability') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Capability</span>
+                </a>
+            </div>
+            <div class="menu-item" id="client">
+                <a class="menu-link" href="{{ url('onboarding:client') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Client</span>
+                </a>
+            </div>
+            <div class="menu-item" id="sptypeassist">
+                <a class="menu-link" href="{{ url('onboarding:super_typeassist') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">TypeAssist</span>
+                </a>
+            </div>
+            <div class="menu-item" id="features">
+                <a class="menu-link" href="{{ url('clientbilling:features') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Features</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    {# <div data-kt-menu-trigger="click" class="menu-item menu-accordion" style="display:none;" id="superadmin">
+        <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons">stars</span>
+                </span>
+                <!--end::Svg Icon-->
+            </span>
+            <span class="menu-title">Log Viewer</span>
+            <span class="menu-arrow text-white mb-1"></span>
+        </span>
+        <div class="menu-sub menu-sub-accordion" kt-hidden-height="116" style="display: none; overflow: hidden;">
+            <div class="menu-item" id="capability">
+                <a class="menu-link" href="{{ url('peoples:capability') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Capability</span>
+                </a>
+            </div>
+            <div class="menu-item" id="client">
+                <a class="menu-link" href="{{ url('onboarding:client') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Client</span>
+                </a>
+            </div>
+            <div class="menu-item" id="sptypeassist">
+                <a class="menu-link" href="{{ url('onboarding:super_typeassist') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">TypeAssist</span>
+                </a>
+            </div>
+            <div class="menu-item" id="features">
+                <a class="menu-link" href="{{ url('clientbilling:features') }}?template=true">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Features</span>
+                </a>
+            </div>
+        </div>
+    </div> #}
+    {% endif %}
+    {% else %}
+    {% if request.session.sitecode not in ["SPSHR"] %}
+        {% if request.session.sitecode not in ["SPSOPERATION"] %}
+            {% if request.session.sitecode not in ["SPSOPS"] %}
+                <div class="menu-item" id="DASHBOARD" style="">
+                    <a class="menu-link" href="/reports/generatepdf/">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <span class="material-symbols-outlined">
+                                    picture_as_pdf
+                                </span>
+                            </span>
+                        </span>
+                        <span class="menu-title">Generate PDF</span>
+                    </a>
+                </div>
+                {% if request.session.sitecode in ["SPSESIC"] %}
+                <div class="menu-item" id="DASHBOARD" style="">
+                    <a class="menu-link" href="/reports/generateletter/">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <span class="material-symbols-outlined">
+                                    description
+                                </span>
+                            </span>
+                        </span>
+                        <span class="menu-title">Generate Letter</span>
+                    </a>
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="menu-item" id="DASHBOARD" style="">
+                <a class="menu-link" href="/reports/generateattendance/">
+                    <span class="menu-icon">
+                        <span class="svg-icon svg-icon-2">
+                            <span class="material-symbols-outlined">
+                                description
+                            </span>
+                        </span>
+                    </span>
+                    <span class="menu-title">Generate Attendance</span>
+                </a>
+            </div>
+            {% endif %}
+        {% else %}
+        <div class="menu-item" id="DASHBOARD" style="">
+            <a class="menu-link" href="/reports/generate_declaration_form/">
+                <span class="menu-icon">
+                    <span class="svg-icon svg-icon-2">
+                        <span class="material-symbols-outlined">
+                            description
+                        </span>
+                    </span>
+                </span>
+                <span class="menu-title">Generate Declaration Form</span>
+            </a>
+        </div>
+        {% endif %}
+        {% else %}
+        <div data-kt-menu-trigger="click" id="EMPLOYEE" class="menu-item menu-accordion" >
+            <span class="menu-link">
+            <span class="menu-icon">
+                <!--begin::Svg Icon | path: icons/duotone/Communication/Group.svg-->
+                <span class="svg-icon svg-icon-2">
+                <span class="material-icons">
+                    people
+                </span>
+                </span>
+            </span>
+            <span class="menu-title">Employees</span>
+            <span class="menu-arrow"></span>
+            </span>
+            <div class="menu-sub menu-sub-accordion" kt-hidden-height="116">
+            <div class="menu-item" id="RP_DOWNLOAD">
+                <a class="menu-link" href="{{ url('employee_creation:employee_creation') }}">
+                <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                </span>
+                <span class="menu-title">Create Employee</span>
+                </a>
+            </div>
+            <div class="menu-item" id="RP_SCHEDULE">
+                <a class="menu-link" href="{{ url('employee_creation:employee_list') }}">
+                <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                </span>
+                <span class="menu-title">View Employees</span>
+                </a>
+            </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>

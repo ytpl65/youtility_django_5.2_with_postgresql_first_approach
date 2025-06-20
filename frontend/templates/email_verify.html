@@ -1,0 +1,46 @@
+{% extends "globals/base.html" %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@200&amp;display=swap" rel="stylesheet">
+<style>
+    body {
+        background-image: linear-gradient(to top, rgb(93 34 81), rgb(10 70 139));
+    }
+</style>
+{% endblock extra_css %}
+
+{% block body %}
+<div class="container" style="height: auto;  margin-bottom: 0px; padding-bottom: 0px; border: 0px solid red;">
+    <div class="row" style="height: auto; border: 0px solid green;">
+        <div class="col" style="width: auto; border: 0px solid red;">
+            <div class="container" style="border: 0px solid; margin-top: 200px; padding-bottom: 10px;">
+                <h1
+                    style="font-family: 'Mulish', sans-serif;text-align: center;color: white;font-weight: 300;font-size: 3.9rem">
+                    {% if success %} Verified Successfully!{% else %}Error, invalid token! or token expired.{% endif %}
+                </h1>
+            </div>
+            <hr style="background-color: white;">
+
+            <div class="container pt-3" style="border: 0px solid;">
+                <h1
+                    style="font-family: 'Mulish', sans-serif; text-align: center; color: white; font-size: calc(15px + 1.5vw);">
+                    {% if success %}
+                    You are now authorized to <a href="{{ url('login') }}"
+                        class="text-decoration-underline text-white">Login</a> into the app, please check your mails
+                    frequently
+                    {% else %}
+                    This link is invalid or been used already, we cannot verify using this link.
+                    {% endif %}
+                </h1>
+            </div>
+
+            <div class="mt-5">
+                <h1
+                    style="font-family: 'Mulish', sans-serif; text-align: center; color: white; font-size: calc(15px + .5vw);">
+
+                </h1>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}

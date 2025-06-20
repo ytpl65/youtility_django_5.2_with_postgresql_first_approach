@@ -1,0 +1,165 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Posting Order List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Posting Order List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+<style>
+tr{
+    font-size: 12px;
+}
+</style>
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Posting Order</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN TABLE ------------------------------------------->
+{% block table %}
+<table id="posting_order_table" class="display compact cell-border rounded" style="width:100%">
+</table>
+
+{% endblock table %}
+
+{% block extra_scripts %}
+<script>
+    var   table      = null;
+    const table_id   = "#posting_order_table"
+    var params=null;
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+
+    const table_filters = localStorage.getItem('posting_order_stats_filter')
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+
+    $(document).ready(function (){
+        //datatable initialization
+        table = $(table_id).DataTable({
+            ajax:{
+				url: '{{ url("helpdesk:postingorder") }}?action=list',
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+			},
+			deferRender: true,
+			language: {
+				searchPlaceholder: "Search keyword"
+			},
+            lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            responsive:true,
+			columns     : [
+                { "data": "cdtz", title:"Created On", width:"10%" },
+                { "title": "Ticket #", data:'ticketno', width:"8%" },
+                { "title": "Type", data:'ticketsource', width:"8%" },
+                { "title": "Category", data:'ticketcategory__taname',  width:"8%" },
+                { "data": "bu__buname", title:'Site', visible:false,  },
+                { "data": "bu__bucode", visible:false, title:'Code', className:'noVis'},
+                { "data": "ticketdesc", title:'Description' },
+                { "data": "isescalated", title:'Escalated', width:"8%"},
+                { "data": "status", title:"Status", width:'8%' },
+                { "data": "cuser__peoplename", title:"Created By", width:"13%"},
+                { "data": "cuser__peoplecode",title:'People code',visible:false},
+                {data:'ctzoffset', title:"Ctzoffset", visible:false, className:'noVis'}
+            ],
+        columnDefs:[
+				{targets:[6],  render:function(data, type, row, meta){
+					return `<a href={{ url('helpdesk:ticket') }}?id=${row['id']}>${data}</a>`}
+				},
+                {targets:[4], render:function(data, type, row, meta){
+                    return `${data} (${row['bu__bucode']})`
+                }
+                },
+                {targets:[0], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+                {targets:[9], render:function(data, type, row, meta){
+                    return `${data} (${row['cuser__peoplecode']})`
+                }
+                },
+                {targets:8, data: 'runningstatus',  render:function(data, type, row, meta){
+					if(data === 'CANCELLED'){return `<span class="badge badge-danger">${data}</span>`}
+					if(data === 'ONHOLD'){return `<span class="badge badge-info">${data}</span>`}
+					if(data === 'NEW'){return `<span class="badge badge-primary">${data}</span>`}
+					if(data === 'OPEN'){return `<span class="badge badge-orange">${data}</span>`}
+					if(data === 'RESOLVED'){return `<span class="badge badge-success">${data}</span>`}
+					if(data === 'CLOSED'){return `<span class="badge badge-secondary">${data}</span>`}
+                    return data
+				}
+                },
+                {targets:[7], render:function(data, type, row, meta){
+                    return data ? "Yes": "No"
+                }
+                }
+			],
+			createdRow:function(row, data, dataIndex){
+				if(data['enable'] === false){
+					$(row).addClass('disabled-record text-white')
+				}
+			},
+            order:[[0, 'desc'], [2, 'desc']],   
+			dom       : `<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			buttons:[
+                {
+                    extend: 'searchBuilder',
+                    config: {
+                    columns: [0, 1, 2, 3, 4, 6, 7, 8, 9, 10]
+                    }
+                },
+                dataTablesPDFConfig(
+                    title = 'Site: {{ request.user.bu.buname }}\n Ticket List',
+                    columns = ':visible',
+                    filename = "posting_order_list"
+                ),
+                dataTablesExcelConfig(
+                    title = 'Site: {{ request.user.bu.buname }}\n Ticket List',
+                    columns = ':visible',
+                    filename = "posting_order_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+					text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_ticket",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+						location.href =  "{{ url('helpdesk:ticket') }}?action=form"
+					}
+				}
+            ],
+
+        })
+
+        initDateRangeHtml()
+         initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            let filters = {from:from_pd, to:to_pd}
+            reloadTable(table, filters)
+         })
+    })
+</script>
+{% endblock extra_scripts %}

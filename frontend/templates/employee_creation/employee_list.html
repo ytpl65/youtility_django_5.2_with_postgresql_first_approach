@@ -1,0 +1,59 @@
+{% extends "globals/base_form.html" %}
+
+{% block page_title %}
+    Employee List
+{% endblock page_title %}
+
+{% block pagebreadcumb %}
+    {{ super() }}
+    <li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Employee List</a></li>
+{% endblock pagebreadcumb %}
+
+{% block form_title %}
+    Employee List
+{% endblock form_title %}
+
+{% block form %}
+<div class="table-responsive">
+    <table id="employee_table" class="display compact cell-border" style="width:100%">
+    </table>
+</div>
+{% endblock form %}
+
+{% block extra_scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <!-- Load jQuery UI -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+    <!-- Load Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Load DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <!-- Load DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var table = $('#employee_table').DataTable({
+            ajax:{
+                url: "{{ url('employee_creation:employee_list') }}?action=list"
+            },
+            columns:[
+                {data: 'id', title:"ID", defaultContent: "", className:'noVis'},
+                {data: 'post_applied_for', title: 'Post Applied For'},
+                {data: 'first_name', title: 'First Name'},
+                {data: 'middle_name', title: 'Middle Name'},
+                {data: 'surname', title: 'Surname'},
+                {data: 'email', title: 'Email'},
+                {data: 'mobile', title: 'Mobile Number'},
+                {data: 'sex', title: 'Gender'},
+                {data: 'approval_status', title: 'Approval Status'},
+            ],
+            deferRender:true,
+            responsive:true,
+            pageLength: 50,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        })
+    });
+</script>
+{% endblock extra_scripts %}

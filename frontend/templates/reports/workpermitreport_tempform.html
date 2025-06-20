@@ -1,0 +1,698 @@
+{% extends "globals/base_form.html" %}
+
+{% block extra_css %}
+{{ reporttemp_form.media.css }}
+<link  href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css"/>
+<link  href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet" type="text/css"/>
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('reports:config_workpermitreport_template') }}?template=true" class="pe-3">Workpermit Templates</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Workpermit Template Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Workpermit Template
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+{% block form %}
+<form action="" method="post" id="reportTemplateForm" url="{{ url('reports:sitereport_template_form') }}">
+<input type="hidden" name="{{ reporttemp_form.ctzoffset.name }}" id = "{{ reporttemp_form.ctzoffset.auto_id }}" value="-1">
+    {{ reporttemp_form.type }}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="pk" id="pk" value="{{ reporttemp_form.instance.pk }}">
+    <input type="hidden" name="parent_id" id="parent" value="1">
+    <div class="row gy-3">
+        <!--FIELDS -->
+        <div class="input-group mb-3">
+            <div class="col-md-4">
+                {{ reporttemp_form.qsetname.label_tag() }}
+            </div>
+            <div class="col-md-8">
+                {{ reporttemp_form.qsetname }}
+            </div>
+        </div>
+        <div class="input-group mb-3">
+            <div class="col-md-4">
+                {{ reporttemp_form.buincludes.label_tag() }}
+            </div>
+            <div class="col-md-8">
+                {{ reporttemp_form.buincludes }}
+            </div>
+        </div>
+        <div class="input-group mb-3">
+            <div class="col-sm-auto">
+                <div class="form-check form-switch form-check-custom form-check-solid">
+                    {{ reporttemp_form.enable }}
+                    <label for="{{ reporttemp_form.enable.id_for_label }}" class="form-check-label">{{ reporttemp_form.enable.label }}</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock form %}
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    {% if reporttemp_form.instance.id %}
+    <button type="submit" id="submitTour" form="reportTemplateForm" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Update &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+
+    <button type="button" onclick="deleteReport(this)" data-id="{{ reporttemp_form.instance.id }}" id="deleteAttd"
+        class="btn btn-sm btn-danger btn-hover-scale">
+        Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+    </button>
+    {% else %}
+    <button type="submit" form="reportTemplateForm" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Save &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    {% endif %}
+</div>
+{% endblock ajax_page_actions %}
+
+{% block extras %}
+<br><br><br>
+<div class="report_section">
+<div class="row mb-3">
+    <div class="col-sm-12 card">
+        <div class="card-body">
+            <h4 class="ch4">List Of Sections</h4>
+            <table id="tabSitereports" class="display  cell-border compact hover">
+            </table>
+            <br>
+            <h4 class="ch4">Questions In The Selcted Section</h4>
+            <table id="tabchildReport" class="display compact hover"></table>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock extras %}
+
+{% block extra_scripts %}
+{{ reporttemp_form.media.js }}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/editor.select2.js') }}" type="text/javascript"></script>
+{# <script src="{{ static('assets/js/formValidations.js') }}"></script> #}
+<script>
+    var tab_parent = null;
+    var _pkid = null;
+    var editor;
+    var optionTag = null
+    var sectionEditor;
+    var template_id;
+    var parentTable;
+    var childTable;
+    var childEditor;
+    var parentEditor;
+
+    function fire_ajax_get_qsb(qsetData){
+        //get qsb of qset
+        let d = {qset_id:qsetData[0].id, count:qsetData[0].count}
+        fire_ajax_get({url:"{{ url('activity:qset_qsetblng') }}?action=get_questions_of_qset", data: d})
+        .done((data, status, xhr) => {
+            childTable.clear();
+            childTable.rows.add(data.rows);
+            childTable.draw();
+        })
+
+    }
+
+    function hideAndShowFields(selected){
+        if(typeof selected !== 'undefined'){
+            if(selected === 'DROPDOWN' || selected === 'CHECKBOX' && typeof selected !== 'undefined'){
+                childEditor.hide(['min', 'max', 'alertbelow', 'alertabove'], false).show(['alerton', 'options'], false)
+            }else if(selected === 'NUMERIC'){
+                childEditor.hide(['alerton', 'options'], false).show(['min', 'max', 'alertbelow', 'alertabove'], false)
+            }else{
+                childEditor.hide(['alerton', 'options', 'min', 'max', 'alertabove', 'alertbelow'])
+            }
+        }
+    }
+
+    function appenAlerton(options){
+        clearSelection("#DTE_Field_alerton")
+        for(let i=0; i<options.length; i++){
+            
+            if ($('#DTE_Field_alerton').find("option[value='" + options[i] + "']").length) {
+                $('#DTE_Field_alerton').val(options[i]).trigger('change');
+            } else { 
+                // Create a DOM Option and pre-select by default
+                var newOption = new Option(options[i], options[i], false, false);
+                // Append it to the select
+                $('#DTE_Field_alerton').append(newOption).trigger('change');
+            } 
+        }
+    }
+
+    function getCurrentEditingRow(editor, table){
+        var rowModifier = editor.modifier();
+        return rowModifier ? table.row(rowModifier).data() : 'None'
+    }
+
+    function initialize_form(){
+        var data = getCurrentEditingRow(childEditor, childTable)
+        if(data!=='None'){
+            hideAndShowFields(data.answertype)
+            //init question
+            var newOption = new Option(data.quesname.split(' | ')[0], data.question_id, true, true);
+            $('#DTE_Field_question').append(newOption).trigger('change');
+            
+            //init type
+            var _selectedText = getSelectedValue("#DTE_Field_question")
+            childEditor.field('answertype').val(_selectedText.split(" | ")[1])
+            
+            //init options
+            //childEditor.field('options').val(data.options)
+            
+            //init alerton
+            var options = data.options.split(',')
+            if(options.length > 0){
+                appenAlerton(options)
+                let alerton = data.alerton.split(',')
+                $("#DTE_Field_alerton").val(alerton).trigger('change')
+            }
+            
+            if(data.answertype === 'NUMERIC' && data.alerton.length > 0){
+                //init max
+                childEditor.field('max').val(data.max)
+                //init min
+                childEditor.field('min').val(data.min)
+                //init alertbelow and alertabove
+                let alerton = data.alerton
+                let aa = alerton.split(',')[1].replace('>', '') //alert-above
+                let ab = alerton.split(',')[0].replace('<', '') //alert-below
+                childEditor.field('alertbelow').val(ab)
+                childEditor.field('alertabove').val(aa)
+            }
+        }
+    }
+
+    function clearSelection(id){
+        //$(id).val(null).trigger('change');
+        $(id).empty().trigger("change");
+    }
+
+    function clearForm(editor){
+        ['min', 'max', 'alertbelow', 'alertabove', 'options'].forEach((ele) => {
+            editor.field(ele).val('')
+        })
+        clearSelection("#DTE_Field_alerton")
+        clearSelection("#DTE_Field_question")
+    }
+    //delete ajax request 
+    function isReportDeleted(id){ 
+        let urlname = "{{ url('reports:config_workpermitreport_template') }}"
+        const params = {url:`${urlname}?action=delete&id=${id}`}
+        fire_ajax_get(params)
+        .done((data, status, xhr) => {
+            if(!xhr.status === 200){
+                return false
+            }
+            return true
+        })
+        .fail((xhr, status, error) => {
+            show_error_alert('Something went wrong!') //defined in custom.js
+            return false
+        })
+    }
+
+    //delete typeassist 
+    function deleteReport(elemt){
+        var id = "{{ reporttemp_form.instance.pk }}"
+        var viewname = 'Site Report Template'
+        show_alert_before_delete(viewname)
+        .then((result) => {
+            if(result.isConfirmed){ //delete requested by user
+                status = isReportDeleted(id) //fire's request
+                console.log("status ", status)
+                if(status){
+                    show_successful_delete_alert() //defined in customjs
+                    window.setTimeout(function() {
+                        window.location.href = "{{ url('reports:config_workpermitreport_template') }}?action=form";
+                    }, 2000);
+                }else{
+                    show_error_alert('Something went wrong!');
+                }
+            }
+        })
+    }
+
+
+    
+
+
+    $(document).ready(function(){
+        //close on select false
+        $("[multiple]").djangoSelect2({
+            closeOnSelect:false,
+            placeholder: "Search options to select!"
+        })
+        //hide datatables
+        if ($("#pk").val() === "None"){
+            $(".report_section").hide()
+        }else{
+            $(".report_section").show()
+            template_id = $("#pk").val() //update global variable
+        }
+        
+        //set ctzoffset
+  	    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        
+        
+        //editor section table
+        parentEditor = new $.fn.dataTable.Editor({
+            table: "#tabSitereports",
+            ajax: {
+                url:"{{ url('activity:qset_qsetblng') }}",
+                data:function(d){
+                    let currentRow = getCurrentEditingRow(parentEditor, parentTable)
+                    console.log(currentRow)
+                    d.parent_id = template_id
+                    d.questionset = true
+                    d.csrfmiddlewaretoken = '{{ csrf_token }}'
+                    d.ctzoffset = $("#id_ctzoffset").val()
+                    d.pk = currentRow !== 'None' ? currentRow['id'] : currentRow
+                    console.log(d.pk)
+                    d.qsetname = $('#DTE_Field_qsetname').val()
+                    d.type = 'WORKPERMITTEMPLATE'
+                    d.seqno = $('#DTE_Field_seqno').val()
+                }
+            },
+            idSrc:  'id',
+            fields:[
+                {label: 'SNo', name: "seqno", type:"text"},
+                {label: 'Section', name: "qsetname"}
+                
+            ]
+        });
+
+
+
+        //editor of child tabble
+        childEditor = new $.fn.dataTable.Editor({
+            table: '#tabchildReport',
+            ajax: {
+                url:"{{ url('activity:qset_qsetblng') }}",
+                data:function(d){
+                    var selected = parentTable.row( { selected: true } )
+                    if ( selected.any() ) {
+                        let currentRow = getCurrentEditingRow(childEditor, childTable)
+                        console.log(currentRow)
+                        d.parent_id = selected.data().id;
+                        d.csrfmiddlewaretoken = '{{ csrf_token }}'
+                        d.question = true
+                        d.alerton = JSON.stringify($("#DTE_Field_alerton").val())
+                        d.question_id = $("#DTE_Field_question").val()
+                        d.min = $("#DTE_Field_min").val()
+                        d.max = $("#DTE_Field_max").val()
+                        d.alertbelow = $("#DTE_Field_alertbelow").val()
+                        d.alertabove = $("#DTE_Field_alertabove").val()
+                        d.answertype = $("#DTE_Field_answertype").val()
+                        d.seqno = $("#DTE_Field_seqno").val()
+                        d.ismandatory = $("#DTE_Field_ismandatory").val()
+                        d.options = $("#DTE_Field_options").val()
+                        d.pk = currentRow !== 'None' ? currentRow['pk'] : currentRow
+                        d.ctzoffset = $("#id_ctzoffset").val()
+                    }
+                }
+            },
+            idSrc:  'pk',
+            fields:[
+                {data:'pk', type:'hidden', name:'pk', def:'None'},
+                {label:'SNo.', name:"seqno", type:'text', data:'seqno'},
+                {label: 'Question', name: 'question', type: 'select', data:'question'},
+                {label: 'Type', name: 'answertype', type: 'readonly', data:'answertype'},
+                {label: 'Min', name: 'min', type: 'text', def:null},
+                {label: 'Max', name: 'max', type: 'text', def:null},
+                {label: 'Alert below', name: 'alertbelow', type: 'text'},
+                {label: 'Alert above', name: 'alertabove', type: 'text'},
+                {label: 'Option', name: 'options', type:'text', fieldInfo:"Enter text ',' (comma) separated"},
+                {label: 'Alert On', name: 'alerton', type:'select'},
+                {label: 'Mandatory', name: 'ismandatory', type: 'select', def:1,
+                options:   [
+                    { label: 'True', value: 1 },
+                    { label: 'False', value: 0 }
+                ]},
+            ],
+            formOptions:{
+                main:{
+                    onReturn:false
+                }
+            }
+        })
+
+        //PARENT EDITOR ON PRE-OPEN EVENT
+        parentEditor.on('preOpen', function(e, mode, action){
+            
+        })
+
+        //PARENT EDITOR ON OPEN EVENT
+        parentEditor.on('open', function(e, mode, action){
+            $(".DTE_Field").addClass('p-1') // add required classes
+            if(action == 'create'){
+                parentEditor.field('seqno').set(parentTable.data().count() + 1)
+            }
+            
+        })
+        
+        //PARENT EDITOR ON OPENED EVENT
+        parentEditor.on('opened', function(e, mode, action){
+            
+        })
+
+
+        //CHILD EDITOR ON PRE-OPEN EVENT
+        childEditor.on('preOpen', function(e, mode, action){
+            
+        })
+
+        //CHILD EDITOR ON OPEN EVENT
+        childEditor.on('open', function(e, mode, action){
+            
+            // on change options set alerton
+            if(action === 'create' || action === 'edit'){
+                
+                $('[data-dte-e="form"]').attr('id', 'id_childform') // add id to form
+                $(".DTE_Field").addClass('p-1') // add css to form fields
+                $("#DTE_Field_alerton, #DTE_Field_question").addClass("form-control form-select") // add css to alerton form field
+
+                
+
+                // initialize select field question
+                init_select_field({
+                    url: "{{ url('reports:config_workpermitreport_template') }}?action=loadQuestions",
+                    id: "#DTE_Field_question",
+                    item: 'Questoins'
+                })
+                
+                // initialize select field alerton
+                init_select_field({
+                    id:'#DTE_Field_alerton',
+                    client:true,
+                    closeOnSelect:false,
+                    multiple:true
+                })
+
+                // on change question select field, autoselect type field
+                $("#DTE_Field_question.form-select").on("change", function () {
+                    var _selectedText = getSelectedValue("#DTE_Field_question");
+                    var selected = _selectedText.split(" | ")[1]
+                    //hide/show fields based on selected text..
+                    hideAndShowFields(selected)
+                    childEditor.field('answertype').val(selected)
+                })
+            }
+            
+            
+            if(action == "create"){
+                childEditor.field('seqno').set(childTable.data().count() + 1) //update seqno for new entry
+                clearForm(childEditor)
+            }
+            
+        })
+
+        // CHILD EDITOR ON OPENED EVENT
+        childEditor.on('opened', function(e, mode, action){
+            //get the data of rows in editing
+            //var data = getCurrentEditingRow(childEditor, childTable)
+            if(action == 'edit'){
+                initialize_form()
+            }
+            //if(action == "edit" && data !== 'None'){
+                //hide/show fields based on selected text..
+                //hideAndShowFields(data.answertype)
+            //}
+            $("#DTE_Field_options").on('change', function(){
+                var options  = $(this).val()
+                if(options.length > 0){
+                    appenAlerton(options.split(','))
+                }else{
+                    console.log('clear selection..........')
+                    clearSelection("#DTE_Field_alerton")
+                }
+            })
+        })
+
+
+        ////op open form event
+        //childEditor.on('open', function(e, mode, action){
+        //    
+        //    
+        //    //initialize select field
+        //    init_select_field({
+        //        url: "{{ url('reports:config_workpermitreport_template') }}?action=loadQuestions",
+        //        id: "#DTE_Field_question",
+        //        item: 'Questoins'
+        //    })
+        //    
+        //    
+//
+        //    //initialize select field
+        //    init_select_field({
+        //        id:'#DTE_Field_alerton',
+        //        client:true,
+        //        closeOnSelect:false,
+        //        multiple:true
+        //    })
+        //    
+        //    
+//
+        //    //on change question select field, autoselect type field
+        //    $("#DTE_Field_question.form-select").on("change", function () {
+        //        var _selectedText = getSelectedValue("#DTE_Field_question");
+        //        var selected = _selectedText.split(" | ")[1]
+        //        //hide/show fields based on selected text..
+        //        hideAndShowFields(selected)
+        //        childEditor.field('answertype').val(selected)
+        //    })
+//
+        //    //on change options set alerton
+        //    $("#DTE_Field_options").on('change', function(){
+        //        var options  = $(this).val()
+        //        if(options.length > 0){
+        //            appenAlerton(options.split(','))
+        //        }else{
+        //            console.log('clear selection..........')
+        //            clearSelection("#DTE_Field_alerton")
+        //        }
+        //    })
+        //    
+        //    if(action == 'create'){
+        //        //if action = create clearForm
+        //        clearForm(childEditor)
+        //    }
+        //    
+        //})
+//
+        ////on childEditor pre open
+        //childEditor.on('preOpen', function(e, mode, action){
+        //    //get the data of rows in editing
+        //    var data = getCurrentEditingRow(childEditor, childTable)
+        //    
+        //    if(action == "create"){
+        //        childEditor.field('seqno').set(childTable.data().count() + 1)
+        //    }else if(action == "edit" && data !== 'None'){
+        //        //hide/show fields
+        //        hideAndShowFields(data.answertype)
+        //        
+        //        //initialize select field
+        //        init_select_field({
+        //            url: "{{ url('reports:config_workpermitreport_template') }}?action=loadQuestions",
+        //            id: "#DTE_Field_question",
+        //            item: 'Questoins'
+        //        })
+        //        if(typeof data !== 'undefined'){
+        //            console.log("setted")
+        //            $('#DTE_Field_question').select2('val', data['question_id'], true)
+        //        }
+        //    }
+        //})
+//
+        ////on childEditor opened
+        //childEditor.on('opened', function(e, o, action){
+        //    //on adding/removing options in 
+        //    //question-form trigger following events
+        //    if(action == 'edit'){
+        //        initialize_form()
+        //    }
+        //    
+        //})
+
+
+            //validations for child editor..
+            childEditor.on('preSubmit', function(e, o, action){
+                if(action !== 'remove' && this.field('answertype').val() == 'NUMERIC' ){
+                    let min = this.field('min')
+                    let max = this.field('max')
+                    let alertbelow = this.field('alertbelow')
+                    let alertabove = this.field('alertabove')
+                    console.log(!min.isMultiValue(), isNaN(parseInt(min.val())) == NaN)
+
+                    if(!(min.isMultiValue()) && isNaN(parseInt(min.val(), 10))) {min.error('value of min must be number')}
+                    if(!(max.isMultiValue()) && isNaN(parseInt(max.val(), 10))) {max.error('value of max must be number')}
+                    if(!(alertbelow.isMultiValue()) && isNaN(parseInt(alertbelow.val(), 10))) {alertbelow.error('value of alert below must be number')}
+                    if(!(alertabove.isMultiValue()) && isNaN(parseInt(alertabove.val(), 10))) {alertabove.error('value of alert above must be number')}
+
+                    if(!(min.isMultiValue() && max.isMultiValue()) && (parseInt(min.val(), 10) > parseInt(max.val(), 10)) ){
+                        min.error('Min value must be smaller than Max value')
+                    }
+                    if(!(min.isMultiValue() && alertbelow.isMultiValue()) && (parseInt(alertbelow.val(), 10) < parseInt(min.val(), 10)) ){
+                        alertbelow.error('Alert Below value must be greater than Min value')
+                    }
+                    if(!(max.isMultiValue() && alertabove.isMultiValue()) && (parseInt(alertabove.val(), 10)  > parseInt(max.val(), 10)) ){
+                        max.error('Alert Above value must be smaller than Max value')
+                    }
+                    if(!(alertbelow.isMultiValue() && alertabove.isMultiValue()) && (parseInt(alertbelow.val(), 10) > parseInt(alertabove.val(), 10)) ){
+                        alertabove.error('Alert Below value must be smaller than Alert Above value')
+                    }
+                    // If any error was reported, cancel the submission so it can be corrected
+                    if ( this.inError() ) {
+                        return false;
+                    }
+
+                }else if (this.field('answertype').val() == 'DROPDOWN' || this.field('answertype').val() == 'CHECKBOX'){
+                    let alerton = this.field('alerton')
+                    let options = this.field('options')
+                    if(!options.isMultiValue() && !options.val()){options.error('options must be given')}
+                    if ( this.inError() ) {
+                        return false;
+                    }
+                }
+
+                
+            })
+            
+            //datatable configuration tabSiteReports       
+            parentTable = $("#tabSitereports").DataTable({
+                ajax:{
+                    url: `{{ url('reports:config_workpermitreport_template') }}?action=get_sections&parent_id=${template_id}`,
+                },
+                responsive: true,
+                searching:false,
+                ordering:false,
+                paging:false,
+                dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                columns     : [
+                    {data: 'id', defaultContent:null, visible:false},
+                    {title: "SNo", data: 'seqno', width:"5%"},
+                    {title: "Section", data: 'qsetname'},
+                    {title: "Count", width: "15%", defaultContent:null, data:'qcount'},
+                ],
+                buttons:[
+                    { extend: "create", editor: parentEditor },
+                    { extend: "edit",   editor: parentEditor },
+                    { extend: "remove", editor: parentEditor }
+                ],
+                select: {
+                    style: 'single'
+                }
+            })
+
+            //report questoins
+            childTable =$("#tabchildReport").DataTable({
+                ajax:{
+                    url:"{{ url('activity:qset_qsetblng') }}?action=get_questions_of_qset",
+                    type:'get',
+                    data:function(d){
+                        var selected = parentTable.row( { selected: true } );
+                         if ( selected.any() ) {
+                            d.qset_id = selected.data().id
+                            d.count = selected.data().count
+                        }
+
+                    }
+                },
+                responsive:true,
+                ordering:false,
+                searching:false,
+                dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                columns:[
+                    {data:'pk', defaultContent:null, visible:false},
+                    {data:'ctzoffset', defaultContent:null, visible:false},
+                    {title: "SNo", data:'seqno', render:function(data, type, row, meta){
+                        return meta.row + 1
+                    }},
+                    {title: "Question", data: 'quesname'},
+                    {data: 'question_id', visible:false, defaultContent:null},
+                    {title: "Question Type", data: 'answertype'},
+                    {title: "Min", data: 'min', render:function(data, type, row, meta){
+                        return row['answertype'] !== 'NUMERIC' ? 'NA' : data
+                        
+                    }},
+                    {title: "Max", data: 'max', render:function(data, type, row, meta){
+                        return row['answertype'] !== 'NUMERIC'  ? 'NA' : data
+                    }},
+                    {title: "Option", data: 'options', render:function(data, type, row, meta){
+                        return row['answertype'] !== 'CHECKBOX' && row['answertype'] !== 'DROPDOWN' ? 'NA' : data
+                    }},
+                    {title: "Alert On", data: 'alerton', render:function(data, type, row, meta){
+                        return row['answertype'] !== 'CHECKBOX' && row['answertype'] !== 'DROPDOWN' ? 'NA' : data
+                    }},
+                    {title: "Mandatory", data: 'ismandatory'},
+                ],
+                buttons:[
+                    { extend: "create", editor: childEditor },
+                    { extend: "edit",   editor: childEditor },
+                    { extend: "remove", editor: childEditor }
+                ],
+                select: {
+                    style: 'single'
+                }
+            })
+            $("#tabchildReport_wrapper .buttons-create").addClass('disabled')//on page load disable new button of child table
+            $("#tabchildReport_wrapper .buttons-create").attr({'data-toggle':"tooltip", 'data-placement':"top", 'title':"Select Section First"})
+
+            
+            //on submit form post request
+            $("#reportTemplateForm").submit((e) => {
+                e.preventDefault()
+                var form = $(this);
+                const params   = { url: $(form).attr("action"), modal: false }
+                const id = $("#pk").val() //form instance id
+                var   payLoad  = {formData:$("#reportTemplateForm").serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'} 
+                if(id != 'None'){
+                    var newPayLoad = {...payLoad, 'pk':id}
+                    payLoad = newPayLoad
+                }
+                fire_ajax_form_post(params, payLoad)
+                .done((data, status, xhr) => {
+                    let url = "{{ url('reports:config_workpermitreport_template') }}"
+                    show_successful_save_alert(update= id != 'None' ? true : false)
+                    window.setTimeout(function() {
+                        window.location.href = `${url}?id=${data.parent_id}`;
+                    }, 2000);
+                })
+            })
+
+            parentTable.on( 'select', function () {
+                childTable.ajax.reload();
+                $("#tabchildReport_wrapper .buttons-create").removeClass('disabled')
+                //childEditor
+                //    .field( 'users.site' )
+                //    .def( parentTable.row( { selected: true } ).data().id );
+            } );
+            
+            parentTable.on( 'deselect', function () {
+                childTable.ajax.reload();
+                $("#tabchildReport_wrapper .buttons-create").addClass('disabled')
+                $("#tabchildReport_wrapper .buttons-create").attr({'data-toggle':"tooltip", 'data-placement':"top", 'title':"Select Section First"})
+            } );
+
+            
+
+       
+    })
+</script>
+{# <script src="{{ static('assets/js/formValidations.js') }}"></script>#}
+{% endblock extra_scripts %}

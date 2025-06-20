@@ -1,0 +1,170 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Shift List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Shift List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Shift List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+{% block table %}
+<table id="shift_table" class="display cell-bordered compact hover" style="width:100%"></table>
+{% endblock table %}
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal animate__animated animate__zoomIn" tabindex="-1" aria-hidden="true"  aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-shift">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="shift_content">
+		</div>
+	</div>
+</div>
+{% endblock popup_alerts %}
+
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script>
+	var table             = null;
+	const modal_id        = "#modal-shift"
+	const modalcontent_id = "#shift_content"
+	const table_id        = "#shift_table"
+	const formid          = "#id_shiftform"
+	const urlname         = "{{ url('onboarding:shift') }}"
+	const viewname        = "Shift"
+	const rowlink         = "a.shift-link"
+	
+	$(document).ready(function () {
+
+        function convertToIST(utcTimeStr) {
+            // Convert UTC time string to IST (UTC+5:30)
+            const [hours, minutes] = utcTimeStr.split(':');
+            const utcDate = new Date();
+            utcDate.setUTCHours(parseInt(hours), parseInt(minutes));
+            
+            // Add 5 hours and 30 minutes for IST
+            utcDate.setTime(utcDate.getTime() + (5.5 * 60 * 60 * 1000));
+            
+            const istHours = utcDate.getUTCHours().toString().padStart(2, '0');
+            const istMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
+            return `${istHours}:${istMinutes}`;
+        }
+
+		function addField() {
+			const container = document.getElementById('dynamic-fields-container');
+			if (!container) return;
+			const newGroup = document.createElement('div');
+			newGroup.className = 'input-group mb-3';
+			newGroup.innerHTML = `
+				<select class="form-select" name="terminal[]">
+					<option value="">Select terminal</option>
+					<option value="terminal1">Terminal 1</option>
+					<option value="terminal2">Terminal 2</option>
+					<option value="terminal3">Terminal 3</option>
+					<!-- Add more options as needed -->
+				</select>
+				<button class="btn btn-outline-secondary add-field-btn" type="button">+</button>
+			`;
+			container.appendChild(newGroup);
+		}
+
+		$(document).on('click', '.add-field-btn', addField);
+		
+
+        //beforeSend of capability ajax request 
+        function ShiftBeforeSend(){
+            $(modal_id).modal("show");
+        }
+		////datatable initialization
+        table = $(table_id).DataTable({
+			ajax: {
+                url    : '{{ url("onboarding:shift") }}?action=list',
+            },
+			deferRender: true,
+			responsive : true,
+			lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+			dom       :`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			columns     : [
+                { "data": "id", title:"ID", 'visible':false, className:'noVis'},
+                { "data": "shiftname" , 'title': 'Name',
+                    'render':function(data, type, row, meta){
+                        return `<a href="${urlname}?id=${row['id']}" class="shift-link" data-id=${row['id']} data-rowid=${meta.row}>${data}</a>`
+                    }
+                },
+                { "data": "starttime", 'title': 'Start Time',
+                    'render': function(data, type, row, meta) {
+                        if (type === 'display' && data) {
+                            return convertToIST(data);
+                        }
+                        return data;
+                    }
+                },
+                { "data": "endtime", 'title': 'End Time',
+                    'render': function(data, type, row, meta) {
+                        if (type === 'display' && data) {
+                            return convertToIST(data);
+                        }
+                        return data;
+                    }
+                },
+                { "data": "nightshiftappicable", 'title': 'Night Shift',
+                    'render': function(data, type, row, meta){
+                        return data === true ? "Yes": "No"
+                    }
+                },
+				{data:"bu__buname", title:"Site", visible:false},
+				{data:'bu__bucode', title:"Site Code", visible:false}
+            ],
+			buttons:[
+                {
+                    extend: 'searchBuilder',
+                    config: {
+                    columns: [1, 2, 3, 4, 5, 6]
+                    }
+                },
+				dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Shift List`,
+                    columns = ':visible',
+                    filename="shift_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Shift List`,	
+                    columns = ':visible',
+                    filename="shift_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+                    text: `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+                    className: "btn btn-sm border border-primary btn-light-primary add_new_vendor",
+                    action: function(e, dt, node, config){
+                        window.location.href = `${urlname}?action=form`;
+                    }
+                }
+            ],
+            select: {
+                style:"single"
+            }
+        })
+        
+        // Remove the modal-related event listeners
+        // The row click event is now handled by the 'render' function in the DataTable initialization
+    }); //END document.ready()
+
+    // Remove the deleteShift function if it's no longer needed in this file
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS ------------------------------->

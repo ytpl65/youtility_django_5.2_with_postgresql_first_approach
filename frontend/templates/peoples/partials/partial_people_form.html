@@ -1,0 +1,604 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ peopleform.media.css }}
+{% endblock head %}
+
+{% block body %}
+<form action="" method="post" id="id_peopleform">
+	<div class="modal-header border-0">
+		<h3 class="modal-title modal-heading" id="exampleModalLabel">Create People <i
+				class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+		<button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	</div>
+	<div class="modal-body" id="partial">
+		<div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors" role="alert"
+			style="display:none">
+			<strong>Error</strong> <span></span>
+			<button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+		<!--BEGIN FIRST ROW-->
+		<div class="mb-3 row g-3 gx-6">
+			<!--BEGIN FIRST COLUMN-->
+			<div class="col-md-10">
+				<!--BEGIN INNER ROW-->
+				<div class="row g-3 gx-6 ">
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_peoplecode">Code:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.peoplecode }}
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.peoplecode.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_peoplename">Name:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.peoplename }}
+						<!--HELP TEXT-->
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.peoplename.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_loginid">Loginid:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.loginid }}
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.loginid.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_email">Email:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.email }}
+						<!--HELP TEXT-->
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.email.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_mobno">Mobno:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.mobno }}
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.mobno.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_gender">Gender:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.gender }}
+						<!--HELP TEXT-->
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.gender.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_dateofbirth">Date of Birth:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.dateofbirth }}
+						<!--HELP TEXT-->
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.dateofbirth.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_deviceid">Device Id:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.deviceid }}
+						<!--HELP TEXT-->
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.deviceid.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label for="id_shift">Shift:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.shift }}
+						<!--HELP TEXT-->
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.shift.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+
+					<!--LABEL FIELD-->
+					<label for="id_peopletype">People Type:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						<div class="d-flex flex-row">
+							{{ peopleform.peopletype }}
+							<a href="" type="button" data-bs-toggle="modal" data-bs-target="#peopletype_popup"><span
+									style="font-size: 24px;" data-bs-toggle="tooltip" data-bs-placement="left"
+									title="If you haven't found an option in selection menu, then create one from here"
+									class="material-icons-outlined mt-3 ps-2 primary-col">
+									add_circle
+								</span></a>
+						</div>
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.peopletype.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_dateofjoin">Date of Joining:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.dateofjoin }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.dateofjoin.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label class="required" for="id_dateofjoin">Site</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.bu }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.bu.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+					<!------------Checkboxes Rendering Last --------------------->
+					<div class="booleans col-md-6 d-flex justify-content-sm-start mt-5">
+						<!--ENABLE CHECKBOX -->
+						<label for = id_isenable class="form-check-label bool col-form-label me-5 text-sm-right">Enable
+							&nbsp {{ peopleform.enable }}</label>
+						<!--BLACKLIST CHECKBOX -->
+						<label for = id_blacklist
+							class="form-check-label bool col-form-label me-5 text-sm-right">Blacklist
+							&nbsp{{ pref_form.blacklist }}</label>
+						<!--ISADMIN CHECKBOX -->
+						<label for = id_isadmin id="label_isadmin"
+							class="form-check-label bool col-form-label me-5 text-sm-right" style="display:none">Is
+							Admin
+							&nbsp{{ peopleform.isadmin }}</label>
+						{% if peopleform.instance.id %}
+						<button type="button" id="change_pass" class="btn btn-sm  btn-primary2 rounded-1"
+							data-bs-target='#paswd_change_alert' data-bs-toggle="modal">Change Password
+							<span class="svg-icon svg-icon-2">
+								<span class="material-icons h-19px" style="vertical-align: middle; font-size: 19px;">
+									lock
+								</span></span></button>
+						{% endif %}
+					</div>
+				</div>
+				<!--END INNER ROW-->
+			</div>
+			<!--END FIRST COLUMN-->
+			<!--BEGIN IMAGE INPUT-->
+			<div class="col-md-2">
+
+				<!--begin::Image input-->
+				<div class="image-input image-input-empty" data-kt-image-input="true"
+					style="background-image: url({% if peopleform.instance %} {{ peopleform.instance.peopleimg.url }} {% else %} '/static/assets/media/images/blank.png' {% endif %})">
+					<!--begin::Image preview wrapper-->
+					<div class="image-input-wrapper w-125px h-125px"></div>
+					<!--end::Image preview wrapper-->
+
+					<!--begin::Edit button-->
+					<label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-white shadow"
+						data-kt-image-input-action="change" data-bs-toggle="tooltip" data-bs-dismiss="click"
+						title="Change avatar">
+						<span class="svg-icon svg-icon-1">
+							<span class="material-icons align-middle dark fs-5">
+								edit
+							</span>
+						</span>
+
+						<!--begin::Inputs-->
+						<input type="file" name="peopleimg" accept=".png, .jpg, .jpeg" />
+						<input type="hidden" name="avatar_remove" />
+						<!--end::Inputs-->
+					</label>
+					<!--end::Edit button-->
+
+					<!--begin::Cancel button-->
+					<span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-white shadow"
+						data-kt-image-input-action="cancel" data-bs-toggle="tooltip" data-bs-dismiss="click"
+						title="Cancel avatar">
+						<span class="svg-icon svg-icon-1">
+							<span class="material-icons align-middle dark fs-5">
+								clear
+							</span>
+						</span>
+					</span>
+					<!--end::Cancel button-->
+
+					<!--begin::Remove button-->
+					<span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-white shadow"
+						data-kt-image-input-action="remove" data-bs-toggle="tooltip" data-bs-dismiss="click"
+						title="Remove avatar">
+						<i class="bi bi-x fs-2"></i>
+					</span>
+					<!--end::Remove button-->
+				</div>
+				<!--end::Image input-->
+			</div>
+			<!--END IMAGE INPUT-->
+		</div>
+
+		<!---BEGIN Add More Details --->
+		<div class="d-flex flex-row justify-content-center mt-2">
+			<p id="add_more" style="cursor:pointer; color:#009EF7" class="" id="add_more"><span id="ptxt"><u>Add more
+						info</u></span>
+				<span class="material-icons-outlined align-middle">
+					arrow_downward
+				</span>
+			</p>
+		</div>
+		<!--END-Add More Details --->
+
+		<!--END FIRST ROW-->
+		<div class="mb-4 row" id="workinfo" style="display:none;">
+			<section class="my-6">
+				<h4>Work Information</h4>
+				<hr>
+				<div class="mb-3 row g-3 gx-6">
+
+					<!--LABEL FIELD-->
+					<label for="id_department">Department:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						<div class="d-flex flex-row">
+							{{ peopleform.department }}
+							<a href="" type="button" data-bs-toggle="modal" data-bs-target="#department_popup"><span
+									style="font-size: 24px;" data-bs-toggle="tooltip" data-bs-placement="left"
+									title="If you haven't found an option in selection menu, then create one from here"
+									class="material-icons-outlined mt-3 ps-2 primary-col">
+									add_circle
+								</span></a>
+						</div>
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.department.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label for="id_designation">Designation:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						<div class="d-flex flex-row">
+							{{ peopleform.designation }}
+							<a href="" type="button" data-bs-toggle="modal" data-bs-target="#designation_popup"><span
+									style="font-size: 24px;" data-bs-toggle="tooltip" data-bs-placement="left"
+									title="If you haven't found an option in selection menu, then create one from here"
+									class="material-icons-outlined mt-3 ps-2 primary-col">
+									add_circle
+								</span></a>
+						</div>
+
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.designation.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label for="id_dateofreport">Date of Release:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.dateofreport }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.dateofreport.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label for="id_reportto">Report to:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ peopleform.reportto }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ peopleform.reportto.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+
+				</div>
+			</section>
+		</div>
+		<div class="mb-4 row" id="capinfo" style="display:none">
+			<section class="mb-6">
+				<h4>People Information</h4>
+				<hr>
+				<div class="mb-3 row g-3 gx-6">
+
+					<!--LABEL FIELD-->
+					<label for="id_mobilecapability">Mobile Capability:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ pref_form.mobilecapability }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ pref_form.mobilecapability.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label for="id_portletcapability">Portlet Capability:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ pref_form.portletcapability }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ pref_form.portletcapability.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label for="id_reportcapability">Report Capability:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ pref_form.reportcapability }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ pref_form.reportcapability.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					<!--LABEL FIELD-->
+
+					<!--LABEL FIELD-->
+					<label for="id_webcapability">Web Capability:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ pref_form.webcapability }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ pref_form.webcapability.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+					
+					<label for="id_noccapability">Noc Capability:</label>
+					<!--INPUT GROUP-->
+					<div class="col-md-4">
+						{{ pref_form.noccapability }}
+						<!--HELP TEXT-->
+						<!----- BEGIN ERROR FIELD  ------->
+						{{ pref_form.noccapability.errors }}
+						<!----- END ERROR FIELD  ------->
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<div class="mb-4 row" id="sgti" style="display:none">
+			<section class="mb-6" id="sgti">
+				<h4>Site Group And Template Information</h4>
+				<hr>
+				<div class="mb-3 row g-3 gx-6">
+					<label for="id_assignsitegroup">Site Group:</label>
+					<div class="col-md-4">
+						{{ pref_form.assignsitegroup }}
+						<!--HELP TEXT-->
+						<!--ERROR FIELD-->
+						{{ pref_form.assignsitegroup.errors }}
+					</div>
+					<label for="id_tempincludes">Template:</label>
+					<div class="col-md-4">
+						{{ pref_form.tempincludes }}
+						<!--HELP TEXT-->
+						<!--ERROR FIELD-->
+						{{ pref_form.tempincludes.errors }}
+					</div>
+					<div class="booleans col-md-6 d-flex justify-content-sm-between mt-5">
+
+						<label for = id_showalltemplates
+							class="form-check-label bool col-form-label me-5 text-sm-right">{{ pref_form.showalltemplates }}
+							&nbspShow all Templates </label>
+						<label for = id_showtemplatebasedonfilter
+							class="form-check-label bool col-form-label me-5 text-sm-right">{{ pref_form.showtemplatebasedonfilter }}
+							&nbspDisplay site wise templates</label>
+
+					</div>
+				</div>
+			</section>
+		</div>
+		<div class="modal-footer border-0 pt-0">
+			<button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">Close <i class="fas fa-times"></i></button>
+			{% if peopleform.instance.peoplecode %}
+			<button type="submit" id="submit" class="btn btn-sm btn-primary2 btn-hover-scale">Update&nbsp;<i
+					class="fas text-white fa-cloud-upload-alt"></i></button>
+			<button type="button" onclick="deletePeople(this)" data-id="{{ peopleform.instance.id }}" id="deleteCap"
+				class="btn btn-sm btn-hover-scale btn-danger">Delete&nbsp;<i class="fas text-white fa-trash-alt"></i></button>
+			{% else %}
+			<button type="submit" class="btn btn-sm btn-primary2 btn-hover-scale">Add&nbsp;<i
+					class="fas text-white fa-cloud-upload-alt"></i></button>
+			{% endif %}
+		</div>
+</form>
+
+{% endblock body %}
+
+{% block js %}
+{{ peopleform.media.js }}
+<script>
+	$(document).ready(function () {
+		$('.django-select2').djangoSelect2({
+			dropdownParent: $('#modal-people')
+		})
+		// add classes to checkboxes.
+		$(".booleans").addClass("form-check form-switch form-check-custom form-check-solid")             
+		
+		/*add class to labels of modals or 
+		popup-taform to adjust the grid properly*/
+		$('.row > label').addClass('col-sm-2')
+		
+		//hide the delete button when instance is not saved yet.
+		if ('{{peopleform.instance.id}}' == ('None' || "")) {	
+			$("#btn_del").hide()
+		}
+		//hide site group and template info
+		session = {{ dict(request.session) |default ("") | tojson }}
+		if (session && session['wizard_data']) {
+			$('#sgti').hide()
+		}
+
+		// submit the popup-taform for validation and saving in db.
+
+		$("#add_more").click(function () {
+			//show more fields to add in peopleform
+			$('#capinfo, #sgti, #workinfo').toggle()
+		})
+		//on submit password change form
+		$('#passwordChangeForm').on('submit', function (e) {
+			console.log('triggered')
+			e.preventDefault();
+			$.ajax({
+				type: 'POST',
+				url: "{{ url('peoples:people_change_paswd') }}",
+				data: $('#passwordChangeForm').serialize(),
+				success: function (data, status, xhr) {
+					console.log(data)
+					$('#password_msgs').html("")
+					if (data['status'] == 500) {
+						let error_field = $('#password_error');
+						let errors = data['res']['new_password2'].map(
+							error => {
+								let li = document.createElement('li');
+								li.textContent = error
+								$(li).css('color', 'red')
+								return li;
+							}
+						);
+						error_field.html("");
+						error_field.append(...errors)
+					} else {
+						$('#paswd_change_alert').modal('hide')
+					}
+
+				}
+			})
+		})
+
+		//hide next btn if instance is not saved yet
+		if (session['wizard_data'] && session['wizard_data']['peoples'].length == 0) {
+			$('#next_btn').hide()
+		}
+
+		// submit the popup-peopletype-taform for validation and saving in db.
+		$('#pop_peopletype_form').on('submit', sumit_popup_form({
+			'url': "{{ url('onboarding:ta_popup') }}",
+			'form': "#pop_peopletype_form",
+			'field': "#id_peopletype",
+			'modal': "#peopletype_popup"
+		}))
+
+		// submit the popup-department-taform for validation and saving in db.
+		$('#pop_dept_form').on('submit', sumit_popup_form({
+			'url': "{{ url('onboarding:ta_popup') }}",
+			'form': "#pop_dept_form",
+			'field': "#id_department",
+			'modal': "#department_popup"
+		}))
+
+		// submit the popup-peopletype-taform for validation and saving in db.
+		$('#pop_desgn_form').on('submit', sumit_popup_form({
+			'url': "{{ url('onboarding:ta_popup') }}",
+			'form': "#pop_desgn_form",
+			'field': "#id_designation",
+			'modal': "#designation_popup"
+		}))
+
+		//ADD CALENDER TO DATE FIELDS WITH FLAT-PICKR PLUGIN
+		$("#id_dateofbirth, #id_dateofjoin, #id_dateofreport").flatpickr({
+			dateFormat: 'd M Y'
+		})
+
+		//Add More Details toggle
+		$("#add_more").click(() => {
+			$('#add_more' > '#ptxt').text((i, text) => {
+				return text === "Add more info" ? "Hide more info" : "Add more info";
+			})
+		})
+		//for select2 search work in bootstrap modals
+		$("#department_popup").find("select[name = tatype]").select2({
+			dropdownParent: $('#department_popup')
+		})
+		$("#designation_popup").find("select[name = tatype]").select2({
+			dropdownParent: $('#designation_popup')
+		})
+		$("#peopletype_popup").find("select[name = tatype]").select2({
+			dropdownParent: $('#peopletype_popup')
+		})
+		//hide change_pass feature for session wizard
+		if (session['wizard_data']) {
+			$("#change_pass").hide()
+		}
+		//pre-select options for pop-up ta forms
+		$("#peopletype_popup select[name='tatype']").val($(
+			"#peopletype_popup select option:contains('PEOPLE_TYPE')").val()).change().prop({
+			"disabled": "true"
+		})
+
+		//pre-select options for pop-up ta forms
+		$("#designation_popup select[name='tatype']").val($(
+			"#designation_popup select option:contains('DESIGNATION')").val()).change().prop({
+			"disabled": "true"
+		})
+
+		//pre-select options for pop-up ta forms
+		$("#department_popup select[name='tatype']").val($(
+			"#department_popup select option:contains('DEPARTMENT')").val()).change().prop({
+			"disabled": "true"
+		})
+
+		//show isadmin checkbox to superuser
+		if (session.is_superadmin) {
+			$("#label_isadmin, #id_isadmin").show()
+		} else {
+			$("#label_isadmin, #id_isadmin").hide()
+		}
+
+		//sets closeonSelect to false for multiple-select fields
+		$("[multiple]").select2({
+			closeOnSelect: false
+		})
+	})
+</script>
+{% endblock js %}

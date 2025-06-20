@@ -1,0 +1,75 @@
+{% extends "onboarding/client_onboarding/base_wizard_form.html" %}
+
+<!----------- BEGIN FORM MESSGES --------------->
+{% block form_msgs %}
+	{% for msg in get_msgs(request) %}
+	<div class="alert {% if msg.tags %} {{ msg.tags }} {% endif %} " id="alert_msg" style="width:73%; ">
+		{{ msg }}
+		<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% endfor %}
+
+{% endblock form_msgs %}
+<!----------- END FORM MESSGES ----------------->
+
+{% block form_title %}
+Create Shift
+{% endblock form_title %}
+
+<!-------------- BEGIN FORM ------------------->
+{% block custom_form %}
+		<div class="mb-3 row g-3 gx-6">
+			<!--SHIFTNAME-->
+			<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_shift_form-shiftname">Shift Name:
+				<span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;" data-bs-toggle="tooltip" data-bs-custom-class="tooltip" data-bs-placement="top"
+				title = "Display name of the shift">
+                        info
+                </span>
+			</label>
+			<div class="col-md-4">
+				{{ wizard.form.shiftname }}
+			</div>
+			<!--STARTTIME-->
+			<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_shift_form-starttime">Start Time:
+			<span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;" data-bs-toggle="tooltip" data-bs-custom-class="tooltip" data-bs-placement="top"
+			title = "Enter starttime of shift">
+                        info
+                </span>
+			</label>
+			<div class="col-md-4">
+				{{ wizard.form.starttime }}
+			</div>
+			<!--CAPCTCHA FREQUENCY-->
+			<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_shift_form-captchafreq">Captchafreq:
+			<span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;" data-bs-toggle="tooltip" data-bs-custom-class="tooltip" data-bs-placement="top"
+			title = "">
+                        info
+                </span>
+			</label>
+			<div class="col-md-4">
+				{{ wizard.form.captchafreq }}
+			</div>
+			<!--ENDTIME-->
+			<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_shift_form-endtime">End Time:
+			<span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;" data-bs-toggle="tooltip" data-bs-custom-class="tooltip" data-bs-placement="top"
+			title = "Enter endtime of shift">
+                        info
+                </span>
+			</label>
+			<div class="col-md-4">
+				{{ wizard.form.endtime }}
+			</div>
+		</div>
+		<input type="submit" class="btn btn-sm btn-success" style="background-color:#189D54;" value="Next">
+{% endblock custom_form %}
+<!------------- END FORM ---------------------->
+
+{% block extra_scripts %}
+<script>
+	$('#id_shift_form-starttime, #id_shift_form-endtime').flatpickr({
+	enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i"
+	})
+</script>
+{% endblock extra_scripts %}

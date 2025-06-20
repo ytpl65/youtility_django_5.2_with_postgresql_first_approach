@@ -1,0 +1,251 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Features
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block title %}
+  Features
+{% endblock title %}
+
+
+{% block extra_css %}
+<link href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet"
+    type="text/css" />
+{% endblock extra_css %}
+
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('clientbilling:features') }}?template=true" class="pe-3">Features</a>
+</li>
+{% endblock pagebreadcumb %}
+
+
+
+{% block form_title %}
+Features
+{% endblock form_title %}
+
+
+{% block card_tabs %}
+<ul id="formnavbar" class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active"id="addfeature" aria-current="page" href="#">Add Feature</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="featurelist" href="#">Feature List</a>
+    </li>
+</ul>
+{% endblock card_tabs %}
+
+{% block popup_alerts %}
+{{ super()  }}
+{% call general_popup(popup_id='approvalprompt', title='Approval Prompt', size='md') %}
+<div class="modal-body">
+        <p>Total&nbsp;<span id="noOfFeatures"></span> Features are selected</p>
+        <textarea name="note" class="form-control" id="" cols="30" rows="3" placeholder="Any Message..?"></textarea>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary2" data-bs-dismiss="modal">Submit</button>
+</div>
+{% endcall %}
+{% endblock %}
+
+{% block form %}
+<form action="" method="post" class="featureform" id="featureform">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="{{ form.ctzoffset.name }}" id="{{ form.ctzoffset.auto_id }}" value="-1">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row gy-4">
+                <div class="col-md-12">
+                    {{ form.name.label_tag() }}
+                    {{ form.name }}
+                </div>
+                <div class="col-md-12">
+                    {{ form.description.label_tag() }}
+                    {{ form.description }}  
+                </div>
+                <div class="col-md-12">
+                    {{ form.defaultprice.label_tag() }}
+                    {{ form.defaultprice }}
+                </div>
+                <div class="col-md-12">
+                    {{ form.isactive.label_tag() }}
+                    &nbsp;{{ form.isactive }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-5">
+        <button type="submit" class="btn btn-sm btn-primary2">Save!</button>
+        <button type="button" class="btn btn-sm btn-secondary ms-3">Clear</button>
+    </div>
+</form>
+
+<div class="d-none feature-list-tab">
+    <table class="display cell-border compact hover" id="tabFeatures"></table>
+    <br><br>
+    <p class="ch4">Approved Features</p><br>
+    <table class="display cell-border compact hover" id="tabApprovedFeatures"></table>
+</div>
+{% endblock form %}
+
+
+{% block extra_scripts %}
+    {{ form.media.js }}
+    <script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+    <script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}"
+        type="text/javascript"></script>
+    <script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}"
+        type="text/javascript"></script>
+    <script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/editor.select2.js') }}" type="text/javascript"></script>
+    <script>
+        var tabFeatures;
+        //return datatable
+        function featureListDataTable() {
+            tabFeatures = $('#tabFeatures').DataTable({
+                ajax:{
+                    url:"{{ url('clientbilling:features') }}?action=list",
+                },
+                retrieve:true,
+                columns:[
+                    { data:'id', 'defaultContent':'', visible:false },
+                    { data:'name', title:"Name" },
+                    { data:"description", title:"Description" },
+                    { data:"defaultprice", title:"Default Price" },
+                    { data:"isactive", title:"Is Active" },
+                    {data:null, defaultContent: '', orderable:true, className: 'select-checkbox noVis', width: "2%"},
+                ],
+                select: {
+                    style:    'multi',
+                    selector: 'tr'
+                },
+                dom: `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                    <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                deferRender: true,
+                responsive: true,
+                ordering: false,
+                buttons:[
+                    {
+                        text:"Select All",
+                        action:function(e, dt, node, config){
+                            var selectedRows = tabFeatures.rows({selected: true}).count();
+                            if(selectedRows > 0) {
+                                // Deselect all selected rows
+                                node.text('Select All');
+                                tabFeatures.rows().deselect();
+                            } else {
+                                // Select all rows
+                                node.text('Deselect All');
+                                tabFeatures.rows().select();
+                            }
+                        }
+                    },
+                    {
+                        text:"Approval Prompt",
+                        action:function(e, dt, node, config){
+                            node.attr("data-bs-toggle", "modal");
+                            node.attr("data-bs-target", "#approvalprompt");
+                        }
+                    }
+                ]
+            })
+        }
+
+        function approvedFeaturesDataTable(){
+            tabApprovedFeatures = $("#tabApprovedFeatures").DataTable({
+                ajax:{
+                    url:"{{ url('clientbilling:features') }}?action=approved_feature_list",
+                },
+                retrieve:true,
+                columns:[
+                    { data:'id', 'defaultContent':'', visible:false },
+                    { data:'feature__name', title:"Name" },
+                    { data:"comment", title:"Comment" },
+                    { data:"approved", title:"Status", width:"8%" },
+                    { data:"approvedon", title:"Approved On" , width:"15%" },
+                    { data:"lastrequested", title:"Last Requested On",  width:"15%" },
+                ],
+                dom: `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                    <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                deferRender: true,
+                responsive: true,
+                ordering: false,
+                buttons:[]
+            })
+        }
+        const navLinkMappings = {
+            'featurelist':{
+                formClass:".feature-list-tab",
+                initFunction:() => {
+                    featureListDataTable()
+                    approvedFeaturesDataTable()
+                }
+            },
+            'addfeature':{
+                formClass:".featureform",
+                initFunction:null
+            }
+        }
+
+        function showFormAndSetActiveNavLink(navLinkId){
+            //hide all forms
+            $(".featureform, .feature-list-tab").addClass("d-none")
+            // Remove active class from all nav links
+            $('.nav-link').removeClass('active');
+
+            // Show the relevant form and set the nav link as active
+            const mapping = navLinkMappings[navLinkId];
+            if (mapping.formClass) {
+                $(mapping.formClass).removeClass('d-none');
+            }
+            $('#' + navLinkId).addClass('active');
+
+            // Call initialization function if defined
+            if (mapping.initFunction) {
+                mapping.initFunction();
+            }
+        }
+
+
+        $(document).ready(function () {
+            //set ctzoffset
+            $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+            // Generic click event handler for all nav links
+            $('.nav-link').click(function() {
+                const navLinkId = $(this).attr('id');
+                showFormAndSetActiveNavLink(navLinkId);
+            });
+            
+            //post request on submit
+            $('.featureform').submit(function(e) {
+                e.preventDefault()
+                var form = $(this);
+                const params = { url: "{{ url('clientbilling:features') }}", modal: false }
+                const id = "{{ form.instance.pk }}" //form instance id
+                var payLoad = { formData: $("#featureform").serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'}
+                if (id != 'None') {
+                    var newPayLoad = { ...payLoad, 'pk': id }
+                    payLoad = newPayLoad
+                }
+                fire_ajax_form_post(params, payLoad)
+                    .done((data, status, xhr) => {
+                        let url = "{{ url('clientbilling:features') }}"
+                        show_successful_save_alert(update = id != 'None' ? true : false)
+                        window.setTimeout(function () {
+                            window.location.href = `${url}?id=${data.pk}`;
+                        }, 2000);
+                })
+            })
+        })
+
+
+
+    </script> 
+{% endblock extra_scripts %}

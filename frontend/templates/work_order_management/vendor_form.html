@@ -1,0 +1,292 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ vendor_form.media.css }}
+<style>
+    .pac-container {
+        z-index: 100000;
+    }
+</style>
+{% endblock head %}
+
+
+{% block popup_alerts %}
+{% call general_popup(popup_id = 'select_addr', title = 'Select Address') %}
+<div class="modal-body">
+    <div class="row">
+        {{ master_assetform.gpslocation }}
+    </div>
+</div>
+<div class="modal-footer">
+
+</div>
+{% endcall %}
+
+
+<!-- Moda for setting GPS coordianates-->
+{% call general_popup(title="Set GPS Location", popup_id="open_map", modal_size="modal-lg") %}
+<div class="modal-body card">
+    <div class="card-body p-0">
+        <div id="map" style="width:750px; height:350px"></div>
+    </div>
+</div>
+<div class="modal-footer d-flex justify-content-between">
+    <div>
+        <p>Tip: Zoom in for accurate coordinates of address, place the marker and then set the coords.</p>
+    </div>
+    <div></div>
+    <div><a href="#" class="btn" id="close_setgps" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary2" id="set_the_coords">Set the coordinates</a></div>
+
+</div>
+{% endcall %}
+{% endblock popup_alerts %}
+
+{% block body %}
+<form action="" method="post" id="vendorform">
+    <input type="hidden" name="{{ vendor_form.ctzoffset.name }}" id="{{ vendor_form.ctzoffset.auto_id }}" value="-1">
+    <input type="hidden" name="pk" id="pk" value="{{ vendor_form.instance.pk }}">
+
+    <div class="modal-header border-0">
+        <h3 class="modal-title modal-heading" id="exampleModalLabel">Create Vendor <i
+                class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+        <button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body" id="partial">
+        <div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors" role="alert"
+            style="display:none">
+            <strong>Error</strong> <span></span>
+            <button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div class="mb-e row g-3 gx-6">
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ vendor_form.code.label_tag() }}
+                    </div>
+                    <div class="col-md-8" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Enter text without any special chars, and spaces">
+                        {{ vendor_form.code }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ vendor_form.name.label_tag() }}
+                    </div>
+                    <div class="col-md-8" data-bs-toggle="tooltip" data-bs-placement="top" title="vendor Name">
+                        {{ vendor_form.name }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ vendor_form.description.label_tag() }}
+                    </div>
+                    <div class="col-md-8" data-bs-toggle="tooltip" data-bs-placement="top" title="vendor Description">
+                        {{ vendor_form.description }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <!--GPS LOCATION-->
+                    <label for="id_gpslocation" class="col-md-4 required">Address:
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip"
+                            data-bs-custom-class="tooltip" data-bs-placement="top"
+                            style="vertical-align: middle; font-size: 19px;"
+                            title="Longitude & latitude cordinates of the business unit">
+                            info
+                        </span>
+                    </label>
+                    <div class="col-md-8">
+                        <div class="d-flex d-inline">
+                            <input type="text" name="gpslocation" readonly placeholder="Latitude, Longitude"
+                                geom_type="POINT" class="form-control d-none" id="id_gpslocation">
+                            {{ vendor_form.address }}
+                            <button type='button' class="btn btn-sm btn-secondary rounded" style="height:3.2rem;"
+                                id="id_setgps">GPS</button>
+                        </div>
+                    </div>
+                </div>
+                 <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ vendor_form.type.label_tag() }}
+                    </div>
+                    <div class="col-md-8" data-bs-toggle="tooltip" data-bs-placement="top" title="vendor type">
+                        {{ vendor_form.type }}
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ vendor_form.mobno.label_tag() }}
+                    </div>
+                    <div class="col-md-8">
+                        {{ vendor_form.mobno }}
+                        <p class="fs-7">Enter country code followed by 10 digit mobile no, For eg: +91xxxxxxxxxx"</p>
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ vendor_form.email.label_tag() }}
+                    </div>
+                    <div class="col-md-8">
+                        {{ vendor_form.email }}
+                    </div>
+                </div>
+                <div class="form-check form-switch form-check-solid ms-3 ">
+                    <div class="input-group mb-6 d-flex justify-content-around">
+                        <label for="{{ vendor_form.enable.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ vendor_form.enable }}&nbsp;&nbsp;{{ vendor_form.enable.label }}</label>
+                        <label for="{{ vendor_form.show_to_all_sites.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ vendor_form.show_to_all_sites }}&nbsp;&nbsp;{{ vendor_form.show_to_all_sites.label }}</label>
+                    </div><br>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</form>
+
+<div class="modal-footer border-0 pt-0">
+    <button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">
+        Close <i class="fas fa-times"></i>
+    </button>
+    {% if vendor_form.instance.id %}
+    <button type="submit" id="submit" form="vendorform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    <button type="button" onclick="deleteVendor(this)" data-id="{{ vendor_form.instance.id }}" id="deleteAttd"
+        class="btn btn-sm btn-danger btn-hover-scale">
+        Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+    </button>
+    {% else %}
+    <button type="submit" form="vendorform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    {% endif %}
+</div>
+{% endblock body %}
+
+{% block js %}
+{{ vendor_form.media.js }}
+<script>
+    var map, userMarker, currinfowindow, currAddr;
+
+    function getLatLng() {
+        var gps =
+            '{% if vendor_form.instance.gpslocation != None %}{{ vendor_form.instance.gpslocation.y }},{{ vendor_form.instance.gpslocation.x }}{% else %}None{% endif %}';
+        if (gps != "None") {
+            console.log('{{ vendor_form.instance.gpslocation }}')
+            return {
+                lat: parseFloat(gps.split(',')[0]),
+                lng: parseFloat(gps.split(',')[1])
+            }
+        }
+        return {
+            lat: 0.0,
+            lng: 0.0
+        }
+    }
+</script>
+<script src="{{ static('assets/js/local/maps.js') }}"></script>
+<script>
+    //delete ajax request 
+    function deleteVendor(elemt) {
+        var id = $(elemt).attr("data-id");
+        show_alert_before_delete('Vendor')
+            .then((result) => {
+                if (result.isConfirmed) { //delete requested by user
+                    const params = {
+                        url: `${urlname}?action=delete&id=${id}`
+                    }
+                    fire_ajax_get(params)
+                        .done((data, status, xhr) => {
+                            show_successful_delete_alert() //defined in customjs
+                            $(modal_id).modal("hide")
+                            table.row({
+                                selected: true
+                            }).remove().draw();
+                        })
+                        .fail((xhr, status, error) => {
+                            show_error_alert('Something went wrong!');
+                        })
+                }
+            })
+    }
+
+
+
+    $(document).ready(() => {
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+        //onclick id_setgps open popp open-map
+        $("#id_setgps").click(function () {
+            $("#open_map").modal('show');
+            initMap("map");
+        });
+        //onclick set the coords get lat and lng from useMarker and set to gpslocation field
+        $("#set_the_coords").click(function () {
+            var lat = userMarker.getPosition().lat();
+            var lng = userMarker.getPosition().lng();
+            $("#id_gpslocation").val(lat + ', ' + lng);
+            const geocoder = new google.maps.Geocoder()
+            getAddressOfPoint(geocoder, {
+                lat: lat,
+                lng: lng
+            }, (address) => {
+                $("#id_address").val(address.formattedAddress)
+            })
+            $("#open_map").modal('hide');
+        });
+
+        $("#close_setgps").click(function () {
+            $("#open_map").modal('hide');
+        });
+        $(".modal").removeAttr("tabindex");
+
+        if ("{{ vendor_form.instance.id }}" !== 'None') {
+            $("#id_gpslocation").val(
+                "{{ vendor_form.instance.gpslocation.coords[::-1] if vendor_form.instance.gpslocation is not none else 'NONE' }}"
+            )
+        }
+
+        form_validate()
+            .onSuccess(e => {
+                var form = $("#vendorform")
+                //e.preventDefault()
+                const params = {
+                    url: urlname,
+                    modal: true
+                } //capability view
+                const id = $("#pk").val() //form instance id
+                var payLoad = {
+                    formData: form.serialize(),
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                } //payload for post request
+                if (id != 'None') {
+                    var newPayLoad = {
+                        ...payLoad,
+                        'pk': id
+                    }
+                    payLoad = newPayLoad
+                }
+                fire_ajax_form_post(params, payLoad)
+                    .done((data, status, xhr) => { //function to submit post request
+                        console.log("data ", data)
+                        $("#modal-vendor").modal("hide");
+                        if (id !== 'None') {
+                            table.row('.selected').data(data.row).draw()
+                        } else {
+                            table.row.add(data.row).draw()
+                        }
+                        show_successful_save_alert(update = id != 'None' ? true : false)
+                    })
+            })
+
+    })
+</script>
+
+
+{% endblock js %}

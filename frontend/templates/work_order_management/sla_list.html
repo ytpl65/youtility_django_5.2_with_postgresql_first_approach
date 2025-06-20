@@ -1,0 +1,192 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Vendor Performance
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Vendor Performance
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Vendor Performance</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+{% block table %}
+<table id="sla_list" class="display compact cell-border" style="width:100%">
+</table>
+{% endblock table %}
+
+
+{% block extra_scripts %}
+<script>
+var params = null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+
+    var table_filters = localStorage.getItem('slastats_filter') ? localStorage.getItem('slastats_filter') : localStorage.getItem('alertsFilters')
+
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+
+$(document).ready(function(){
+    urlname = "{{ url('work_order_management:sla')}}"
+
+    is_approver = session['is_wp_approver']
+    is_sla_approver = session['is_sla_approver']
+    console.log(is_approver)
+
+    table = $("#sla_list").DataTable({
+        ajax:{
+            url:'{{ url("work_order_management:sla") }}?action=list',
+            data:function(d){
+                d.params = JSON.stringify(params)
+            }
+        },
+        pageLenght:500,
+        ordering:false, 
+        deferRender:true,
+        lenghtMenu:[250,500,750,1000],
+        dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        columns:[
+            { data:'id', visible:false, searchable:false, className:'noVis'},
+            {title:'Datetime', data:'cdtz'},
+            {title:'Report No', data:'other_data__wp_seqno', width:"10%"},
+            {title:'Vendor Performance Template', data:'qset__qsetname'},
+
+            {title:'Vendor Name', data:'vendor__name'},
+            {title:'Approval', data:'workpermit'},
+            {title:'Site', data:'bu__buname'},
+            {title:'Uptime',data:'other_data__uptime_score'},
+            {title:'Overall Score',data:'other_data__overall_score'},
+             {title:'Remarks',data:'other_data__remarks',visible:false},
+            {title:'Action', data:null, defaultContent:'<a href="#" class="edit-link">Report&nbsp;<i class="bi text-danger fs-5 bi-file-earmark-pdf-fill"></i></a>'},
+            {title:'Site Code', data:'bu__bucode', visible:false},
+            {visible:false, data:"ctzoffset", className:'noVis'},
+           
+        ],
+        columnDefs:[
+        {targets:1, render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+            }
+            },
+        {targets:3, render:function(data, type, row, meta){
+                return  `<a href="${urlname}?id=${row['id']}">${data}</a>`
+            }
+        },
+
+        {
+            targets:5, render:function(data, type, row, meta){
+                if(data === 'APPROVED'){
+                    return `<span class="badge fs-9 badge-success">${data}</span>`
+                }else if (data === 'REJECTED'){
+                    return `<span class="badge fs-9 badge-danger">${data}</span>`
+                }else{
+                    return `<span class="badge fs-9 badge-warning">${data}</span>`
+                }
+            }
+        },
+        {
+            targets:7,render:function(data,type,row,meta){
+                console.log(data)
+                return `<span>${data}%</span>`
+            }
+        },
+        {
+            targets:8,render:function(data,type,row,meta){
+                return `<span>${data}%</span>`
+            }
+        }     
+        ],
+        buttons:[
+            "searchBuilder",
+                dataTablesPDFConfig(
+                    title = '',
+                    columns = '',    
+                    filename = ""
+                ),
+                dataTablesExcelConfig(
+                    title = 'Vendor Performance Report',
+                    columns = ':visible',
+                    filename = "Vendor Performance Report"
+                ),
+                dataTablesColumnVisibilityConfig(),
+            {
+                text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_wp",
+                action:function(e, dt, node, config){
+                    location.href = '{{ url("work_order_management:sla") }}?action=form'
+                }
+            }
+        ]
+    })
+
+    initDateRangeHtml()
+    initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+        from_pd = picker.startDate.format('YYYY-MM-DD');
+        to_pd = picker.endDate.format('YYYY-MM-DD');
+        let filters = {from:from_pd, to:to_pd}
+        reloadTable(table, filters)
+    })
+
+    if (is_sla_approver === true) {
+        $('.add_new_wp').hide();
+    }
+
+
+
+    $('#sla_list tbody').on('click', '.edit-link', function () {
+    var data = table.row($(this).parents('tr')).data();
+    data['submit_button_flow'] = false
+    data['filename']='sla_report'
+    console.log("Data: ",data);
+    $.ajax({
+        url: '{{ url("work_order_management:sla") }}?action=printReport',
+        type: 'GET',
+        data: data,
+        xhrFields: {
+          responseType: 'blob'
+        },
+        success: function (response) {
+            var reportname = data['qset__qsetname']
+            var seqno    = data['other_data__wp_seqno']
+            var site_name    = data['bu__buname']
+            var filename = `${reportname}_${site_name}_${seqno}.pdf`
+            var blob = new Blob([response], { type: 'application/pdf' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename; // You can set a default name or get it from the server
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        },
+        error:function(xhr, status, error){
+          show_error_alert("Something went wrong!", "Server Error")
+        }
+    })
+})
+})
+
+
+
+</script>
+{% endblock extra_scripts%}

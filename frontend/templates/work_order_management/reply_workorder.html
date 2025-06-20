@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- BEGIN GLOBAL STYLESHEETS BUNDLE (used by all pages) -->
+    <link href="{{ static('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ static('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ static('assets/plugins/custom/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="container h-100">
+        <div class="row h-100 justify-content-center align-items-center">
+            <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
+                {% if accepted is defined %}
+                <div class="alert alert-success shadow" role="alert">
+                    <h4 class="alert-heading">Thank you!</h4>
+                    <p> We appreciate your prompt response, for letting us know that you are interested in this work order #{{wo.id}} request.</p>
+                    <hr>
+                    <p class="mb-0">We look forward to working with you on this work order and are confident 
+                    that you will deliver high-quality work within the agreed-upon timelines.</p>
+                </div>
+                {% elif declined is defined %}
+                <form action="{{ url('work_order_management:reply_workorder') }}" method="post" class="shadow">
+                    <input type="hidden" name="action" value="reply_form">
+                    <input type="hidden" name="womid" value="{{ wo.id }}">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading">Thank you!</h4>
+                        <p>
+                        We value your expertise and would appreciate your feedback on why you chose not to proceed with the project. 
+                        Your feedback will help us improve our processes and ensure that we are providing the best opportunities for our vendors.
+                        </p>
+                        <hr>
+                        <p class="mb-0">
+                            If you have any specific concerns or reasons for declining the project, please let us know. 
+                        </p>
+                        <textarea name="reply_from_vendor" class="form-control" placeholder="Please specify your reasons" id="" cols="30" rows="6">
+                        
+                        </textarea>
+                        <button type="submit" class="btn mt-3 btn-sm btn-success">Submit Response</button>
+                    </div>
+                </form>       
+                {% else %} 
+                <div class="row text-center shadow">
+                    <h1>You can close this tab</h1>
+                </div>
+                {% endif %}        
+            </div>
+        </div>
+    
+    </div>
+
+        <!-- BEGIN  GLOBAL JS BUNDLE (used by all pages) -->
+        <script src="{{ static('assets/plugins/global/plugins.bundle.js') }}"></script>
+        <script src="{{ static('assets/js/scripts.bundle.js') }}"></script>
+        <script src="{{ static('assets/plugins/custom/jquery-ui/jquery-ui.min.js') }}"></script>
+        <!-- END  GLOBAL JS BUNDLE (used by all pages) -->
+
+</body>
+</html>

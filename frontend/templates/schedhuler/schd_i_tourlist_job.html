@@ -1,0 +1,169 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Scheduled Tours
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Scheduled Tours
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Scheduled Tours</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN Schedhuled Tour TABLE ------------------------------------------->
+{% block table %}
+<table id="schdtour_table" class="display compact cell-border" style="width:100%">
+</table>
+{% endblock table %}
+<!-------------------------------------------- END Schedhuled Tour TABLE ------------------------------------------->
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal animate__animated animate__zoomIn" tabindex="-1" aria-hidden="true"  aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-schdtour">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="schdtour_content">
+		</div>
+	</div>
+</div>
+
+{% call general_popup(title='List of Peoples', popup_id='id_people_list', modal_size='modal-md') %}
+            <div class="modal-body">
+                <table class="display cell-border" style="width:100%" id="tabListOfPeoples"></table>
+            </div>
+    {% endcall %}
+{% endblock popup_alerts %}
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script>
+	var table           = null;
+    var peopleList = null;
+    var ajaxData = {}
+	const formFilter      = "#schdtour_filter"
+	const table_id        = "#schdtour_table"
+	const formid          = "#id_schdtourform"
+    const urlname = "{{ url('schedhuler:schd_internal_tour') }}"
+    
+    function showListOfPeoples(id, from){
+        $('#id_people_list').modal('show')
+        ajaxData.id=id
+        ajaxData.model = from
+        peopleList.ajax.reload()
+    }
+
+    $(document).ready(function (){
+        //datatable initialization
+        table = $(table_id).DataTable({
+			ajax:{
+                url: "{{ url('schedhuler:schd_internal_tour') }}?action=list"
+            },
+			deferRender: true,
+			scrollY: 300,
+            scrollCollapse: true,
+            scrollX:true,
+            lengthMenu: [ 10, 20, 50,100 ],
+            pageLength: 10,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns:[
+                {data: 'id', title:"ID", defaultContent:null},
+                {data: 'jobname', title: "Name"},
+                {data: 'assignedto', title:"People/Group", defaultContent:null, render:function(data, type, row, meta){
+                    if(data){
+                        if(data.includes('[GROUP]')){
+                            return `<a href="javascript:void(0)"  onClick='showListOfPeoples(${row['id']}, "Job")'>${data}</a>`
+                        }else{
+                            return data
+                        }
+                    }
+                    else{
+                        return data
+                    }
+                    
+                }},
+                {title: 'From', data: 'fromdate'},
+                {title: 'To', data: 'uptodate'},
+                {title: 'Duration', data: 'planduration'},
+                {title: 'Gracetime', data: 'gracetime'},
+                {title: 'Exp. Time', data: 'expirytime'},
+                {title: 'Site', data: 'bu__buname'},
+                {title: 'Site Code', data: 'bu__bucode', visible:false},
+                {data: 'ctzoffset', title:"Ctzoffset", visible:false, className:"noVis"},
+            ],
+            rowReorder: {
+                dataSrc: 'jobname',
+            },
+            columnDefs:[
+                {targets:0, data: 'id', visible:false, searchable:false, className:'noVis'},
+                {
+                    targets:1, data: 'jobname', render: function (data, type, row, meta){
+                        return `<a href="${urlname}?id=${row['id']}">${data}</a>`
+                    }
+                },
+                {targets:3, render:function(data, type, row, meta){
+                    return  convert_to_local(type, data, row)
+                }},
+                {targets:4, render:function(data, type, row, meta){
+                    return  convert_to_local(type, data, row)
+                }}
+            ],
+            select:true,
+            buttons:[
+                {
+                    extend: 'searchBuilder',
+                    config: {
+                    columns: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                    }
+                },
+                dataTablesPDFConfig(
+                    'Site: {{ request.user.bu.buname }}\nScheduled Internal Tour List',
+                    [1,2,3,4,5,6,7,8,9],
+                    filename="schd_tour_list"
+                ),
+                dataTablesExcelConfig(
+                    'Site: {{ request.user.bu.buname }}\nScheduled Internal Tour List',
+                    [1,2,3,4,5,6,7,8,9],
+                    filename="schd_tour_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+					text     : `Schedule New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_people",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+                        //This will send the page to the location specified
+        				window.location.href = "{{ url('schedhuler:schd_internal_tour') }}?action=form";
+					}
+				}
+			]
+        
+        })
+        initializeListOfPeoplesModal(ajaxData, "{{ url('onboarding:list_of_peoples') }}")
+
+        //BEGIN STYLING DATATABLE
+		$("th > input").addClass('form-control')
+		$("th > input").css('height', '35px')
+		var styles = {
+			"border-bottom": "none",
+			"background-color": "#f1f4f7"
+		}
+
+        $(`${table_id} thead tr:eq(1)`).css(styles)
+		//END STYLING DATATABLE
+
+    })
+
+</script>
+{% endblock extra_scripts %}

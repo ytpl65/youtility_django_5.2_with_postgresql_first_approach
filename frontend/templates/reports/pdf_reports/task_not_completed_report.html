@@ -1,0 +1,119 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+
+{% endblock header_end %}
+
+{% block inline_css %}
+<style>
+thead tr th, tbody tr td {
+    font-size: 0.7rem;
+}
+/* CSS to style parent rows with a left and right border */
+.parent-row {
+    background-color: #eff7fc;
+}
+
+#body {
+    border-bottom: 2px solid #01579b;
+}
+
+/* CSS to style child rows with a bottom border and consistent left and right borders with parent */
+.child-row {
+   background-color: rgb(255, 255, 255)!important;
+}
+
+.child-row td {
+        border-bottom: 0.25px solid #75ade2;
+    }
+
+    .trcount1 td {
+        border-top: 1px dashed #030101;
+    }
+
+    .trcount1 td:first-child {
+        border-left: 1px dashed #030101;
+    }
+
+    .trcount1 td:last-child {
+        border-right: 1px dashed #030101;
+    }
+
+    .trcount2 td {
+        border-bottom: 1px dashed #030101;
+    }
+
+    .trcount2 td:first-child {
+        border-left: 1px dashed #030101;
+    }
+
+    .trcount2 td:last-child {
+        border-right: 1px dashed #030101;
+    }
+
+
+/* Optionally, to remove bottom border from the last child row if it should blend with the next parent row */
+
+</style>
+{% endblock inline_css %}
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+
+{% block table %}
+<table id="tourdetails" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Sr.no</th>
+            <th scope="col">Subject Name</th>
+            <th scope="col">Job Type</th>
+            <th scope="col">Asset</th>
+            <th scope="col">Quesion Set</th>
+             <th scope="col">Status</th>
+            <th scope="col">Scheduled Time</th>
+        </tr>
+    </thead>
+    <tbody id="body">
+        <tr>
+            {% for row in data %}
+        <tr>
+            <td>{{ row['Client'] }}</td>
+            <td>{{ row['Site'] }}</td>
+            <td>{{ row['Tour/Route'] }}</td>
+            <td>{{ row['Planned Datetime'] }}</td>
+            <td>{{ row['Expiry Datetime'] }}</td>
+            <td>{{ row['Assigned To'] }}</td>
+            <td>{{ row['JobType'] }}</td>
+            <td>{{ row['Status'] }}</td>
+            <td>{{ row['Performed On'] }}</td>
+            <td>{{ row['Performed By'] }}</td>
+            <td>{{ row['Is Time Bound'] }}</td>
+        </tr>
+        {% endfor %}
+        </tr>
+    </tbody>
+</table>
+{% endblock table %}
+
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

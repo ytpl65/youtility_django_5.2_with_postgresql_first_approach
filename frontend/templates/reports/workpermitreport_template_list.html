@@ -1,0 +1,70 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+WorkPermit Report List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+WorkPermit Report List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">WorkPermit Report List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+{% block table %}
+    <table id="workpermitReportList" class="display cell-border compact hover">
+    </table>
+{% endblock table %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function () {
+
+    $("#workpermitReportList").DataTable({
+        ajax:{
+            url: "{{ url('reports:config_workpermitreport_template') }}?action=list",
+        },
+        responsive: true,
+        deferRender: true,
+        dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row' <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        columnDefs:[
+            {data: 'id',targets: 0,visible: false},
+            {
+                data: 'qsetname',
+                targets:2,
+                render:function(data, type, row, meta){
+                    var url= "{{ url('reports:config_workpermitreport_template') }}?id=" + row['id'];
+                    return `<a href=${url}>${data}</a>`
+                }
+            }
+        ],
+        columns:[
+            {data: 'id'},{data: 'qsetname', title: 'Site Report'}, {data: 'enable', title: 'Enable'}
+        ],
+        buttons:[
+            {
+                text:`Add New &nbsp;<i class='fas text-white fa-plus ch4'></i></a>`,
+                className: "btn btn-sm btn-light-primary",
+                action: function(e, dt, node, config){
+                    //This will send the page to the location specified
+                    console.log("hitted success")
+                    window.location.href = "{{ url('reports:config_workpermitreport_template') }}?action=form";
+                }
+            }
+        ]
+
+    })
+})
+</script>
+{% endblock extra_scripts %}

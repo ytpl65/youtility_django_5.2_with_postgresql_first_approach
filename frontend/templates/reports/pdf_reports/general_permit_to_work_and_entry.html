@@ -1,0 +1,681 @@
+{% extends "reports/pdf_reports/workpermit_base.html" %}
+
+{% block inline_css %}
+<style>
+    .logos {
+        width: 5.8rem;
+        height: 3.8rem;
+    }
+
+    .color-red {
+        color: red;
+        font-weight: bolder;
+    }
+
+    #subtitle {
+        background-color: #01579b;
+        color: white;
+        padding: 6px 20px;
+        border-radius: 25px;
+        font-size: 20px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+    }
+
+    .border-class {
+        border: 1px solid black;
+        padding: 10px;
+    }
+
+    .container {
+        border: 1px solid black;
+        display: flex;
+        flex-direction: row;
+        margin: 5px;
+    }
+
+    .permit-valid-container {
+        margin: 10px;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    .div1 {
+        border-right: 1px solid black;
+        width: 150px;
+    }
+
+    .div2 {
+        padding-left: 10px;
+    }
+
+    ol > li {
+        font-size: small;
+    }
+
+    .new-font-size {
+        font-size: small;
+    }
+
+    .electrical-work {
+        text-decoration: underline;
+        font-weight: bolder;
+        font-size: small;
+    }
+
+    .font-bold {
+        margin-top: 30px;
+        font-weight: bold;
+    }
+
+    .tick::before {
+        content: "\2714"; /* Unicode for tick mark */
+        color: green;
+    }
+
+    .cross::before {
+        content: "\2718"; /* Unicode for cross mark */
+        color: red;
+    }
+
+    .type_of_permit table tr td {
+        margin: 5px;
+    }
+
+    .na::before {
+        content: "\2013"; /* Unicode for en dash (hyphen) */
+        color: gray;
+        font-weight: bold;
+    }
+
+    .declaration-of-employee {
+        border: 1px solid black;
+        padding: 10px;
+    }
+
+    .note-answer {
+        text-decoration: underline;
+        font-size: small;
+    }
+
+    .side-note {
+        margin: 20px -5px -10px;
+        font-weight: bold;
+        font-size: x-small;
+    }
+
+    .certify-permit {
+        margin-top: -10px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        font-size: small;
+    }
+
+    .certify {
+        margin-top: 30px;
+    }
+
+    .certify-permit-status {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .permit-details {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .permit-detail-left-section {
+        width: 100px;
+        border-right: 1px solid black;
+    }
+
+    .permit-detail-right-section {
+        padding: 10px;
+    }
+
+    .form-container {
+        width: 95%;
+        max-width: 800px;
+        margin: 0 auto;
+        border: 1px solid #000;
+        padding: 10px;
+        font-size: small;
+    }
+
+    .form-header {
+        font-weight: bold;
+        margin-bottom: 10px;
+        border-bottom: 1px solid black;
+    }
+
+    .form-row {
+        display: flex;
+        margin-bottom: 5px;
+    }
+
+    .form-label {
+        flex: 0 0 200px;
+        font-weight: bold;
+        text-decoration: underline;
+    }
+
+    .form-value {
+        flex: 1;
+        text-decoration: underline;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .check {
+        margin-right: 10px;
+    }
+
+    .not-checked {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+</style>
+{% endblock %}
+
+{% block static_content %}
+<div class="new-page border-class">
+    <div class="container">
+        <div class="div1"></div>
+        <div class="div2">
+            <h3>GENERAL PERMIT TO WORK AND ENTRY</h3>
+            <table>
+                <tr>
+                    <td>Site: {{sitename}}</td>
+                    <td>Permit no: {{ permit_no }}</td>
+                    <td>INITIATOR COPY</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div class="container permit-valid-container">
+        <h5 class="permit-valid-container">Permit is valid from {{ permit_valid_from }} hrs to  {{ permit_valid_upto }} hrs </h5>
+    </div>
+    
+    <div style="margin: 10px;">
+        <h5>Type of Permit</h5>
+        <table border="1" style="width: 90%; margin-left:20px ">
+            <tr>
+                <td>1. Lifting Operation</td>
+                {% if 'Lifting Operation' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+                <td>5. Mechanical Work</td>
+                {% if 'Mechanical Work' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+                <td>9. Scaffolding Work</td>
+                {% if 'Scaffolding work' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>2. Hot Work</td>
+                {% if 'Hot Work' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+                <td>6. Working on Fire Safety System</td>
+                {% if 'Working on Fire Safety System' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+                <td>10. Demolition Work</td>
+                {% if 'Demolition Work' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>3. Working at Height</td>
+                {% if 'Working at Height' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+                <td>7. Work on Lifting Appliances</td>
+                {% if 'Work on Lifting Appliances' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+                <td>11. Electrical Work</td>
+                {% if 'Electrical Work' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td>4. Confined Space Work</td>
+                {% if 'Confined Space Work' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+                <td>8. Working on Critical Safety System</td>
+                {% if 'Working on Critical Safety System' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+                <td>12. Excavation Work</td>
+                {% if 'Excavation Work' in workpermit %}
+                <td class="tick"></td>
+                {% else %}
+                <td class="na"></td>
+                {% endif %}
+            </tr>
+        </table>
+    </div>
+
+    <div class="form-container">
+        <div class="form-header">Permit details</div>
+        <div class="form-row">
+            <div class="form-label">Department:</div>
+            <div class="form-value">{{ department }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-label">Area/Building</div>
+            <div class="form-value">{{ area_building }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-label">Location:</div>
+            <div class="form-value">{{ location }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-label">Job description:</div>
+            <div class="form-value">{{ job_description }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-label">Name of the Employees/ Contractor's:</div>
+            <div class="form-value">{{ employees_contractors }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-label">Workmen fitness:</div>
+            <div class="form-value checkbox-group">
+                <span class="checkbox-label check">Checked</span>
+                {% if workmen_fitness == 'Checked' %}
+                <span class="tick"></span>
+                {% endif %}
+                <span class="checkbox-label not-checked">Not Checked</span>
+                {% if workmen_fitness == 'Not Checked' %}
+                <span class="tick"></span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="font-bold">Identify Hazards and Risks associated with the Activity.</div>
+    <div class="instruction">Tick which is applicable ( &#10003;/ x)</div>
+    <table border="1">
+        {% for i in range(0, new_section_details_two|length, 3) %}
+        <tr>
+            {% if new_section_details_two|length > i %}
+            <td>{{ new_section_details_two[i].question__quesname }}</td>
+            <td><span class="{% if new_section_details_two[i].answer == 'Yes' %}tick{% elif new_section_details_two[i].answer == ' No' %}cross{% else %}na{% endif %}"></span></td>
+            {% endif %}
+            {% if new_section_details_two|length > i + 1 %}
+            <td>{{ new_section_details_two[i + 1].question__quesname }}</td>
+            <td><span class="{% if new_section_details_two[i + 1].answer == 'Yes' %}tick{% elif new_section_details_two[i + 1].answer == ' No' %}cross{% else %}na{% endif %}"></span></td>
+            {% endif %}
+            {% if new_section_details_two|length > i + 2 %}
+            <td>{{ new_section_details_two[i + 2].question__quesname }}</td>
+            <td><span class="{% if new_section_details_two[i + 2].answer == 'Yes' %}tick{% elif new_section_details_two[i + 2].answer == ' No' %}cross{% else %}na{% endif %}"></span></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="font-bold">Select the right kind of PPEs/Safety implements for the nature of risks associated</div>
+    <div class="instruction">Tick which is applicable ( &#10003;/ x)</div>
+    <table border="1">
+        {% for i in range(0, new_section_details_three|length, 3) %}
+        <tr>
+            {% if new_section_details_three|length > i %}
+            <td>{{ new_section_details_three[i].question__quesname }}</td>
+            <td><span class="{% if new_section_details_three[i].answer == 'Yes' %}tick{% elif new_section_details_three[i].answer == ' No' %}cross{% else %}na{% endif %}"></span></td>
+            {% endif %}
+            {% if new_section_details_three|length > i + 1 %}
+            <td>{{ new_section_details_three[i + 1].question__quesname }}</td>
+            <td><span class="{% if new_section_details_three[i + 1].answer == 'Yes' %}tick{% elif new_section_details_three[i + 1].answer == ' No' %}cross{% else %}na{% endif %}"></span></td>
+            {% endif %}
+            {% if new_section_details_three|length > i + 2 %}
+            <td>{{ new_section_details_three[i + 2].question__quesname }}</td>
+            <td><span class="{% if new_section_details_three[i + 2].answer == 'Yes' %}tick{% elif new_section_details_three[i + 2].answer == ' No' %}cross{% else %}na{% endif %}"></span></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="new-page border-class">
+    <div class="container">
+        <div class="div1"></div>
+        <div class="div2">
+            <h3>GENERAL PERMIT TO WORK AND ENTRY</h3>
+            <table>
+                <tr>
+                    <td>Site: {{sitename}}</td>
+                    <td>Permit no: {{ permit_no }}</td>
+                    <td>INITIATOR COPY</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div>
+        <p>
+            (<span class="font-bold">Note</span>: Any other or additional control measures if required, to be mentioned below. All PTW that may affect other areas needs to be cross-referenced)
+        </p>
+        <div class="note-answer">
+            {{ other_control_measures }}
+        </div>
+    </div>
+
+    <h5>Declaration by the Employee / Contractor / Executor of the activity</h5>
+    <div class="declaration-of-employee">
+        <div>
+            <p>
+                I have understood the Hazards and Risks associated with the activity, and adequate PPEs and Safety instructions have been provided to me. I take the responsibility of training my co-workers working at site on the Safety Requirements as per applicable norms of ISS and Site/Client requirement. I hereby declare that I shall abide by the Safety Requirements of ISS, while working in the premises.
+            </p>
+            <h5>Names of the Supervisors/incharge:</h5>
+            <ol>
+                {% for name in name_of_supervisor %}
+                <li>{{ name }}</li>
+                {% endfor %}   
+            </ol>
+            <h5>Names of the persons involved:</h5>
+            <ol>
+                {% for name in name_of_persons_involved %}
+                <li>{{ name }}</li>
+                {% endfor %}
+            </ol>
+            <p class="side-note">Note: In case of larger team, provide the details in additional sheet along with work permit</p>
+        </div>
+    </div>
+    <div class="certify">
+        <p>I, certify that persons carrying out the job are trained, competent, physically fit and have attended the toolbox talk.</p>
+    </div>
+    <div class="certify-permit">
+        <div>
+            <p>Permit Initiated by: </p>
+            <div>{{ permit_initiated_by }}</div>
+        </div>
+        <div>
+            <p>Permit Authorized by:</p>
+            <div>
+                <ol>
+                    {% for name in permit_authorized_by %}
+                    <li>{{ name }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="new-page border-class">
+    <div class="container">
+        <div class="div1"></div>
+        <div class="div2">
+            <h3>GENERAL PERMIT TO WORK AND ENTRY</h3>
+            <table>
+                <tr>
+                    <td>Site: {{sitename}}</td>
+                    <td>Permit no: {{ permit_no }}</td>
+                    <td>INITIATOR COPY</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <h4>HSEQ Guidelines/ Instructions:</h4>
+    <h5>General:</h5>
+    <ol>
+        <li>This work permit is intended primarily to safeguard people and property of the company.</li>
+        <li>The work permit is required to work in all areas of the company.</li>
+        <li>Risk assessment should be carried out at site by initiator and executor before starting the work</li>
+        <li>In case of emergency the executor to stop the job and intimate the initiator and wait for further instruction.</li>
+        <li>Work at height /work alone activities are not permitted during night shifts.</li>
+        <li>This permit is valid up to the time mentioned and any extension of the work permit should be duly authorized by responsible person only.</li>
+        <li>Executor of this permit should have awareness of the PPE requirement to carryout assigned work.</li>
+        <li></li>
+        <li>Executor should report all the incidents/ hazards to the initiator.</li>
+        <li>Executor to carry a copy of the work permit during working hours and ensure the proper closing of the work permit.</li>
+        <li>Executor to ensure work area is clear and returned to safe condition, appropriate storage and avoid dumping of wastages in site</li>
+        <li>Ensure all debris are cleared and kept at the designated areas <span style="text-decoration: underline;">{{ debris_cleared }}</span> on a daily basis.</li>
+    </ol>
+    <h5>Covid Protocol:</h5>
+    <p class="new-font-size">In view of the current pandemic kindly ensure that all the staff are informed and advised of the requirement for protection and safeguarding everyone from contracting the same. All need to follow the norms:</p>
+    <ul>
+        <li>Social distancing </li>
+        <li>Frequent washing of hands </li>
+        <li>Wear a mask properly</li>
+    </ul>
+    <p class="color-red">In case anyone is not well they should inform their supervisor and go for medical advice/ treatment. Anyone who is COVID positive or has come in close contact with a COVID positive patient, he/she should inform the team and quarantine themselves and follow medical advice.</p>
+    <h5>Personal Protection Equipment (PPEs):</h5>
+    <ol>
+        <li>All personnel deployed for the work should have the appropriate PPE’s as required for the job</li>
+        <li>All Persons should be provided with Safety Shoes, Safety Goggles, gloves and Helmet as a basic minimum. </li>
+        <li>All PPE’s should be as per the IS / EN standards as applicable, as it is required to meet the basic Safety standard to protect the individual in case of any accident</li>
+        <li>Electrical tools should have proper insulation </li>
+        <li>All Electrical PPE’s should be as per the rating required – e.g. Insulated gloves, face shield, aprons etc</li>
+        <li>All tools and tackles should be checked before every use and stored properly in a safe manner</li>
+        <li>Where the sound level exposure is high then appropriate ear plug / ear muff to be used</li>
+        <li>MEWP/Lifting tools and tackles should be inspected by authorized personnel.</li>
+    </ol>
+</div>
+
+<div class="new-page border-class">
+    <div class="container">
+        <div class="div1"></div>
+        <div class="div2">
+            <h3>GENERAL PERMIT TO WORK AND ENTRY</h3>
+            <table>
+                <tr>
+                    <td>Site: {{sitename}}</td>
+                    <td>Permit no: {{ permit_no }}</td>
+                    <td>INITIATOR COPY</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <h5>Work at height</h5>
+    <ol>
+        <li>Work performed at and above 6 ft or 1.8 Meters will be considered as height work</li>
+        <li>It is mandatory to carry out the review of the risk assessment prior to approving the work permit</li>
+        <li>All safety full body harness to be numbered, inspected before use and stored safely.</li>
+        <li>Double lanyard full body harness shall be used for all WAH activity.</li>
+        <li>Safety belt shall be anchored to fixed and rigid support.</li>
+        <li>Use of appropriate ladders to be ensured for electrical and other work.</li>
+        <li>Initiator should inspect and verify all the equipment’ that are used for height work.</li>
+        <li>Ensure the area is barricaded / enclosed and fall risk if any isolated.</li>
+        <li>Ladders, harness, anchoring points to be checked for any damages before start of work.</li>
+        <li>Scaffolding to be erected and dismantled under proper supervision and trained staff. Scaffolding railings and toe guards to be ensure for all work platforms.</li>
+        <li>Appropriate Scaff tags to be used after inspection.</li>
+        <li>No Person should be on scaffold while it is been moved/shifted from one place to another.</li>
+        <li>Mobile elevated work platform (MEWP- scissor lift, boom lift/cherry picker and cradles) should be operated by trained and competent staff. Equipment’s to be used as per OEM’s guidelines.</li>
+        <li>It is preferred to use ‘A’ type ladders for activities that are for short duration.</li>
+    </ol>
+
+    <h5>Hot Work:</h5>
+    <ol>
+        <li>Ensure the welding machine, gas cutting machine, drilling machine, grinding machines are in good condition before starting the job</li>
+        <li>Welding machine connection to be inspected/checked for proper fitting of lugs and sleeves, connection and earthing</li>
+        <li>Loose cable joints are not allowed for welding and other portable machines</li>
+        <li>In gas cutting machine flash back arrestor is mandatory.</li>
+        <li>Only trained and competent personnel allowed to carry out welding and gas cutting jobs.</li>
+        <li>Medical fitness check should be carried out/ available (chest x ray) as per the norms for all welders</li>
+        <li>Area should be cleared of all flammable /combustible material around the Hot work area, or ensure that the material is safely covered / protected using Fire retardant sheet/ blanket (11 mtr radius)</li>
+        <li>PPEs like welding shield, mask, Apron, welding goggles, leather gloves should be available.</li>
+        <li>Trained Fire Watcher should be deployed during the hot work activity.</li>
+        <li>Fire blanket / sheet to be utilized along with hard barricading as applicable.</li>
+        <li>Wind direction to be checked before start of work, and activity aligned to avoid any inhalation of fumes by the workers, if required smoke extractors to be used.</li>
+        <li>Appropriate fire extinguisher to be available at point of work</li>
+    </ol>
+</div>
+
+<div class="new-page border-class">
+    <div class="container">
+        <div class="div1"></div>
+        <div class="div2">
+            <h3>GENERAL PERMIT TO WORK AND ENTRY</h3>
+            <table>
+                <tr>
+                    <td>Site: {{sitename}}</td>
+                    <td>Permit no: {{ permit_no }}</td>
+                    <td>INITIATOR COPY</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <h5>Confined space work:</h5>
+    <ol>
+        <li>Work inside any vessel, reactor, kettles, storage tanks, underground water tanks, ducts, drainage sewer septic tanks, sumps are categorized as confined work places.</li>
+        <li>Confined place work to be carried out only in the day time and under complete supervision only.</li>
+        <li>Full body harness with extended rope shall be provided to the person performing the work.</li>
+        <li>One trained standby person shall be available to watch and respond in case of any emergency.</li>
+        <li>Use of hand lamp / torch shall not exceed 12V inside the confined place.</li>
+        <li>Ventilate the area for at least 2 hrs. Before starting the activity.</li>
+        <li>Check for O2 and Other gas by using oxy meter or multi gas detector before entering the confined space. Oxygen level inside the confined space should be 19.6 % to 21%.</li>
+        <li>Emergency rescue device to be available at site.</li>
+        <li>Individual before entering confined space should wear the personal oximeter on body.</li>
+        <li>In case of reactor, advise to wear motion sensor device on body.</li>
+        <li>Appropriate respiratory mask to be worn as per for risk level in the activity.</li>
+        <li>Any hot work activity inside confined space must be properly risk assessed for the activity.</li>
+    </ol>
+    <h5>Electrical Work:</h5>
+    <ol>
+        <li>For work inside the substation, ensure to take approval from site Supervisor / Site Lead and Client.</li>
+        <li>All operators should have electrical valid license (as applicable) and verified by approving authority.</li>
+        <li>Appropriate Electrical PPE is to be ensured before carrying out any electrical related work at the premises.</li>
+        <li>LOTO procedure should be ensured before commencing any maintenance work at the site and to be validated by the Electrical Supervisor / FM only and to be verified before start of activity.</li>
+        <li>Documents like manual, work instructions, Standard operating procedure, operator license, rope strength etc. to be checked in advance.</li>
+        <li>Check for Service partners /sub-contractor licenses and competency for Electrical high voltage activity.</li>
+        <li>Check for Calibration certificates of electronic equipment and tools inspection.</li>
+        <li>PTW and LOTO details to be cross referenced for ease of identification</li>
+    </ol>
+
+    <div class="electrical-work">
+        Electrical high voltage (more than 1000 volts) – Ensure all requirements as per the ISS SOP are followed with appropriate PPEs, Competent personnel, legal compliances, all appropriate tools and tackles to be inspected and have emergency response plan.
+    </div>
+
+    <h5>Late Night work:</h5>
+    <ol>
+        <li>Try to avoid critical activities during late hours in the premises and site.</li>
+        <li>If required need to take special permission from all concern dept/client/ local authorities as applicable.</li>
+        <li>The person must be experienced, trained and competent to do the job.</li>
+        <li>Sufficient arrangement of light/ illumination to be available at the work area.</li>
+        <li>Medical fitness certificate of all people involved in the work activity.</li>
+        <li>Need to follow all procedures/ SOPs for all critical activities as applicable.</li>
+        <li>HIRA / Method statement / JSA to be ensured and team should be trained/ made aware of the same.</li>
+        <li>Lone person working to be avoided at site as far as possible have a buddy system.</li>
+    </ol>
+</div>
+
+<div class="new-page border-class">
+    <div class="container">
+        <div class="div1"></div>
+        <div class="div2">
+            <h3>GENERAL PERMIT TO WORK AND ENTRY</h3>
+            <table>
+                <tr>
+                    <td>Site: {{sitename}}</td>
+                    <td>Permit no: {{ permit_no }}</td>
+                    <td>INITIATOR COPY</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <h5>Working with flammable liquids/gases:</h5>
+    <ol>
+        <li>Follow safe working procedures and advice from Material Safety Data Sheets and Safety Labels when transporting, storing, using and disposing chemicals.</li>
+        <li>Keep flammable chemical away from any heat source.</li>
+        <li>Do not mix / store with other chemicals – segregate and store separately the flammable and corrosive chemicals.</li>
+        <li>Emergency response plan must be available and understood by all in case of inadvertent spill/ release of gases.</li>
+        <li>All gas cylinders should be stored in a safe manner and anchored to avoid any inadvertent fall risk.</li>
+        <li>All cylinders to have the safety cap on when not in use.</li>
+        <li>Flame proof/ intrinsically safe equipment to be used to avoid any spark.</li>
+        <li>Wear the correct Personal Protective Equipment for the job and follow safety norms and ensure signages for ease of understanding is available and displayed on site.</li>
+        <li>Segregate the cylinders and store them in upright condition in a ventilated area - with correct labels.</li>
+        <li>Report any leaks or any spills immediately.</li>
+        <li>Have a proper secondary containment area to arrest any leaks or spills.</li>
+    </ol>
+
+    <h5>Working with Chemicals:</h5>
+    <ol>
+        <li>Use only approved chemicals you have been trained to use – if you don’t know it, don’t use it!</li>
+        <li>Wear the correct Personal Protective Equipment for the job and follow safety instructions.</li>
+        <li>Only use chemicals from containers or bottles with correct labels.</li>
+        <li>All Chemicals should be identified for hazards and assessed for risk.</li>
+        <li>Follow safe working procedures and advice from Material Safety Data Sheets and Safety Labels when transporting, storing, using and disposing chemicals.</li>
+        <li>All approved chemicals for use are to be recorded in a register.</li>
+        <li>Keep flammable chemical away from any heat source.</li>
+        <li>Use trays as secondary containment to contain any leaks and spills.</li>
+        <li>Clean up or report any chemical spills immediately.</li>
+        <li>Only use original containers/bottles/cans for storage and keep them closed when not in use.</li>
+    </ol>
+
+    <h5 class="color-red">Please Note:</h5>
+    <p>Kindly report to your Supervisor/Site Lead/HSE Manager:</p>
+    <ol>
+        <li>Any Hazards observed.</li>
+        <li>Incident / Near miss incident happen/ observed.</li>
+        <li>Any unsafe Act / Unsafe conditions observed.</li>
+        <li>In case of any doubt – STOP WORK and assess the risk before continuing with the activity.</li>
+        <li>Damaged equipment etc.</li>
+        <li>Any spills or leak observed.</li>
+    </ol>
+    <div>
+        <h5>Permit Details</h5>
+        <table border="1">
+            <tr>
+                <td>PERMIT RETURNED AT</td>
+                <td>{{ permit_returned_at }}</td>
+            </tr>
+            <tr>
+                <td>WORK CHECKED AT</td>
+                <td>{{ work_checked_at }}</td>
+            </tr>
+            <tr>
+                <td>Name Of Requester</td>
+                <td>{{ name_of_requester }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <footer>
+        {% block footer %}
+        <div class="flex-between">
+            <div class = "version_id">
+                <p>Version 2.0 1st July 2021</p>
+            </div>    
+        </div>
+        {% endblock footer %}
+    </footer>
+</div>
+{% endblock %}

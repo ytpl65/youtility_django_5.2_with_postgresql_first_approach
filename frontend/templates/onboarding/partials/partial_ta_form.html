@@ -1,0 +1,73 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ ta_form.media.css }}
+{% endblock head %}
+{% macro typeassist_form() %}
+	<input type="hidden" name="{{ ta_form.ctzoffset.name }}" id = "{{ ta_form.ctzoffset.auto_id }}" value="-1">
+	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+	<div class="row mb-3">
+	{{ ta_form.tacode.label_tag() }}
+	{{ ta_form.tacode }}
+	</div>
+	<div class="row mb-3">
+	{{ ta_form.taname.label_tag() }}
+	{{ ta_form.taname }}
+	</div>
+	<div class="row mb-3">
+	{{ ta_form.tatype.label_tag() }}
+	{{ ta_form.tatype }}
+	</div>
+	<div class="row mx-3 form-check form-switch form-check-solid">
+		<div class="input-group mb-6">
+			<label for="{{ ta_form.enable.id_for_label }}" 
+			class="form-check-label bool text-sm-right">{{ ta_form.enable }}&nbsp;&nbsp;{{ ta_form.enable.label }}</label>
+		</div>
+	</div>
+
+{% endmacro %}
+
+{% block body %}
+<form action="" method="post" id="id_taform">
+	<input type="hidden" name="pk" id="pk" value="{{ ta_form.instance.pk }}">
+	<div class="modal-header border-0">
+		<h3 class="modal-title modal-heading" id="exampleModalLabel">Create TypeAssist <i class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+		<button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	</div>
+	<div class="modal-body" id="partial">
+		<div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors"role="alert" style="display:none">
+			<strong>Error</strong> <span></span>
+			<button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+
+		{{ typeassist_form() }}
+	</div>
+</form>
+	
+	<div class="modal-footer border-0 pt-0">
+		<button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">Close <i class="fas  fa-times"></i></button>
+		{% if ta_form.instance.tacode %}
+			{% if ta_form.instance.cuser.peoplecode != 'NONE' or request.user.is_superuser %}
+			<button type="submit" id="submit" form="id_taform" class="btn btn-sm btn-primary2 btn-hover-scale">Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+			<button type="button" onclick="deleteTa(this)" data-id="{{ ta_form.instance.id }}" id="deleteCap" class="btn btn-sm btn-hover-scale btn-danger">Delete&nbsp;<i class="fas text-white fa-trash-alt"></i></button>
+			{% endif %}
+		{% else %}
+		<button type="submit" form="id_taform" class="btn btn-sm btn-primary2 btn-hover-scale">Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		{% endif %}
+	</div>
+
+{% endblock body %}
+
+{% block js %}
+{{ ta_form.media.js }}
+<script>
+$(document).ready(() => {
+	//set ctzoffset
+  	$("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+	
+	$("#modal-ta").find("select").djangoSelect2({
+		dropdownParent: $('#modal-ta')
+    })
+})
+</script>
+{% endblock js %}

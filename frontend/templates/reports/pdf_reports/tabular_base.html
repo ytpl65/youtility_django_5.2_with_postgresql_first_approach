@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>{% block reports_title %}Report{% endblock reports_title %}</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!---custom css file -->
+  <link href="{{ static('assets/css/local/reports.css') }}" rel="stylesheet" type="text/css" />
+  {% block inline_css %}{% endblock inline_css %}
+</head>
+
+<body>
+  <header id="page_header">
+    <!-- report navbar here -->
+    <div>
+      {% block header_start %}
+
+      {% endblock header_start %}
+    </div>
+    <div>
+      {% block header_center %}
+
+      {% endblock header_center %}
+    </div>
+    <div>
+      {% block header_end %}
+
+      {% endblock header_end %}
+    </div>
+
+  </header>
+
+  <main>
+    <!-- report body here -->
+    <div class="table-responsive">
+      <!--render table here-->
+      {% block table %} {% endblock table %}
+      {% block summary %}{% endblock summary %}
+    </div>
+  </main>
+
+  <footer>
+    {% block page_footer %}
+
+    {% endblock page_footer %}
+    <!-- report footer here -->
+  </footer>
+
+  {% block script %}{% endblock script %}
+</body>
+
+</html>

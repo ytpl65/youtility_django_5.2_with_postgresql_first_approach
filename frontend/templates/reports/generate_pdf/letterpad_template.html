@@ -1,0 +1,129 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Calibri', sans-serif;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-top: 120px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header .address {
+            text-align: left;
+            line-height: 1.2; /* Adjusted for the overall address section */
+        }
+        .header .address p {
+            margin: 0; /* Optional: Removes additional margin between lines */
+            line-height: 1.6; /* Decrease line height specifically for paragraphs */
+        }
+        .header .logo {
+            text-align: right;
+        }
+        .logo img {
+            width: 60px;
+            height: auto;
+        }
+        .content {
+            margin-top: 25px;
+        }
+        .content .salutation {
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 1px;
+            font-size: 8px;
+            text-align: left;
+        }
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .footer .signature {
+            font-weight: bold;
+            font-size: 13px;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="header">
+        <div class="address">
+            <p>To,</p>
+            <p>{{ Customer }}</p>
+            <p>{{ Site }}</p>
+            <p>PF Code No:- {{ PFCodeNo }}</p>
+            <p>ESIC Code No:- {{ ESICCodeNo }}</p>
+        </div>
+    </div>
+    <div class="content">
+        <p class="salutation">Dear Sir,</p>
+        <p>As advised we submit herewith details of PF & ESIC Numbers. We also confirm that the statutory dues in
+           respect of personnel deployed at your location have been deducted & remitted to the authorities as per
+           the guidelines. These details pertain to the month of {{ YearMonth }}.
+        </p>
+        <br>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>SR. NO</th>
+                        <th>EMP CODE</th>
+                        <th>NAME</th>
+                        <th>DESG</th>
+                        <th>UAN NO</th>
+                        <th>ESIC NO</th>
+                        <th>PF WAGES</th>
+                        <th>PF AMT</th>
+                        <th>ESI WAGES</th>
+                        <th>ESI AMT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(0, table_data.uan_list|length) %}
+                    <tr>
+                        <td>{{ i+1 }}</td>
+                        <td>{{ table_data.employee_list[i] }}</td>
+                        <td>{{ table_data.name_list[i] }}</td>
+                        <td>{{ table_data.designation_list[i] }}</td>
+                        <td>{{ table_data.uan_list[i] }}</td>
+                        <td>{{ table_data.esic_list[i] }}</td>
+                        <td>{{ table_data.pf_deduction_amount_list[i] }}</td>
+                        <td>{{ table_data.pf_employee_amount_list[i] }}</td>
+                        <td>{{ table_data.calcesi_list[i] }}</td>
+                        <td>{{ table_data.esi_employee_list[i] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if Company == 'SPS' %}
+    <div class="footer">
+        <div class="signature">
+            <strong>For Security & Personnel Services Pvt. Ltd</strong>
+            <br><br><br>Authorized Signatory
+        </div>
+    </div>
+    {% else %}
+    <div class="footer">
+        <div class="signature">
+            <strong>For Sukhi Orion Security Systems Pvt. Ltd</strong>
+            <br><br><br>Authorized Signatory
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>

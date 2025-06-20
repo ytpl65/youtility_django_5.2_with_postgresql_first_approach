@@ -1,0 +1,223 @@
+{% extends "globals/base_list.html" %}
+
+{% block card_title %}
+Preview Submissions
+{% endblock card_title %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Preview Submissions
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block card_icon %}
+
+{% endblock card_icon %}
+
+
+{% block wizard_head %}
+{{ super() }}
+<style>
+    table {
+        border: 1px solid black;
+    }
+
+    tr {
+        padding-inline: 5px;
+    }
+
+    h6 {
+        color: #2e638b;
+    }
+    .ml-1{
+        margin-left:10px;
+    }
+</style>
+{% endblock wizard_head %}
+
+<!------ BEGIN Page Body ------>
+{% block table %}
+<div class="row">
+    <div class="table-responsive col-md-6 col-sm-6">
+        {% set bus = wizard_subs['bus'] %}
+        <h6>Step-1 Buisiness Unit</h6>
+        <table class="table table-striped" id="bu_table">
+            <thead class="ml-1">
+                <th scope="col">#</th>
+                <th scope="col">Code</th>
+                <th scope="col">Name</th>
+                <th scope="col">Type</th>
+                <th scope="col">Belongs To</th>
+            </thead>
+            <tbody>
+                {% for bu in bus %}
+                <tr class="ms-1">
+                    <td scope="row">{{ loop.index }}</td>
+                    <td><a href="#">{{ bu['bucode'] }}</a></td>
+                    <td>{{ bu['buname'] }}</td>
+                    <td>{{ bu['butype__taname'] }}</td>
+                    <td>{{ bu['parent__bucode'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-responsive col-md-6 col-sm-6">
+        <h6>Step-2 Shift</h6>
+        <table class="table table-striped" id="shift_table">
+            <thead>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
+            </thead>
+            <tbody>
+                {% for shift in wizard_subs['shiftids'] %}
+                <tr>
+                    <td scope="row">{{ loop.index }}</td>
+                    <td>{{ shift['shiftname'] }}</td>
+                    <td>{{ shift['starttime'] }}</td>
+                    <td>{{ shift['endtime'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="table-responsive col-md-6 col-sm-6">
+        <h6>Step-3 People</h6>
+        <table class="table table-striped" id="people_table">
+            <thead class="px-1">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Code</th>
+                <th scope="col">Name</th>
+                <th scope="col">Type</th>
+                <th scope="col">Login Id</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for people in wizard_subs['peoples'] %}
+                <tr>
+                    <td scope="row">{{ loop.index }}</td>
+                    <td>{{ people['peoplecode'] }}</td>
+                    <td>{{ people['peoplename'] }}</td>
+                    <td>{{ people['peopletype__taname'] }}</td>
+                    <td>{{ people['loginid'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-responsive col-md-6 col-sm-6">
+        <h6>Step-4 Pgroup</h6>
+        <table class="table table-striped" id="pgroup_table">
+            <thead>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+            </thead>
+            <tbody>
+                {% for pg in wizard_subs['ppgroups'] %}
+                <tr>
+                    <td scope="row">{{ loop.index }}</td>
+                    <td>{{ pg['groupname'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tab-footer d-flex flex-row mt-6">
+    {% set data = request.session['wizard_data'] %}
+    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#id_quit_wizard">Quit
+        Wizard</button>
+
+    {% if not data['ppgroups'] %}
+    <!--check previous form id's in session, then load that with the instance -->
+    <a href="{{ url('peoples:wiz_pgroup_form') }}" class="mx-2 btn btn-sm btn-primary2 rounded-1">
+        Previous</a>
+    {% else %}
+    <!--if previous form id's not in session, then load that form empty-->
+    <a href="{{ url('peoples:wiz_pgroup_update', args=[data['ppgroups'][-1] ]) }}"
+        class="mx-2 btn btn-sm btn-primary2 rounded-1">Previous</a>
+    {% endif %}
+    <button type="button" class="btn btn-sm btn-success" id="saveWizard">Save Wizard</button>
+</div>
+{% endblock table %}
+
+<!------- END Page Body ------->
+
+
+<!------------BEGIN PopUp Alerts All Bootstrap Code Should Reside Here --------->
+{% block popup_alerts %}
+{{ super()  }}
+{% call general_popup( popup_id = "id_quit_wizard", title="Delete Wizard Confirmation") %}
+<div class="modal-body">
+    <h5>Are you sure?</h5>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <a href="{{ url('onboarding:wizard_delete') }}" class="btn btn-sm  btn-danger rounded-1">Yes</a>
+</div>
+{% endcall %}
+
+{% call general_popup(popup_id = 'save_wizard', title = "Confirm Onboarding") %}
+<div class="modal-body d-flex justify-content-md-center">
+
+    <div>
+    <p>All data is onboarded successfully, if you want to reconfigure any form access it from menu's.<br>Thank you</p>
+    <span class="material-icons-outlined md-48" style="color:green">
+        file_download_done
+    </span>
+    </div>
+    
+</div>
+<div class="modal-footer">
+<a class="btn btn-success" href = "{{ url('home') }}">Ok</a>
+</div>
+{% endcall %}
+{% endblock popup_alerts %}
+<!------------ END PopUp Alerts All Bootstrap Code Should Reside Here --------->
+
+
+<!------------BEGIN Page Level Scripts -------------------->
+{% block extra_scripts %}
+<script>
+    $(document).ready(function(){
+        {% set default = 'You have not submitted any form.' %}
+        var session = {{ dict(request.session) | default (default) | tojson }}
+        if($('tbody').is(':empty')){
+            $(this).append('<p>No data available!</p>')
+        }
+
+        //saveWizard with swal(sweetalert)
+        $("#saveWizard").click(function(){
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, save it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                     Swal.fire(
+                        'Saved!',
+                        'Your data has been saved.',
+                        'success'
+                    ).then(() => {
+                        window.location = "{{ url('onboarding:saveWizard') }}"
+                    })
+                }
+            })
+        })
+    });
+</script>
+{% endblock extra_scripts %}
+<!------------END Page Level Scripts -------------------->

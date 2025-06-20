@@ -1,0 +1,148 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Routes 
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Routes
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block popup_alerts %}
+    {% call general_popup(title='List of Peoples', popup_id='id_people_list', modal_size='modal-md') %}
+            <div class="modal-body">
+                <table class="display cell-border" style="width:100%" id="tabListOfPeoples"></table>
+            </div>
+    {% endcall %}
+{% endblock popup_alerts %}
+
+<!-- 
+VARIABLE DEFINITIONS FOR DEVELOPERS
+ext_schdtour_filter = 'External ScheduleTour Filter',
+ext_schdtour_list = 'External ScheduleTour List',
+-->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Routes 
+</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN Schedhuled External Tour TABLE ------------------------------------------->
+{% block table %}
+<table id="ext_schdtour_table" class="display cell-border" style="width:100%">
+</table>
+
+{% endblock table %}
+<!-------------------------------------------- END Schedhuled External Tour TABLE ------------------------------------------->
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script>
+	var table           = null;
+    var peopleList = null;
+    var ajaxData = {}
+	const formFilter      = "#ext_schdtour_filter"
+	const table_id        = "#ext_schdtour_table"
+
+    function showListOfPeoples(id, from){
+        $('#id_people_list').modal('show')
+        ajaxData.id=id
+        ajaxData.model = from
+        peopleList.ajax.reload()
+    }
+
+    $(document).ready(function (){
+        //datatable initialization
+        table = $(table_id).DataTable({
+            ajax:{
+                url: '{{ url("schedhuler:schd_external_tour") }}?action=list'
+            },
+			columns:[
+                {data: 'id', title:"ID", visible:false},
+                {data: 'jobname', title: 'Name'},
+                {data: 'sitegrpname', title: 'Cluster'},
+                {data: 'assignedto', title:"People/Group", defaultContent:null, render:function(data, type, row, meta){
+                    if(data.includes('[GROUP]')){
+                        return `<a href="javascript:void(0)"  onClick='showListOfPeoples(${row['id']}, "Job")'>${data}</a>`
+                    }else{
+                        return data
+                    }
+                }
+                },
+                {data:'israndomized', title:'Random'},
+                {data:'tourfrequency', title:'Frequency'},
+                {title: 'From', data: 'fromdate'},
+                {title: 'To', data: 'uptodate'},
+                {title: 'Duration', data: 'planduration'},
+                {title: 'Gracetime', data: 'gracetime'},
+                {title: 'Exp. Time', data: 'expirytime'},
+                {data: 'ctzoffset', title:"Ctzoffset", visible:false, className:'noVis'},
+            ],
+            columnDefs:[
+                {targets:0, data: 'id', visible: 'false', searchable:false, className:'noVis' },
+                {targets:1, data: 'jobname', render:function(data, type, row, meta){
+                    let urlname = "{{ url('schedhuler:schd_external_tour') }}"
+                    return `<a href="${urlname}?id=${row['id']}">${data}</a>`
+                }
+                },
+                {targets:4, data:"israndomized", render:function(data, type, row, meta){
+					return data ? 'Yes': 'No'				
+				}},
+                {targets:6, render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+                {targets:7, render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+            ],
+            order:[[6, 'desc']],
+            deferRender: true,
+            lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            responsive:true,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            buttons:[
+                {
+                    extend: 'searchBuilder',
+                    config: {
+                    columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    }
+                },
+                dataTablesPDFConfig(
+                    'Site: {{ request.user.bu.buname }}\nScheduled Route Plan List',
+                    [1,2,3,4,5,6,7,8,9],
+                    filename="schd_routeplan_list"
+                ),
+                dataTablesExcelConfig(
+                    'Site: {{ request.user.bu.buname }}\nScheduled Route Plan List',
+                    [1,2,3,4,5,6,7,8,9],
+                    filename="schd_routeplan_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+					text     : `Schedule New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_job",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+        				window.location.href = "{{ url('schedhuler:schd_external_tour') }}?action=form";
+					}
+				}
+			]
+        
+        })
+
+        initializeListOfPeoplesModal(ajaxData, "{{ url('onboarding:list_of_peoples') }}")
+    })
+
+</script>
+{% endblock extra_scripts %}

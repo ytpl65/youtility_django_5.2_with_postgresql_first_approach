@@ -1,0 +1,235 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ master_assetform.media.css }}
+<style>
+.pac-container { z-index: 100000; }
+</style>
+{% endblock head %}
+
+{% block body %}
+<form action="" method="post" id="id_checkpointform">
+<input type="hidden" name="{{ master_assetform.ctzoffset.name }}" id = "{{ master_assetform.ctzoffset.auto_id }}" value="-1">
+<input type="hidden" name="pk" id = "pk" value="{{ master_assetform.instance.id }}">
+    <div class="modal-header border-0">
+        <h3 class="modal-title modal-heading" id="exampleModalLabel">Create {{ label }} <i
+                class="fas text-white fa-poll-h fa-sm ch4"></i>
+                </h3>
+        <button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body" id="partial">
+        <div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors" role="alert"
+            style="display:none">
+            <strong>Error</strong> <span></span>
+            <button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!--============================== FORM FIELDS START =============================-->
+        <div class="row mb-3 gy-3">
+            <!--CHeckpoint Code Start-->
+            <label for="{{ master_assetform.assetcode.id_for_label }}" class="required col-md-1">Code:</label>
+            <div class="col-md-11">
+                {{ master_assetform.assetcode }}
+                {{ master_assetform.assetcode.errors }}
+            </div>
+            <!--CHeckpoint Code End-->
+
+            <!--CHeckpoint Name Start-->
+            <label for="{{ master_assetform.assetname.id_for_label }}" class="required col-md-1">Name:</label>
+            <div class="col-md-11">
+                {{ master_assetform.assetname }}
+                {{ master_assetform.assetname.errors }}
+            </div>
+            <!--CHeckpoint Name End-->
+            <!--CHeckpoint Belongs To Start-->
+            <label for="{{ master_assetform.parent.id_for_label }}" class="col-md-1">Belongs To:</label>
+            <div class="col-md-11">
+                {{ master_assetform.parent }}
+                {{ master_assetform.parent.errors }}
+            </div>
+            <!--CHeckpoint Belongs To End-->
+            
+            <!--Running Status Start-->
+            <label for="{{ master_assetform.runningstatus.id_for_label }}" class="required col-md-1">Status:</label>
+            <div class="col-md-5">
+                {{ master_assetform.runningstatus }}
+                {{ master_assetform.runningstatus.errors }}
+            </div>
+            <!--Running Status End-->
+            
+            <!--Type Start-->
+            <label for="{{ master_assetform.type.id_for_label }}" class="col-md-1">Type:</label>
+            <div class="col-md-5">
+                {{ master_assetform.type }}
+                {{ master_assetform.type.errors }}
+            </div>
+            <!--Type End-->
+            <!--Belongs To End-->
+            <!--Belongs To Start-->
+            <label for="{{ master_assetform.location.id_for_label }}" class="col-md-1">Location:</label>
+            <div class="col-md-5">
+                {{ master_assetform.location }}
+                {{ master_assetform.location.errors }}
+            </div>
+            <!--Belongs To End-->
+            
+            <!--GPS LOCATION-->
+            <label for="id_gpslocation" class="col-md-1">GPS Location:
+                <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+                    data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+                    title="Longitude & latitude cordinates of the business unit">
+                    info
+                </span>
+            </label>
+            <div class="col-md-5">
+                <div class="d-flex d-inline">
+                    <input type="text" name="gpslocation" readonly placeholder="Latitude, Longitude" geom_type="POINT" class="form-control" id="id_gpslocation">
+                    <button type='button' class="btn btn-sm btn-secondary rounded-right rounded-1" style="height:3.2rem;" id="id_setgps">GPS</button>
+                </div>
+            </div>
+            
+            <!--Asset Identifier Start-->
+
+            {{ master_assetform.identifier }}
+            {{ master_assetform.identifier.errors }}
+
+            <!--Asset Identifier End-->
+
+            <!-- Critical Start -->
+            <div class="booleans col-md-3 d-flex justify-content-sm-between mt-5
+            form-check form-switch form-check-custom form-check-solid">
+                <label for="{{ master_assetform.iscritical.id_for_label }}"
+                    class="form-check-label bool col-form-label me-5 text-sm-right">
+                    {{ master_assetform.iscritical.label }}: &nbsp; {{ master_assetform.iscritical }}
+                </label>
+            </div>
+            <!-- Critical End -->
+
+            <!-- Enable Start -->
+            <div class="booleans col-md-2 d-flex justify-content-sm-between mt-5
+            form-check form-switch form-check-custom form-check-solid">
+                <label for="{{ master_assetform.enable.id_for_label }}"
+                    class="form-check-label bool col-form-label me-5 text-sm-right">
+                    {{ master_assetform.enable.label }}: &nbsp; {{ master_assetform.enable }}
+                </label>
+            </div>
+            <!-- Enable End -->
+            
+            
+        </div>
+    </div>
+
+    <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-secondary btn-hover-scale"
+         data-bs-dismiss="modal">
+            Close <i class="fas  fa-times"></i>
+        </button>
+        {% if master_assetform.instance.id %}
+            <button type="submit" id="submit" class="btn btn-sm btn-primary2 btn-hover-scale">
+                Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+            </button>
+            
+            <button type="button" onclick="deleteCheckpoint(this)"
+             data-id="{{ master_assetform.instance.id }}" id="deleteCp"
+                class="btn btn-sm btn-danger btn-hover-scale">
+                Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+            </button>
+        {% else %}
+            <button type="submit" class="btn btn-sm btn-primary2 btn-hover-scale">
+                Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+            </button>
+        {% endif %}
+    </div>
+</form>
+{% endblock body %}
+
+{% block popup_alerts %}
+{% call general_popup(popup_id = 'select_addr', title = 'Select Address') %}
+<div class="modal-body">
+<div class="row">
+{{ master_assetform.gpslocation }}
+</div>
+</div>
+<div class="modal-footer">
+
+</div>
+{% endcall %}
+
+	<!-- Moda for setting GPS coordianates-->
+	{% call general_popup(title="Set GPS Location", popup_id="open_map", modal_size="modal-lg") %}
+	<div class="modal-body card">
+		<div class="card-body p-0">
+			<div id="map" style="width:750px; height:350px"></div>
+		</div>
+	</div>
+	<div class="modal-footer d-flex justify-content-between">
+		<div><p>Tip: Zoom in for accurate coordinates of address, place the marker and then set the coords.</p></div>
+		<div></div>
+		<div><a href="#" class="btn" id="close_setgps" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-primary2" id="set_the_coords">Set the coordinates</a></div>
+		
+	</div>
+	{% endcall %}
+{% endblock  popup_alerts %}
+
+
+{% block js %}
+
+{{ master_assetform.media.js }}
+<script>
+	var map, userMarker, currinfowindow, currAddr;
+	function getLatLng(){
+		var gps  = '{% if master_assetform.instance.gpslocation != None %}{{ master_assetform.instance.gpslocation.y }},{{ master_assetform.instance.gpslocation.x }}{% else %}None{% endif %}';
+		if(gps != "None"){
+			console.log('{{ master_assetform.instance.gpslocation }}')
+			return { lat:parseFloat(gps.split(',')[0]), lng:parseFloat(gps.split(',')[1]) }
+		}return {lat:0.0, lng:0.0}
+	}
+</script>
+<script src="{{ static('assets/js/local/maps.js') }}"></script>
+
+<script>
+
+    //set ctzoffset
+  	$("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        //$('.optionGrp').hide()
+    $('form').find("label").addClass("col-md-1")
+    $(document).ready(() => {
+        //onclick id_setgps open popup open-map
+		$("#id_setgps").click(function(){
+			$("#open_map").modal('show');
+			initMap("map");
+		});
+
+		//onclick set the coords get lat and lng from useMarker and set to gpslocation field
+		$("#set_the_coords").click(function(){
+			var lat = userMarker.getPosition().lat();
+			var lng = userMarker.getPosition().lng();
+			$("#id_gpslocation").val(lat + ', ' + lng);
+			const geocoder = new google.maps.Geocoder()
+			getAddressOfPoint(geocoder, {lat:lat, lng:lng}, (address) => {
+				$("#id_address").val(address)
+			})
+			$("#open_map").modal('hide');
+		});
+
+		$("#close_setgps").click(function(){
+			$("#open_map").modal('hide');
+		});
+        
+        //remove class to label which was added from above
+        $('.booleans label').removeClass('col-md-1')
+        $('.django-select2').select2({
+            dropdownParent: $('#modal-checkpoint')
+        })
+        $(".modal").removeAttr("tabindex");
+
+        if("{{ master_assetform.instance.id }}" !== 'None'){
+            $("#id_gpslocation").val("{{ master_assetform.instance.gpslocation.coords[::-1] if master_assetform.instance.gpslocation is not none else 'NONE' }}")
+        }
+    })
+
+
+
+</script>
+{% endblock js %}

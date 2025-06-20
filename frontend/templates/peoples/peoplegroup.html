@@ -1,0 +1,217 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+People Groups
+{% endblock card_title %}
+<!---- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+People Groups
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!----------- BEGIN PAGE BREADCUMBS ----------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">People Groups</a></li>
+{% endblock pagebreadcumb %}
+<!----------- END PAGE BREADCUMBS ------------->
+
+
+<!------------------ BEGIN PEOPLE TABLE ------------------------->
+{% block table %}
+<div class="table-responsive">
+    <table id="pgroup_table" class="display cell-border hover compact" style="width:100%">
+    </table>
+</div>
+{% endblock table %}
+<!------------------ END PEOPLE TABLE --------------------------->
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal animate__animated animate__zoomIn" tabindex="-1" aria-hidden="true"  aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-pgroup">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content" id="pgroup_content">
+		</div>
+	</div>
+</div>
+{% endblock popup_alerts %}
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script>
+	var table             = null;
+	const modal_id        = "#modal-pgroup"
+	const modalcontent_id = "#pgroup_content"
+	const formFilter      = "#pgroup_filter"
+	const table_id        = "#pgroup_table"
+	const formid          = "#id_pgroupform"
+	const urlname         = "{{ url('peoples:peoplegroup') }}"
+	const viewname        = "Pgroup"
+	const rowlink         = "a.pg-link"
+	
+	function addResultToTable(row){
+		table.row.add({
+			'groupname':row['groupname'],
+			'enable':row['enable'] === true ? 'True' : 'False',
+			'id':row['id']
+		}).draw();
+	}
+
+	$(document).ready(function () {
+        //beforeSend of capability ajax request 
+        function BeforeSend(){
+            $(modal_id).modal("show");
+        }
+		//datatable initialization
+        table = $(table_id).DataTable({
+			ajax:{
+				url:`${urlname}?action=list`
+			},
+			deferRender: true,
+			responsive : true,
+			lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            dom       : `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			columns:[
+				{	title:'Group Name',
+					data: "groupname",
+					render:function(data, type, row, meta){
+						 return `<a href="#" class="ta-link" data-id=${row['id']} data-rowid=${meta.row}>${data}</a>`
+					}
+				},
+				{data: "enable",title:"Enable", render:function(data, type, row, meta){
+					return data === true ? '<i class="bi bi-check-circle-fill text-success"></i> Active': '<i class="bi bi-x-circle-fill text-danger"></i> Inactive'				
+				}
+				},
+				{data: 'id', title:"ID", visible:false, defaultContent: "", className:'noVis'},
+				{data:'bu__buname', title:'Site', visible:false},
+				{data:'bu__bucode', title:'Site Code', visible:false}
+			],
+			createdRow:function(row, data, dataIndex){
+				if(data['enable'] === false){
+					$(row).addClass('disabled-record text-white')
+				}
+			},
+			buttons:[
+				{
+					extend: 'searchBuilder',
+					config: {
+					columns: [0, 1, 3, 4, 5]
+					}
+				},
+				dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n People Group List`,
+                    columns = ':visible',
+					filename = "people_group_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n People Group List`,
+                    columns = ':visible',
+					filename = "people_group_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+
+				{
+					text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_pgroup",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+						const params = {
+							'modal_id'    : modal_id,
+							'url'         : `${urlname}?action=form`,
+							'beforeSend'  : BeforeSend }
+						fire_ajax_get(params)
+						.done((data, status, xhr) => {
+                            $(`${modal_id} .modal-content`).html(data.html_form)
+                        })
+						.fail((xhr, status, error) => {
+							show_error_alert("Something went wrong!")
+						})
+					}
+				}
+			],
+			select: {
+                    style: 'single'
+                }
+		})
+
+		
+		//submit form
+		$(modal_id).on('submit', formid, function(e) {
+			var form = $(this);
+			e.preventDefault()
+			const params = { url:urlname, modal:true } //capability view
+			const id = $("#pk").val() //form instance id
+			var payLoad = {formData:form.serialize(), peoples:$("#id_peoples").val(),  csrfmiddlewaretoken: '{{ csrf_token }}'}//payload for post request
+			if(id != 'None'){
+				var newPayLoad = {...payLoad, 'pk':id}
+				payLoad = newPayLoad
+			}
+			
+			fire_ajax_form_post(params, payLoad)
+			.done((data, status, xhr) => { //function to submit post request
+				$(modal_id).modal("hide");
+				if(id!=='None'){
+					table.row('.selected').data(data.row).draw()
+				}else{
+					table.row.add(data.row).draw()
+				}
+				show_successful_save_alert(update= id != 'None' ? true : false)
+			})
+		})
+
+		//update row (form-view)
+		table.on('select',function(e,dt,type,indexes){
+			if(type === 'row'){
+				var id=table.rows(indexes).data().pluck('id')[0]
+				if (!id){return}
+				e.preventDefault();
+				const params = {
+					'modal_id':modal_id,
+					'url':`${urlname}?id=${id}`,
+					beforeSend: BeforeSend
+				}
+				fire_ajax_get(params)
+				.done((data,status,xhr)=>{
+					$(modalcontent_id).attr('data-form','update')
+					$(`${modal_id} .modal-content`).html(data.html_form)
+				})
+				.fail((xhr,status,error) => {
+					show_error_alert('Something went wrong!')
+				})
+			}
+		})
+	}); //END document.ready()
+
+	//delete ajax request 
+	function deletePgroup(elemt){
+		var id = $(elemt).attr("data-id")
+		show_alert_before_delete(viewname)
+		.then((result) => {
+			if(result.isConfirmed){
+				const params = {url:`${urlname}?action=delete&id=${id}`,beforeSend:function(){} }
+				fire_ajax_get(params)
+				.done((data,status,xhr) => {
+					if(!xhr.status === 200){
+						show_error_alert('Something went Wrong!');
+					}
+					else{
+						show_successful_delete_alert()
+						$(modal_id).modal("hide")
+						table.row('.selected').remove().draw();
+					}
+				})
+				.fail((xhr,status,error) => {
+					console.log(xhr)
+					show_error_alert(xhr.responseJSON.errors)
+				})
+			}
+		})
+	}
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS ------------------------------->

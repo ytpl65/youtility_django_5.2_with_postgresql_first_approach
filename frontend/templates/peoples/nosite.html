@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Site</title>
+    <!-- BEGIN GLOBAL STYLESHEETS BUNDLE (used by all pages) -->
+    <link href="{{ static('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ static('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ static('assets/plugins/custom/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet" type="text/css" />
+
+    {{ nositeform.media.css }}
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center align-middle">
+            <div class="col-md-8 col-lg-6 col-xl-4 ">
+                <div class="card shadow-sm card-bordered" style="margin-top: 250px; width:520px">
+                    <div class="card-header justify-content-center my-0">
+                        <div class="site_logo mt-5"><img class="dlogo" style="height:55px"
+                                src="{{static('assets/media/images/logo-transparent.png')}}" alt="">
+                        </div>
+                    </div>
+                    <div class="card-body  p-5">
+                        <form action=""  method="post" id="nosite">
+                            <div class="input-group mb-3">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                <div class="col-md-2 pt-3">
+                                    {{ nositeform.site.label_tag() }}
+                                </div>
+                                <div class="col-md-10">
+                                    {{ nositeform.site }}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" form="nosite" class="btn btn-primary btn-sm">Submit</button>
+                        <button type="button" id="logout" class="btn btn-sm btn-secondary">Log Out</button>
+                        <div class="col">
+                            <p class="fw-normal text-muted mt-4 text-decoration-underline _wrappermb-4">
+                                Note: You have no default site assigned to your account.
+                                Please select one from the list above.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- BEGIN  GLOBAL JS BUNDLE (used by all pages) -->
+        <script src="{{ static('assets/plugins/global/plugins.bundle.js') }}"></script>
+        <script src="{{ static('assets/js/scripts.bundle.js') }}"></script>
+        <script src="{{ static('assets/plugins/custom/jquery-ui/jquery-ui.min.js') }}"></script>
+        <!-- END  GLOBAL JS BUNDLE (used by all pages) -->
+
+        {{ nositeform.media.js }}
+        <script>
+            $(document).ready(function () {
+                $("#logout").click(function () {
+                    window.location.href = "{{ url ('logout') }}";
+                });
+            });
+
+        </script>
+</body>
+
+</html>

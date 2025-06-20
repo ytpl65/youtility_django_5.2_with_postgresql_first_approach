@@ -1,0 +1,201 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ approver_form.media.css }}
+{% endblock head %}
+
+{% block body %}
+<form action="" method="post" id="approverform">
+    <input type="hidden" name="{{ approver_form.ctzoffset.name }}" id="{{ approver_form.ctzoffset.auto_id }}" value="-1">
+    <input type="hidden" name="pk" id="pk" value="{{ approver_form.instance.pk }}">
+    <div class="modal-header border-0">
+        <h3 class="modal-title modal-heading" id="exampleModalLabel">Create Approver <i
+                class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+        <button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body" id="partial">
+        <div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors" role="alert"
+            style="display:none">
+            <strong>Error</strong> <span></span>
+            <button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div class="mb-e row g-3 gx-6">
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ approver_form.identifier.label_tag() }}
+                    </div>
+                    <div class="col-md-8" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Enter text without any special chars, and spaces">
+                        {{ approver_form.identifier }}
+                    </div>
+                </div>
+
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ approver_form.people.label_tag() }}
+                    </div>
+                    <div class="col-md-8" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Enter text without any special chars, and spaces">
+                        {{ approver_form.people }}
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ approver_form.sites.label_tag() }}
+                    </div>
+                    <div class="col-md-8" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Enter text without any special chars, and spaces">
+                        {{ approver_form.sites }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <div class="col-md-4">
+                        {{ approver_form.approverfor.label_tag() }}
+                    </div>
+                    <div class="col-md-8" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Enter text without any special chars, and spaces">
+                        {{ approver_form.approverfor }}
+                    </div>
+                </div>
+                <div class="form-check form-switch form-check-solid ms-3 ">
+                    <div class="input-group mb-6 d-flex justify-content-start">
+                        <label for="{{ approver_form.forallsites.id_for_label }}"
+                            class="form-check-label bool text-sm-right">{{ approver_form.forallsites }}&nbsp;&nbsp;{{ approver_form.forallsites.label }}</label>
+                    </div><br>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</form>
+
+<div class="modal-footer border-0 pt-0">
+    <button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">
+        Close <i class="fas fa-times"></i>
+    </button>
+    {% if approver_form.instance.id %}
+    <button type="submit" id="submit" form="approverform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    <button type="button" onclick="deleteApprover(this)" data-id="{{ approver_form.instance.id }}" id="deleteAttd"
+        class="btn btn-sm btn-danger btn-hover-scale">
+        Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+    </button>
+    {% else %}
+    <button type="submit" form="approverform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    {% endif %}
+</div>
+{% endblock body %}
+
+{% block js %}
+{{ approver_form.media.js }}
+<script>
+    //delete ajax request 
+    function deleteApprover(elemt) {
+        var id = $(elemt).attr("data-id");
+        show_alert_before_delete('Approver')
+            .then((result) => {
+                if (result.isConfirmed) { //delete requested by user
+                    const params = {
+                        url: `${urlname}?action=delete&id=${id}`
+                    }
+                    fire_ajax_get(params)
+                        .done((data, status, xhr) => {
+                            show_successful_delete_alert() //defined in customjs
+                            $(modal_id).modal("hide")
+                            table.row({
+                                selected: true
+                            }).remove().draw();
+                        })
+                        .fail((xhr, status, error) => {
+                            show_error_alert('Something went wrong!');
+                        })
+                }
+            })
+    }
+
+    $(document).ready(() => {
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+        
+
+        $("#approverform").submit((e) => {
+            e.preventDefault()
+            var form = $("#approverform")
+            //e.preventDefault()
+            const params = {
+                url: urlname,
+                modal: true
+            } //capability view
+            const id = $("#pk").val() //form instance id
+            var payLoad = {
+                formData: form.serialize(),
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            } //payload for post request
+            if (id != 'None') {
+                var newPayLoad = {
+                    ...payLoad,
+                    'pk': id
+                }
+                payLoad = newPayLoad
+            }
+            fire_ajax_form_post(params, payLoad)
+                .done((data, status, xhr) => { //function to submit post request
+                    console.log("data ", data)
+                    $("#modal-approver").modal("hide");
+                    if (id !== 'None') {
+                        table.row('.selected').data(data.row).draw()
+                    } else {
+                        table.row.add(data.row).draw()
+                    }
+                    show_successful_save_alert(update = id != 'None' ? true : false)
+                })
+
+        })
+
+        $("select[multiple]").select2({
+            closeOnSelect:false })
+
+        // Define checkbox and select element
+        var checkbox = $('#id_forallsites');
+        var select = $('#id_sites');
+
+        if("{{ approver_form.instance.id }}" === "None"){
+            // Clear the selected values
+            select.val(null).trigger('change')
+            select.select2({"disabled": 'readonly'})
+            toggleRequiredAttribute('id_sites', set=false)
+        }
+
+        // Event for checkbox change
+        checkbox.change(function(){
+            // If checkbox is checked
+            if(this.checked){
+                // Clear the selected values
+                select.val(null).trigger('change')
+                select.select2({"disabled": 'readonly'})
+                toggleRequiredAttribute('id_sites', set=false)
+            } else {
+                // Enable select field
+                select.select2({'disabled': false});
+                toggleRequiredAttribute('id_sites', set=true)
+                $("select[multiple]").select2({
+                    closeOnSelect:false 
+                })
+            }
+        });
+
+       
+    })
+
+
+</script>
+
+{% endblock js %}

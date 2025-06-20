@@ -1,0 +1,208 @@
+{% extends "globals/base_list.html" %}
+
+
+{% block extra_css %}
+<style>
+tr {
+    font-size: 12px;
+    height: 100%;
+}
+</style>
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Conveyance List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Conveyance List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Conveyance List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block table %}
+<table id="conveyance_table"  class="display cell-border compact" style="width:100%">
+    <thead  class="fw-bold fs-6"></thead>
+</table>
+{% endblock table %}
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal animate__animated animate__zoomIn" tabindex="-1" aria-hidden="true"  
+aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-te">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content" id="te_content">
+		</div>
+	</div>
+</div>
+{% endblock popup_alerts %}
+
+{% block extra_scripts %}
+<script>
+    var table = null;
+    var params=null;
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+    const table_filters = localStorage.getItem('womstats_filter')
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+	const modal_id        = "#modal-te"
+	const modalcontent_id = "#te_content"
+	const table_id        = "#conveyance_table"
+	const formid          = "#id_teform"
+	const urlname         = "{{ url('attendance:conveyance') }}"
+	const viewname        = "Conveyance"
+	const rowlink         = "a.te-link"
+
+$(document).ready(() => {
+    //beforeSend of capability ajax request 
+    function TaBeforeSend(){
+        $(modal_id).modal("show");
+    }
+    var formUrl = "{{ url('attendance:conveyance') }}"
+    ////datatable initialization
+    table = $(table_id).DataTable({
+        ajax:{
+            url: "{{ url('attendance:conveyance') }}?action=list",
+            data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+        },
+        deferRender: true,
+        //scrollY: 300,
+        //scrollCollapse: true,
+        //scrollX:true,
+        lengthMenu: [250,500,750,1000],
+        pageLength: 500,
+        responsive:true,
+        dom: `<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        columns:[
+            {visible:false, data: 'id', searchable:false, orderable:false, className:"noVis",defaultContent: ""}, //0
+            {data: 'bu__buname', title: 'Site Name', render:function ( data, type, row, meta ) {
+                return `<p data-placement="top" data-toggle="tooltip"  
+                data-bs-placement="right"  class="pe-auto"
+                title=${row['bu__bucode']}>${row['bu__buname']}</p>`;
+            }
+            }, //1
+            {data: 'people__peoplename', title: 'People', render:function ( data, type, row, meta ) {
+                return `<a href=${formUrl}?id=${row['id']}>${data}</a>`
+            }
+            }, //2
+            {data: 'people__peoplecode', title:"People Code", visible:false, searchable:false, orderable:false }, //3
+            {data: 'bu__bucode', visible:false, title:"Bu Code", searchable:false, orderable:false }, //4
+            
+            {data: 'punchintime', title: 'Start Time', width:"10%", render:function(data, type, row, meta){
+                if(type === "sort" || type === "type"){
+                    return data;
+                }
+                //return data
+                if(data){
+                    let datetime = moment(data, 'YYYY-MM-DDTHH:mm:ss').add(row['ctzoffset'], 'm').format("DD-MMM-YYYY HH:mm")
+                    return data ? datetime : '-';
+                }return data
+                
+            } }, //5
+            {data: 'punchouttime', title: 'End Time',  width:"10%", render:function(data,type,row,meta){
+                if(type === "sort" || type === "type"){
+                    return data ? data: '-';
+                }
+                if(data){
+                    let datetime = moment(data, 'YYYY-MM-DDTHH:mm:ss').add(row['ctzoffset'], 'm').format("DD-MMM-YYYY HH:mm")
+                    return data ? datetime : '-';
+                }return data
+            } }, //6
+            {data: 'start', visible:false, title:"Start Location", searchable:false, orderable:false }, //7
+            {data: 'end', visible:false, title:"End Location", searchable:false, orderable:false }, //8
+            {data: 'transportmodes', title: 'Transport Modes' }, //9
+            {data: 'distance', title: 'Distance (Kms)', width:'10%' }, //10
+            {data: 'duration', title: 'Duration (Mins)',  width:'10%' }, //11
+            {data: 'expamt', title: 'Amount',  width:'10%' }, //12
+        ],
+        columnDefs:[{
+            targets:[8,7],
+            render:function(data, type, row, meta){
+                if(isValidJSON(data)){
+                    let parsedJson = JSON.parse(data)
+                    return parsedJson['coordinates'].reverse()
+
+                }
+            }
+        }],
+        order:[[5, 'desc']],
+        buttons:[{
+            text: 'Add New',
+            className: 'btn btn-sm btn-light-primary d-none',
+            action:function(e, dt, node, config){
+                location.href = "{{ url('attendance:conveyance') }}?action=form"
+            }
+        },    
+        "searchBuilder",
+        dataTablesPDFConfig(
+            title = `Site: {{request.user.bu.buname}}\n Travel Expense List`,
+            columns = ':visible',
+            filename = 'conveyance_list'
+        ),
+        dataTablesExcelConfig(
+            title = `Site: {{request.user.bu.buname}}\n Travel Expense List`,
+            columns = ':visible',
+            filename = 'conveyance_list'
+        ),
+        dataTablesColumnVisibilityConfig(),
+        ]
+    })
+
+    initDateRangeHtml()
+    initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+        from_pd = picker.startDate.format('YYYY-MM-DD');
+        to_pd = picker.endDate.format('YYYY-MM-DD');
+        let filters = {from:from_pd, to:to_pd}
+        reloadTable(table, filters)
+    })
+
+
+    //submit form
+    $(modal_id).on('submit', formid, function(e) {
+        var form = $(this);
+        e.preventDefault()
+        const params = { url:urlname, modal:true } //capability view
+        const formtype = $(modalcontent_id).attr('data-form') //form-type (create/update)
+        const id = $(modalcontent_id).attr('data-id') //form instance id
+        var payLoad = {formData:form.serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'}//payload for post request
+        if(formtype === 'update'){
+            var newPayLoad = {...payLoad, 'pk':id}
+            payLoad = newPayLoad
+        }
+        fire_ajax_form_post(params, payLoad)
+        .done((data, status, xhr) => { //function to submit post request
+            console.log("data ", data)
+            $(modal_id).modal("hide");
+            Swal.fire(
+            `${viewname} saved`,
+            `${viewname} with this code <strong>${data.code}</strong> has been saved successfully`,
+            'success'
+            ).then(function(){
+                location.reload()
+            })
+        })
+    })
+
+})
+</script>
+{% endblock extra_scripts %}

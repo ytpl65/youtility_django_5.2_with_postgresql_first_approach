@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px; background-color: #f2f2f2;">Permit Name</th>
+            <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">{{ permit_name }}</td>
+        </tr>
+        <tr>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px; background-color: #f2f2f2;">Site Name</th>
+            <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">{{ sitename }}</td>
+        </tr>
+        <tr>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px; background-color: #f2f2f2;">Status</th>
+            <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">{{ status }}</td>
+        </tr>
+        <tr>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px; background-color: #f2f2f2;">Permit Number</th>
+            <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">{{ permit_no }}</td>
+        </tr>
+        <tr>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px; background-color: #f2f2f2;">Vendor Name</th>
+            <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">{{ vendor_name }}</td>
+        </tr>
+    </table>
+    <br>
+    If the work permit details meet your requirements, please proceed to approve it with the
+    <a style="margin-right: 20px;" class="ybtn-success"
+       href="{{ HOST }}{{ url('work_order_management:verifier_reply_workpermit') }}?action=accepted&womid={{ workpermitid }}&peopleid={{ peopleid }}&sitename={{ sitename }}&client_id={{ client_id }}"
+       target="_blank">
+        Click Here to Approve
+    </a>
+    <br>
+    <hr>
+    Conversely, if any information doesn't meet your requirements you can reject it with
+    <a class="ybtn-warn"
+       href="{{ HOST }}{{ url('work_order_management:verifier_reply_workpermit') }}?action=rejected&womid={{workpermitid}}&peopleid={{ peopleid }}&client_id={{ client_id }}"
+       target="_blank">
+        Click Here to Reject
+    </a>
+    <hr>
+
+</body>
+
+</html>

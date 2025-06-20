@@ -1,0 +1,179 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+External Tour List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+External Tour List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block popup_alerts %}
+    {% call general_popup(title='List of Peoples', popup_id='id_people_list', modal_size='modal-md') %}
+            <div class="modal-body">
+                <table class="display cell-border" style="width:100%" id="tabListOfPeoples"></table>
+            </div>
+    {% endcall %}
+{% endblock popup_alerts %}
+
+{% block extra_css %}
+{# <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"> #}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">External Tour List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN Schedhuled Tour TABLE ------------------------------------------->
+{% block table %}
+<table id="externaltour_table" class="display compact cell-border" style="width:100%">
+</table>
+
+{% endblock table %}
+
+{% block extra_scripts %}
+{# <script src="https://cdn.datatables.net/rowreorder/1.2.8/js/dataTables.rowReorder.min.js" type="text/javascript"></script> #}
+<script>
+    var table = null;
+    var peopleList = null;
+    var ajaxData = {}
+    const table_id = '#externaltour_table'
+    const urlname = "{{ url('schedhuler:jobneedexternaltours') }}"
+
+    //if you want to modifiy here, then modify in custom.js initDateRange also
+    var params = null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+
+    const table_filters = localStorage.getItem('routes_filter') ? localStorage.getItem('routes_filter') : localStorage.getItem('alertsFilters')
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+    function showListOfPeoples(id, from){
+        $('#id_people_list').modal('show')
+        ajaxData.id=id
+        ajaxData.model = from
+        peopleList.ajax.reload()
+    }
+    function openFullScreenMap() {
+      var url = 'https://www.openstreetmap.org';
+      var windowFeatures = 'menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes';
+      window.open(url, '_blank', windowFeatures);
+    }
+
+    $(document).ready(function (){
+
+        //datatable initialization
+        table = $(table_id).DataTable({
+			//orderCellsTop: true,
+            ajax:{
+                url:`${urlname}?action=list`,
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+            },
+            language: { search: "", searchPlaceholder:"Search keywords..." },
+			deferRender: true,
+            lengthMenu:[250,500,750,1000],
+            pageLength:500,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            //ordering:false,
+            columns:[
+                {data: 'id', visible:false, searchable:false, className:'noVis'},
+                {
+                    data: 'plandatetime',
+                    title: "Plan Datetime",
+                    render: function(data, type, row, meta){
+                        const datetime = moment.utc(data).add(row['gracetime'], 'minutes');
+                        return `<a href="${urlname}?id=${row['id']}">${datetime.local().format('YYYY-MM-DD HH:mm')}</a>`;
+                    }
+                },
+                {data: 'jobdesc', title: 'Description'},
+                {data: 'jobstatus', title: 'Status'},
+                {title: 'People/Group', defaultContent:null, data:'assignedto'},
+                {data: 'performedby__peoplename', title: 'Performed By'},
+                {data: 'gracetime', title: "Grace Time"},
+                {data: 'expirydatetime', title: "Expiry Datetime"},
+                {data:'gps', title:"Track", className:"noVis"},
+            ],
+            order:[[1, 'desc']],
+            columnDefs:[
+                {targets:[1], render:function(data, type, row, meta){
+                  return `<a href="${urlname}?id=${row['id']}">${convert_to_local(type, data, row)}</a>`
+                }
+                },
+                {targets:[7], render:function(data, type, row, meta){
+                  return `<a href="${urlname}?id=${row['id']}">${convert_to_local(type, data, row)}</a>`
+                }
+                },
+                {targets:[2], render:function(data, type, row, meta){
+                   return `<a href="${urlname}?id=${row['id']}">${data}</a>`
+                }
+                },
+                {targets:[4], render:function(data, type, row, meta){
+                    if(data.includes('[GROUP]')){
+                        return `<a href="javascript:void(0)"  onClick='showListOfPeoples(${row['id']}, "Jobneed")'>${data}</a>`
+                    }else{
+                        return data
+                    }
+                }
+                },
+                {targets:[8], render:function(data, type, row, meta){
+                    let coords = parseGeoJson(data)
+                    if(row['jobstatus'] !== 'ASSIGNED'){
+                        let lat = coords.split(', ')[0]
+                        let lng = coords.split(', ')[1]
+                        return `<a href="{{ url('schedhuler:site_tour_tracking') }}?jobneed_id=${row['id']}" target='_blank'>View on map</a>`
+                    }
+                    return '--'
+                }
+                }
+            ],
+            scrollCollapse: true,
+            buttons:[
+                "searchBuilder",
+                dataTablesPDFConfig(
+                     title = 'Site: {{ request.user.bu.buname }}\Route Plan List',
+                    columns = ':visible',
+                    filename="routeplan_list"
+                ),
+                dataTablesExcelConfig(
+                     title = 'Site: {{ request.user.bu.buname }}\Route Plan List',
+                    columns = ':visible',
+                    filename = "routeplan_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+			],
+        
+        })
+
+        //add input field to the datatables dom
+        initDateRangeHtml()
+        initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            let filters = {from:from_pd, to:to_pd}
+            reloadTable(table, filters)
+        })
+
+        initializeListOfPeoplesModal(ajaxData, "{{ url('onboarding:list_of_peoples') }}")
+
+
+
+    })
+</script>
+{% endblock extra_scripts %}

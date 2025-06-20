@@ -1,0 +1,89 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Mobile User Logs
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Mobile User Logs
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{# <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"> #}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Mobile User Logs</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN Schedhuled Tour TABLE ------------------------------------------->
+{% block table %}
+
+<table id="mobile_userlogs" class="display compact cell-border" style="width:100%" >
+
+</table>
+{% endblock table %}
+
+{% block extra_scripts %}
+<script>
+var table = null;
+$(document).ready(function(){
+table = $("#mobile_userlogs").DataTable({
+    ajax:{
+        url: '{{ url("activity:mobileuserlogs") }}?action=list',
+        data:function(d){
+                d.fields = ['id', 'cdtz', 'bu__buname','signalstrength',
+                'availintmemory', 'availextmemory', 'signalbandwidth',
+                'people__peoplename', 'gpslocation', 'eventvalue', 'batterylevel']
+            }
+    },
+    pageLength:50,
+    columns     : [
+        { "data": "id", visible:false },
+        { "data": "cdtz" , title: "Date"},
+        { "data": "bu__buname" , title: 'Bu'},
+        { "data": "people__peoplename" , title: 'People'},
+        { "data": "gpslocation", 'title': 'GPS'},
+        { "data": "eventvalue", title: 'Event'},
+        { "data": "batterylevel", title: 'Battery'},
+        { "data": "signalbandwidth", title: 'Signal Bandwidth'},
+        { "data": "availintmemory", title: 'Avail. Internal Memory'},
+        { "data": "availextmemory", title: 'Avail. External Memory'},
+        { "data": "signalstrength", title: 'Signal Strength'},
+    ],
+    serverSide:true,
+    fixedHeader:true,
+    search    : {return: true},
+    lengthMenu: [[10, 20, 30], [10, 20, 30]],
+    columnDefs:[
+        {targets:2, data: 'people__peoplename',
+        render:function(data, type, row, meta){
+            var url= "{{ url('activity:mobileuserlogs') }}?template=true&id=" + row['id'];
+            return `<a href=${url}>${data}</a>`
+        }}
+    ],
+    dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+    responsive : true,
+    buttons:[
+        {
+            text:`Add New &nbsp;<i class='fas text-white fa-plus ch4'></i></a>`,
+            className: 'btn btn-sm btn-light-primary',
+            action: function(e, dt, node, config){
+                window.location.href = "{{ url('activity:mobileuserlogs') }}?action=form";
+            }
+        }
+    ]
+})
+
+
+})
+</script>
+{% endblock extra_scripts %}

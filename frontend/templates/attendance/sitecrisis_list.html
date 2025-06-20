@@ -1,0 +1,117 @@
+{% extends "globals/base_list.html" %}
+
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Site Crisis
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Site Crisis
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Site Crisis</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+
+{% block table %}
+<!--------------------------BEGIN TABLE------------------------------>
+<table id="sitecrisis_table" class="display cell-border" style="width:100%">
+</table>
+{% endblock table %}
+
+
+{% block extra_scripts %}
+<script>
+var table= null
+    var params=null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+    const table_filters = localStorage.getItem('sitecrisis_stats_filters')
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+    function handleGPSLocation(data){
+        let latlng = parseGeoJson(data)
+        let latlngArr =  latlng.split(', ')
+        if(latlngArr.length > 1){
+            redirectMapUrl =  `https:www.google.com/maps?q=${latlngArr[0]},${latlngArr[1]}`
+            return `<a href=${redirectMapUrl} target="_blank">${latlng}<a>`
+        }return `<a href="javascript:void(0)">${data}</a>`
+    }
+
+    $(document).ready(() => {
+        table = $("#sitecrisis_table").DataTable({
+            ajax:{
+                url:'{{ url("attendance:attendance_view") }}?action=get_sitecrisis_list',
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+            },
+            deferRender: true,
+			lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            responsive:true,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns:[
+                {data:'id', visible:false, className:'noVis'},
+                {data:"bu__buname", title:"Site Name"},
+                {data:'bu__bucode', visible:false, title:'Site Code' },
+                {data:'people__peoplename', title:'People'},
+                {data:'cdtz', title:'Date Time'},
+                {data:'people__peoplecode', title:'People Code'},
+                {data:'people__mobno', title:"Mob No"},
+                {data:'people__email', title:'Email'},
+                {data:'gps', title:'Location'},
+                {data:null, title:'Attachment', className:'noVis'},
+                {data:'ctzoffset', visible:false, className:'noVis'},
+                {data:'filename', visible:false, className:'noVis'},
+                {data:'filepath', visible:false, className:'noVis'},
+            ],
+            columnDefs:[
+                {targets:[4], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+                {targets:[8], render:function(data, type, row, meta){
+                    return handleGPSLocation(data)
+                }
+                },
+                {targets:[9],  render:function(data, type, row, meta){
+                    if(row.filepath == null) return 'N/A'
+                    let file = `{{ MEDIA_URL }}${row.filepath.replace('youtility4_media/', "")}/${row.filename}`
+                    return `<a href="${file}" target="_blank"><i class="fas fa-file-video text-primary fs-3"></i></a>`
+                }
+                }
+            ],
+            order:[[0, 'desc']],
+            buttons:[]
+        })
+        //add input field to the datatables dom
+         initDateRangeHtml()
+         initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            let filters = {from:from_pd, to:to_pd}
+            reloadTable(table, filters)
+         })
+		//END STYLING DATATABLE
+    })
+</script>
+
+{% endblock extra_scripts%}

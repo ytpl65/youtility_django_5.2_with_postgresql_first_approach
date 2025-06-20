@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youtility - Login</title>
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/jpg" href="{{ static('assets/media/images/favicon.ico') }}" />
+    <style>
+        :root {
+            --primary-color: #01569a;
+            --hover-color: #0277bd;
+            --success-color: #47ad44;
+            --light-bg: #f5f9fc;
+            --border-color: #e0e6ed;
+            --text-color: #3f4254;
+            --light-text: #7e8299;
+            --shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(135deg, #f5f9fc 0%, #e1eefb 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 450px;
+            width: 100%;
+            padding: 20px;
+        }
+
+        #loginbody {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        #loginbody::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--hover-color));
+        }
+
+        .site_logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .site_logo img {
+            width: 180px;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .site_logo img:hover {
+            transform: scale(1.05);
+        }
+
+        form {
+            width: 100%;
+        }
+
+        .fields {
+            width: 100%;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #id_username,
+        #id_password {
+            width: 100%;
+            height: 50px;
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 14px;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        #id_username:focus,
+        #id_password:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(1, 86, 154, 0.1);
+            outline: none;
+        }
+
+        ::placeholder {
+            color: var(--light-text);
+        }
+
+        #eye {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--light-text);
+            transition: color 0.3s ease;
+        }
+
+        #eye:hover {
+            color: var(--primary-color);
+        }
+
+        .sign_in {
+            width: 100%;
+            margin-top: 25px;
+        }
+
+        .signinbtn {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(90deg, var(--primary-color), var(--hover-color));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(1, 86, 154, 0.2);
+        }
+
+        .signinbtn:hover {
+            background: linear-gradient(90deg, var(--hover-color), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(1, 86, 154, 0.3);
+        }
+
+        .signinbtn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(1, 86, 154, 0.2);
+        }
+
+        .alert.alert-danger.loginerr {
+            background-color: #ffe8e8;
+            border: 1px solid #ffcad0;
+            color: #d63031;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .copyright {
+            margin-top: 20px;
+            color: var(--light-text);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* Ripple effect on login button */
+        .signinbtn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .signinbtn:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform .5s, opacity 1s;
+        }
+
+        .signinbtn:active:after {
+            transform: scale(0, 0);
+            opacity: .3;
+            transition: 0s;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            #loginbody {
+                padding: 20px;
+            }
+
+            .site_logo img {
+                width: 150px;
+            }
+        }
+
+        /* Animation for alerts */
+        @keyframes slideIn {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .alert {
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        /* Decorative background elements */
+        .bg-shape {
+            position: fixed;
+            z-index: -1;
+        }
+
+        .bg-shape-1 {
+            top: 50px;
+            right: 10%;
+            width: 300px;
+            height: 300px;
+            background-color: rgba(1, 86, 154, 0.03);
+            border-radius: 50%;
+        }
+
+        .bg-shape-2 {
+            bottom: 50px;
+            left: 10%;
+            width: 200px;
+            height: 200px;
+            background-color: rgba(71, 173, 68, 0.03);
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Decorative background shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+
+    <div class="container">
+        <div class="login_body" id="loginbody">
+            <div class="site_logo">
+                <img class="dlogo" src="{{static('assets/media/logos/ytpl_transparent.png')}}" alt="Youtility Technologies Logo">
+            </div>
+
+            <form action="" method='post'>
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <input type="hidden" name="timezone" id="timezone">
+
+                {% if loginform.non_field_errors() %}
+                {% for error in loginform.non_field_errors() %}
+                <div class="alert alert-danger loginerr">{{error}}</div>
+                {% endfor %}
+                {% endif %}
+
+                {% if messages %}
+                {% for msg in messages %}
+                <div class="{% if msg.tags %}{{ msg.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    <strong>Message!</strong> {{msg}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <div class="fields">
+                    {% for field in loginform %}
+                    {% for error in field.errors %}
+                    <div class="alert alert-danger loginerr">{{error}}</div>
+                    {% endfor %}
+
+                    <div class="input-group">
+                        {{ field }}
+                        {% if loop.index == 2 %}
+                        <span class="material-icons" id="eye">visibility</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="sign_in">
+                        <button class="signinbtn" type="submit">LOG IN</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="copyright">{{ current_year }} © Youtility Technologies Pvt. Ltd.</div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        const togglePassword = document.querySelector('#eye');
+        const password = document.querySelector('#id_password');
+
+        togglePassword.addEventListener('click', function(e) {
+            // Toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // Toggle the eye icon
+            this.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        });
+
+        // Set timezone
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('timezone').value = -new Date().getTimezoneOffset();
+        });
+    </script>
+</body>
+
+</html>

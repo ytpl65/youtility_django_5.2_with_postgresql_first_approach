@@ -1,0 +1,187 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Tour List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Tour List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+
+{% block popup_alerts %}
+    {% call general_popup(title='List of Peoples', popup_id='id_people_list', modal_size='modal-md') %}
+            <div class="modal-body">
+                <table class="display cell-border" style="width:100%" id="tabListOfPeoples"></table>
+            </div>
+    {% endcall %}
+{% endblock popup_alerts %}
+
+{% block extra_css %}
+{# <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"> #}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Tour List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN Schedhuled Tour TABLE ------------------------------------------->
+{% block table %}
+<table id="internaltour_table" class="display nowrap compact cell-border" style="width:100%">
+</table>
+
+{% endblock table %}
+
+{% block extra_scripts %}
+{# <script src="https://cdn.datatables.net/rowreorder/1.2.8/js/dataTables.rowReorder.min.js" type="text/javascript"></script> #}
+<script>
+    var table = null;
+    var peopleList = null;
+    var ajaxData = {}
+    const formFilter = '#internaltour_filter'
+    const table_id = '#internaltour_table'
+    const urlname = "{{ url('schedhuler:jobneedtours') }}"
+
+    //if you want to modifiy here, then modify in custom.js initDateRange also
+    var params=null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+    var table_filters=null
+    
+    if(localStorage.getItem("dynamic_tours_filter")){
+        table_filters = localStorage.getItem('dynamic_tours_filter')
+    }else if(localStorage.getItem('tourstats_filter')){
+        table_filters = localStorage.getItem('tourstats_filter')
+    }else{
+        table_filters = localStorage.getItem('alertsFilters')
+    }
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+    function showListOfPeoples(id, from){
+        $('#id_people_list').modal('show')
+        ajaxData.id=id
+        ajaxData.model = from
+        peopleList.ajax.reload()
+    }
+
+    $(document).ready(function (){
+        //datatable initialization
+        table = $(table_id).DataTable({
+			//orderCellsTop: true,
+            ajax:{
+                url:`${urlname}?action=list`,
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+            },
+            language: { search: "", searchPlaceholder:"Serch keywords..." },    
+			deferRender: true,
+            lengthMenu: [250,500,750,1000],
+            pageLength: 250,
+            serverSide:true,
+            initComplete:function(){
+                const input = $(`${table_id}_filter input`);
+                input.off();
+                input.on('keypress',function(e){
+                    if (e.which === 13) {
+                        table.search(this.value).draw();
+                    }
+                }) 
+            },
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            responsive:true,
+            columns:[
+                {data: 'id', visible:false, searchable:false, className:'noVis'},
+                {data:"client__buname", title:"Client", visible:false},
+                {data:"bu__buname", title:"Site"},
+                {data: 'jobdesc', title: 'Description', render:function(data, type, row, meta){
+                    return `<a href="${urlname}?id=${row['id']}">${data}</a>`
+                }
+                },
+                {
+                    data: 'plandatetime',
+                    title: "Plan Datetime",
+                    render: function(data, type, row, meta){
+                        const datetime = moment.utc(data).add(row['gracetime'], 'minutes');
+                        return `<a href="${urlname}?id=${row['id']}">${datetime.local().format('YYYY-MM-DD HH:mm')}</a>`;
+                    }
+                },
+                {data: 'expirydatetime', title: "Expiry Datetime", render:function(data, type, row, meta){
+                    return `<a href="${urlname}?id=${row['id']}">${convert_to_local(type, data, row)}</a>`
+                }
+                },
+                {data:"no_of_checkpoints", title:"Checkpoints/Assets"},
+                {data: 'jobstatus', title: 'Status'},
+                {data:"completed",title:"Completed"},
+                {data:"missed",title:"Missed"},
+                {data: 'jobtype', title: 'Type'},
+                {title: 'People/Group', defaultContent:null, data:'assignedto', render:function(data, type, row, meta){
+                    console.log("Data: ",data)
+                    if(data.includes('[GROUP]')){
+                        return `<a href="javascript:void(0)"  onClick='showListOfPeoples(${row['id']}, "Jobneed")'>${data}</a>`
+                    }else{
+                        return data
+                    }
+                }
+                },
+                {data: 'endtime', title: "Performed On", render:function(data, type, row, meta){
+                    if (data === null) {return "--";} 
+                    else { 
+                    return `<a href="${urlname}?id=${row['id']}">${convert_to_local(type, data, row)}</a>`}
+                }
+                },
+                {data: 'performedby__peoplename', title: 'Performed By'},
+                {data:"bu__bucode", title:"Site Code", visible:false},
+                {data:"other_info__isdynamic", title:"Dynamic"},
+                {data:"ctzoffset", visible:false, className:'noVis'},
+            ],
+            order:[[1, 'desc']],
+            scrollCollapse: true,
+            buttons:[
+                "searchBuilder",
+                dataTablesPDFConfig(
+                    title = 'Site: {{ request.user.bu.buname }}\nTour List',
+                    columns = ':visible',
+                    filename="tour_list"
+                ),
+                dataTablesExcelConfig(
+                    'Site: {{ request.user.bu.buname }}\nTour List',
+                    columns = ':visible',
+                    filename="tour_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+			],      
+        })
+
+        //add input field to the datatables dom
+        initDateRangeHtml()
+        initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            let filters = {from:from_pd, to:to_pd}
+            reloadTable(table, filters)
+        })
+        initializeListOfPeoplesModal(ajaxData, "{{ url('onboarding:list_of_peoples') }}")
+
+
+
+
+    })
+</script>
+{% endblock extra_scripts %}

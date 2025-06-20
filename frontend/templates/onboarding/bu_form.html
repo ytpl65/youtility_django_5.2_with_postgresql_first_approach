@@ -1,0 +1,542 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+BV Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% from "onboarding/partials/partial_ta_form.html" import typeassist_form with context %}
+
+{% block extra_css %}
+{{ buform.media.css }}
+<style>
+.pac-container {
+	background-color: #FFF;
+	z-index: 20;
+	position: fixed;
+	display: inline-block;
+	float: left;
+}
+</style>
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('onboarding:bu') }}?template=true" class="pe-3">BV List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">BV Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!-------------  BEGIN POP-UPS CODE -------------->
+{% block popup_alerts %}
+	{{ super() }}
+	{% if edit is defined %}
+	<!-- to delete an instance with popup_alert pass the delete_url_name, instance_	id, popup_title, popup_id -->
+		{% call general_popup(title="Delete",popup_id="delete_alert") %}
+		<div class="modal-body">
+			<h4>Are you sure, you want to delete this?</h4>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No Go back</button>
+			<a href="{{ url('onboarding:bu_delete', args=[buform.instance.id]) }}"
+				class="btn btn-sm  btn-danger rounded-1">Yes I'm Sure</a>
+		</div>
+		{% endcall %}
+	{% endif %}
+
+	<!------------- typeassist popup for onclick + icon ---------------------->
+	{% call general_popup(title='Create TypeAssist', popup_id = "butype_ta_popup") %}
+	<form action="" method="post" id="butype_ta_form">
+		<div class="modal-body">
+			<input type="hidden" name="form_name" , value="ta_form">
+			{% if ta_form is defined %}
+			{{ typeassist_form() }}
+			{% endif %}
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-sm  btn-secondary rounded-1" onclick="document.getElementById('butype_ta_form').reset()" data-bs-dismiss="modal">Close</button>
+			<input type="submit" class="btn btn-sm  btn-primary2 rounded-1"  value="Sumbit" form="butype_ta_form" />
+		</div>
+	</form>
+	{% endcall %}
+
+	<!-- Moda for setting GPS coordianates-->
+	{% call general_popup(title="Set GPS Location", popup_id="open_map", modal_size="modal-lg") %}
+	<div class="modal-body card">
+		<div class="card-body p-0">
+			<div id="map" style="width:750px; height:350px"></div>
+		</div>
+	</div>
+	<div class="modal-footer d-flex justify-content-between">
+		<div><p>Tip: Zoom in for accurate coordinates of address, place the marker and then set the coords.</p></div>
+		<div></div>
+		<div><a href="#" class="btn" id="close_setgps" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-primary2" id="set_the_coords">Set the coordinates</a></div>
+		
+	</div>
+	{% endcall %}
+{% endblock popup_alerts %}
+<!------------------------  END POP-UPS CODE ----------------------------->
+
+<!-- calling the macro form which is imported above -->
+
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Business-View
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+<!-------------- BEGIN FORM ------------------->
+{% block form %}
+<form action="" method="post" id="id_buform">
+	<!-------------------------- CSRF MIDDLEWARE TOKEN --------------------->
+	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+	<input type="hidden" id="pk" name="pk" value="{{ buform.instance.id }}">
+	<input type="hidden" name="{{ buform.ctzoffset.name }}" id = "{{ buform.ctzoffset.auto_id }}" value="-1">
+
+	<div class="mb-3 row g-3 gx-6">
+		<!--BUCODE-->
+		<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_bucode">Code:
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+				title="Code is a unique name which is associated to all operations related to business unit">
+				info
+			</span>
+		</label>
+		<div class="col-md-4">
+			{{ buform.bucode }}
+			{{ buform.bucode.errors }}
+		</div>
+		
+		<!--BUNAME-->
+		<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_buname">Name:
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="'Name' should be more readable compared to 'Code', spaces are allowed in this field">
+				info
+			</span>
+		</label>
+		<div class="col-md-4">
+			{{ buform.buname }}
+			{{ buform.buname.errors }}
+		</div>
+		<!--SOLID-->
+		<label class="col-form-label col-md-2 col-sm-2 text-sm-right" for="id_solid">Sol Id:
+		</label>
+		<div class="col-md-4">
+			{{ buform.solid }}
+			{{ buform.solid.errors }}
+		</div>
+		<!--PARENT-->
+		<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_parent">Belongs to:
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="As the name suggest it specifies, to which buisness unit it belongs to.">
+				info
+			</span>
+		</label>
+		<div class="col-md-4">
+			{{ buform.parent }}
+			{{ buform.parent.errors }}
+		</div>
+		
+		<!--BU IDENTIFIER-->
+		<label for="id_identifier" class="required col-form-label col-md-2 col-sm-2 text-sm-right">Type:
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="Butype specfies the type of this business unit">
+				info
+			</span>
+		</label>
+		<div class="col-md-4">
+			<div class="d-flex flex-row">
+				{{ buform.identifier }}
+			</div>
+			{{ buform.identifier.errors }}
+		</div>
+		<!--SITE TYPE-->
+		<label for="id_butype" style="display:none;" class="col-form-label col-md-2 col-sm-2 text-sm-right site_type">Site Type:
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="Butype specfies the type of this business unit">
+				info
+			</span>
+		</label>
+		<div class="col-md-4 site_type" style="display:none;">
+			<div class="d-flex flex-row">
+				{{ buform.butype }}
+				<a href="" type="button" data-bs-toggle="modal" data-bs-target="#butype_ta_popup"><span
+						style="font-size: 24px;" data-bs-toggle="tooltip" data-bs-placement="top"
+						title="If you haven't found an option in selection menu, then create one from here"
+						class="material-icons-outlined mt-3 ps-2 primary-col">
+						add_circle
+					</span></a>
+			</div>
+			{{ buform.butype.errors }}
+		</div>
+		<!--Site Incharge-->
+		<label for="id_siteincharge" class="col-form-label col-md-2 col-sm-2 text-sm-right">Site Manager:
+		</label>
+		<div class="col-md-4">
+			<div class="d-flex flex-row">
+				{{ buform.siteincharge }}
+			</div>
+			{{ buform.siteincharge.errors }}
+		</div>
+
+		<!--Control Room-->
+		<label for="id_controlroom" class="col-form-label col-md-2 col-sm-2 text-sm-right">Control Room:
+		</label>
+		<div class="col-md-4">
+			<div class="d-flex flex-row">
+				{{ buform.controlroom }}
+			</div>
+			{{ buform.controlroom.errors }}
+		</div>
+		<label for="id_permissibledistance" class="col-form-label col-md-2 col-sm-2 text-sm-right">Permissible Distance:
+		</label>
+		<div class="col-md-4">
+			<div class="d-flex flex-row">
+				{{ buform.permissibledistance }}
+				<span class="mt-2 ms-1">Metres</span>
+			</div>
+			{{ buform.permissibledistance.errors }}
+		</div>
+		<!--GPS LOCATION-->
+		<label for="id_gpslocation" class="col-form-label col-md-2 col-sm-2 text-sm-right">GPS Location:
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="Longitude & latitude cordinates of the business unit">
+				info
+			</span>
+		</label>
+		<div class="col-md-4">
+			<div class="d-flex d-inline">
+				<input type="text" name="gpslocation" readonly placeholder="Latitude, Longitude" geom_type="POINT" class="form-control" id="id_gpslocation">
+				<button type='button' class="btn btn-sm btn-secondary rounded-right rounded-1" style="height:3.2rem;" id="id_setgps">GPS</button>
+			</div>
+		</div>
+
+		<!--ADDRESS-->
+		<label for="id_address" class="col-form-label col-md-2 col-sm-2 text-sm-right">Address:
+		</label>
+		<div class="col-md-4">
+			{{ buform.address }}
+		</div>
+
+
+		<!-- Validation Error Modal -->
+		<div class="modal fade" id="validationErrorModal" tabindex="-1" aria-labelledby="validationErrorModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered"> <!-- Added modal-dialog-centered class -->
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="validationErrorModalLabel">Validation Error</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p id="validationErrorMessage"></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--------------------- BEGIN CHECKBOXES ---------------------------->
+		<div class="booleans col-md-6 d-flex justify-content-sm-between mt-5" >
+			<label for="{{ buform.iswarehouse.id_for_label }}"
+				class="form-check-label bool col-form-label me-5 text-sm-right">
+				{{ buform.iswarehouse }} &nbsp; {{ buform.iswarehouse.label }}
+				<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+					data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+					title="Check,  if this business unit is a warehouse">
+					info
+				</span>
+			</label>
+
+			<label for="{{ buform.isserviceprovider.id_for_label }}"
+				class="form-check-label bool col-form-label me-5 text-sm-right">
+				{{ buform.isserviceprovider }} &nbsp; {{ buform.isserviceprovider.label }}
+				<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+					data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+					title="Check,  if this business unit is a service provider">
+					info
+				</span>
+			</label>
+
+			<label for="{{ buform.isvendor.id_for_label }}"
+				class="form-check-label bool col-form-label me-5 text-sm-right">
+				{{ buform.isvendor }} &nbsp; {{ buform.isvendor.label }}
+				<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+					data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+					title="Check,  if this business unit is a vendor">
+					info
+				</span>
+			</label>
+			{% if request.user.isadmin %}
+			<label for="{{ buform.enable.id_for_label }}"
+				class="form-check-label bool col-form-label me-5 text-sm-right">
+				{{ buform.enable }} &nbsp; {{ buform.enable.label }}
+				<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+					data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+					title="Uncheck if this business unit not enabled">
+					info
+				</span>
+			</label>
+			{% endif %}
+		</div>
+		<!--------------------- END CHECKBOXES -------------------------->
+	</div>
+</form>
+{% endblock form %}
+<!------------- END FORM ---------------------->
+
+<!-------------- BEGIN FORM PAGE ACTIONS --------->
+{% block formpage_actions %}
+{% if request.session['wizard_data'] is defined %}
+<!--- BEGIN wizard Controls --->
+{{ super() }}
+<!-- END wizard Controls ------>
+{% else %}
+<!--- BEGIN Normal Form Controls -->
+{% if edit is defined %}
+{{ form_update('id_buform', popup_id="delete_alert") }}
+{% else %}
+{{ form_create('id_buform') }}
+{% endif %}
+<!----- END Normal Form Controls --->
+
+{% endif %}
+{% endblock formpage_actions %}
+<!---------------- END FORM PAGE ACTIONS ----------->
+
+<!--------------- BEGIN PAGE-LEVEL EXTRA SCRIPTS ---------------->
+
+{% block extra_scripts %}
+{{ buform.media.js }}
+<script>
+	var map, userMarker, currinfowindow, currAddr;
+	function getLatLng(){
+		var gps  = '{% if buform.instance.gpslocation != None %}{{ buform.instance.gpslocation.y }},{{ buform.instance.gpslocation.x }}{% else %}None{% endif %}';
+		if(gps != "None"){
+			console.log('{{ buform.instance.gpslocation }}')
+			return { lat:parseFloat(gps.split(',')[0]), lng:parseFloat(gps.split(',')[1]) }
+		}return {lat:0.0, lng:0.0}
+	}
+</script>
+<script src="{{ static('assets/js/local/maps.js') }}"></script>
+<script>
+	function showHideBuType(){
+		//on load check butype is site
+		var data = $("#id_identifier option:selected").text();
+		var list = ['SITE', 'Site (SITE)', 'Site']
+		if(list.includes(data)){
+				$(".site_type").show();
+				toggleRequiredAttribute('id_siteincharge')
+		}else{
+			$(".site_type").hide();
+			toggleRequiredAttribute('id_siteincharge', set = false)
+		}
+	}
+
+
+	//delete ajax request 
+	function isBuDeleted(id){
+		const params = {
+			'url':`{{ url('onboarding:bu') }}?action=delete&id=${id}`,
+		 	'beforeSend':function () {}
+		}
+		fire_ajax_get(params)
+		.done((data, status, xhr) => {
+			if(!xhr.status === 200){
+				return false
+			}
+			return true
+		})
+		.fail((xhr, status, error) => {
+			show_error_alert('Something went wrong!') //defined in custom.js
+			return false
+		})
+	}
+	
+
+
+	$(document).ready(function () {
+
+		//onclick id_setgps open popup open-map
+		$("#id_setgps").click(function(){
+			$("#open_map").modal('show');
+			initMap("map");
+		});
+
+		$("#btn_clear").click(() => {
+			location.href = "{{ url('onboarding:bu') }}?action=form"
+		})
+
+		//onclick set the coords get lat and lng from useMarker and set to gpslocation field
+		$("#set_the_coords").click(function(){
+			var lat = userMarker.getPosition().lat();
+			var lng = userMarker.getPosition().lng();
+			$("#id_gpslocation").val(lat + ', ' + lng);
+			const geocoder = new google.maps.Geocoder()
+			getAddressOfPoint(geocoder, {lat:lat, lng:lng}, (address) => {
+				$("#id_address").val(address.formattedAddress)
+				localStorage.setItem("address", JSON.stringify(address))
+
+			})
+			$("#open_map").modal('hide');
+		});
+
+		$("#close_setgps").click(function(){
+			$("#open_map").modal('hide');
+		});
+
+		//set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+		
+		//hide the delete button when instance is not saved yet.
+		if ('{{buform.instance.id}}' == 'None') {
+			$("#btn_del").hide()
+			$(".dt-button buttons-create").addClass("disabled")
+			//on load check
+			showHideBuType();
+		}else{
+			showHideBuType();
+			$("#id_gpslocation").val("{{ buform.instance.gpslocation.coords[::-1] if buform.instance.gpslocation is not none else 'NONE' }}")
+			$("#id_address").val("{{ buform.instance.bupreferences.get('address', "") }}")
+			$("#id_permissibledistance").val("{{ buform.instance.bupreferences.get('permissibledistance', "") }}")
+			$("#id_total_people_count").val("{{ buform.instance.bupreferences.get('total_people_count', 0) }}")
+		}
+
+		// submit the popup-taform for validation and saving in db.
+		$('#butype_ta_form').on('submit', sumit_popup_form({
+			'url': "{{ url('onboarding:ta_popup') }}",
+			'form': "#butype_ta_form",
+			'field': "#id_butype",
+			'modal': "#butype_ta_popup",
+			'default':$("#butype_ta_popup select option:contains('Site Type')").val()
+
+		}))
+		
+		//for select2 search work in bootstrap modals
+		$("#typeassist_popup").find("select[name = tatype]").select2({
+            dropdownParent: $('#typeassist_popup')
+        })
+		
+		$("#butype_ta_popup").find("select[name = tatype]").select2({
+            dropdownParent: $('#butype_ta_popup')
+        })
+		
+		//closeOnSelect set true 
+		$('#id_parent, #id_butype').select2({
+			closeOnSelect: true
+		})
+		
+		//hide next btn if instance is not saved yet
+		if (session['wizard_data'] && session['wizard_data']['bus'].length == 0) {
+			$('#next_btn').hide()
+		}
+		//show butype when user opts to site
+		$('#id_identifier').on('change', function() {
+			console.log("changed")
+			showHideBuType()
+		})
+		
+		//pre-select options for pop-up ta forms
+		$("#butype_ta_popup select[name='tatype']").val($("#butype_ta_popup select option:contains('Site Type')").val()).change()
+		$("#butype_ta_popup select[name='tatype']").select2({disabled: 'readonly'})
+		
+
+		//on form submit
+        $("#id_buform").on('submit', function(e){
+            //var form = $(this)
+            e.preventDefault()
+
+			/*const totalPeopleCount = parseInt($("#id_total_people_count").val(), 10);
+			let designationCountSum = 0;
+
+			// Calculate the sum of all designation counts
+			fieldContainer.find('.row').each(function () {
+				const input = $(this).find('input');
+				const count = parseInt(input.val(), 10);
+				if (!isNaN(count)) {
+					designationCountSum += count;
+				}
+			});
+
+			// Validate the sum of designation counts against total_people_count
+			if (designationCountSum !== totalPeopleCount) {
+				const errorMessage = `The sum of all designation counts (${designationCountSum}) must equal the total people count (${totalPeopleCount}).`;
+				$("#validationErrorMessage").text(errorMessage);
+				$("#validationErrorModal").modal('show');
+				return; // Prevent form submission
+			}*/
+
+			var form = $(this)
+			const jsonData = {};
+			/*fieldContainer.find('.row').each(function (index, row) {
+				const dropdown = $(row).find('select');
+				const input = $(row).find('input');
+
+				// Check if both values exist
+				if (dropdown.val() && input.val()) {
+					jsonData[dropdown.val()] = input.val();
+				}
+			});*/
+
+            const params = {url: "{{ url('onboarding:bu') }}", modal:false}
+			console.log('parama')
+            const id = "{{ buform.instance.pk }}"
+            var payLoad = {formData:form.serialize(), 
+							csrfmiddlewaretoken: '{{ csrf_token }}', 
+							address:localStorage.getItem("address"), 
+							jsonData: JSON.stringify(jsonData)}//payload for post request
+		
+            if(id != 'None'){
+				var newPayLoad = {...payLoad, 'pk':id}
+				payLoad = newPayLoad
+			}
+			fire_ajax_form_post(params, payLoad)
+			.done((data, status, xhr) => { //function to submit post request
+                show_successful_save_alert(update= id != 'None' ? true : false)
+                window.setTimeout(function() {
+                    window.location.href = `{{ url('onboarding:bu') }}?id=${data.pk}`;
+                }, 2000);
+			})
+        })
+
+		//on delete form
+		$("#btn_del").on('click', function(e){
+			e.preventDefault()
+			var id = "{{ buform.instance.id }}"
+            show_alert_before_delete('Business Unit')
+            .then((result) => {
+                if(result.isConfirmed){ //delete requested by user
+                    status = isBuDeleted(id) //fire's request
+                    console.log("status ", status)
+                    if(status){
+                        show_successful_delete_alert() //defined in customjs
+                    }else{
+                        show_error_alert('Something went wrong!');
+                    }
+                }
+            })
+		})
+	})
+</script>
+{% endblock extra_scripts %}
+<!--------------- END PAGE-LEVEL EXTRA SCRIPTS --------------->

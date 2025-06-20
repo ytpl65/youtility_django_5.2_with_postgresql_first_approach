@@ -1,0 +1,152 @@
+{% extends "onboarding/client_onboarding/base_wizard_form.html" %}
+
+<!----------- BEGIN FORM MESSGES --------------->
+{% block form_msgs %}
+{% for msg in get_msgs(request) %}
+<div class="alert {% if msg.tags %} {{ msg.tags }} {% endif %} " id="alert_msg" style="width:73%; ">
+	{{ msg }}
+	<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+
+{% endblock form_msgs %}
+<!----------- END FORM MESSGES ----------------->
+
+<!-----BEGIN FORM TITLE ----->
+{% block form_title %}
+Create Site
+{% endblock form_title %}
+
+<!-----END FORM TITLE  ----->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+{% if wizard.form.non_field_errors() %}
+<div id="non_field_error" class="alert alert-danger" style="width: 73%;">
+	{% for error in wizard.form.non_field_errors() %}
+	{{ error }}
+	{% endfor %}
+	<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+<!-------------- BEGIN FORM ------------------->
+{% block custom_form %}
+<!-------------- BEGIN FORM FIELDS ----------->
+<div class="mb-3 row g-3 gx-6">
+	<!--BUCODE-->
+	<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_site_form-bucode">Code:
+		<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+			data-bs-placement="top"
+			title="Code is a unique name which is associated to all operations related to business unit, Please enter the value without any spaces, or special characters"
+			style="vertical-align: middle; font-size: 19px;">
+			info
+		</span>
+	</label>
+	<div class="col-md-4">
+		{{ wizard.form.bucode }}
+		{{ wizard.form.bucode.errors }}
+	</div>
+	<!--BUNAME-->
+	<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_site_form-buname">Name:
+		<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+			data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+			title="'Name' should be more readable compared to 'Code', spaces are allowed in this field">
+			info
+		</span>
+	</label>
+	<div class="col-md-4">
+		{{ wizard.form.buname }}
+		{{ wizard.form.buname.errors }}
+	</div>
+	<!--PARENT-->
+	<label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_site_form-parent">Belongs to:
+		<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+			data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+			title="As the name suggest it specifies, to which buisness unit it belongs to.">
+			info
+		</span>
+	</label>
+	<div class="col-md-4">
+		{{ wizard.form.parent }}
+		{{ wizard.form.parent.errors }}
+	</div>
+	<!--BUTYPE-->
+	<label for="id_site_form-butype" class="col-form-label col-md-2 col-sm-2 text-sm-right">Type:
+		<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+			data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+			title="Butype specfies the type of this business unit">
+			info
+		</span>
+	</label>
+	<div class="col-md-4">
+		{{ wizard.form.butype }}
+		{{ wizard.form.butype.errors }}
+	</div>
+	<!--GPS LOCATION-->
+	<label for="id_site_form-gpslocation" class="col-form-label col-md-2 col-sm-2 text-sm-right">GPS Location:
+		<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+			data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+			title="Longitude & latitude cordinates of the business unit">
+			info
+		</span>
+	</label>
+	<div class="col-md-4">
+		{{ wizard.form.gpslocation }}
+		{{ wizard.form.gpslocation.errors }}
+	</div>
+
+	<!--------------------- BEGIN CHECKBOXES -------------------------->
+	<div class="booleans col-md-6 d-flex justify-content-sm-between mt-5">
+
+		<label for="{{ wizard.form.iswarehouse.id_for_label }}"
+			class="form-check-label bool col-form-label me-5 text-sm-right">
+			{{ wizard.form.iswarehouse }} &nbsp; {{ wizard.form.iswarehouse.label }}
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="Check,  if this 	 is a warehouse">
+				info
+			</span>
+		</label>
+
+		<label for="{{ wizard.form.isserviceprovider.id_for_label }}"
+			class="form-check-label bool col-form-label me-5 text-sm-right">
+			{{ wizard.form.isserviceprovider }} &nbsp; {{ wizard.form.isserviceprovider.label }}
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="Check,  if this business unit is a service provider">
+				info
+			</span>
+		</label>
+
+		<label for="{{ wizard.form.isvendor.id_for_label }}"
+			class="form-check-label bool col-form-label me-5 text-sm-right">
+			{{ wizard.form.isvendor }} &nbsp; {{ wizard.form.isvendor.label }}
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="Check,  if this business unit is a vendor">
+				info
+			</span>
+		</label>
+
+		<label for="{{ wizard.form.enable.id_for_label }}"
+			class="form-check-label bool col-form-label me-5 text-sm-right">
+			{{ wizard.form.enable }} &nbsp; {{ wizard.form.enable.label }}
+			<span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+				title="Uncheck if this business unit not enabled">
+				info
+			</span>
+		</label>
+	</div>
+	<!--------------------- END CHECKBOXES -------------------------->
+
+</div>
+<!-------------- END FORM FIELDS -------------->
+<!----- FORM SUBMIT BUTTON ----->
+<input type="submit" class="btn btn-sm btn-success" style="background-color:#189D54;" formnovalidate="formnovalidate"
+	value="Next">
+{% endblock custom_form %}
+<!------------- END FORM ---------------------->

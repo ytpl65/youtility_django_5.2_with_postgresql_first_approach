@@ -1,0 +1,253 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Location Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extras_css %}
+{{ locationform.media.css }}
+{% endblock extras_css %}
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Location Form
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('activity:location') }}?template=true" class="pe-3">Location List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Location Form</a></li>
+{% endblock pagebreadcumb %}
+
+
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error: </strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+
+
+{% block form %}
+<form action="" method="post" id="locationform">
+    <input type="hidden" name="pk" id="pk" value="{{ locationform.instance.pk }}">
+    <input type="hidden" name="csrfmiddlewaretoken" value ="{{ csrf_token }}">
+    <input type="hidden" name="{{   locationform.ctzoffset.name }}"id= "{{ locationform.ctzoffset.auto_id }}" value="-1">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ locationform.loccode.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ locationform.loccode }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ locationform.locname.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ locationform.locname }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ locationform.locstatus.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ locationform.locstatus }}
+                </div>
+            </div>
+            <div class="d-flex">
+                <div class="input-group form-check form-switch form-check-solid mb-6">
+                    <label for="{{ locationform.iscritical.id_for_label }}" 
+                    class="form-check-label bool text-sm-right">{{ locationform.iscritical }}&nbsp;&nbsp;{{ locationform.iscritical.label }}</label>
+                </div>
+                <div class="input-group form-check form-switch form-check-solid mb-6">
+                    <label for="{{ locationform.enable.id_for_label }}" 
+                    class="form-check-label bool text-sm-right">{{ locationform.enable }}&nbsp;&nbsp;{{ locationform.enable.label }}</label>
+                </div>
+            </div>
+            </div>
+         <div class="col-md-6">
+             <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ locationform.parent.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ locationform.parent }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ locationform.type.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ locationform.type }}
+                </div>
+            </div>
+           
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label for="id_gpslocation" class="col-form-label text-sm-right">GPS Location:
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+                            data-bs-placement="top" style="vertical-align: middle; font-size: 19px;"
+                            title="Longitude & latitude cordinates of the business unit">
+                            info
+                        </span>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    <div class="d-flex d-inline">
+                        <input type="text" name="gpslocation" readonly placeholder="Latitude, Longitude" geom_type="POINT" class="form-control" id="id_gpslocation">
+                        <button type='button' class="btn btn-sm btn-secondary rounded-right rounded-1" style="height:3.2rem;" id="id_setgps">GPS</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock form %}
+
+
+{% block popup_alerts %}
+<!-- Moda for setting GPS coordianates-->
+	{% call general_popup(title="Set GPS Location", popup_id="open_map", modal_size="modal-lg") %}
+	<div class="modal-body card">
+		<div class="card-body p-0">
+			<div id="map" style="width:750px; height:350px"></div>
+		</div>
+	</div>
+	<div class="modal-footer d-flex justify-content-between">
+		<div><p>Tip: Zoom in for accurate coordinates of address, place the marker and then set the coords.</p></div>
+		<div></div>
+		<div><a href="#" class="btn" id="close_setgps" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-primary2" id="set_the_coords">Set the coordinates</a></div>
+		
+	</div>
+	{% endcall %}
+{% endblock popup_alerts %}
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    <button type="submit" form="locationform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        {% if locationform.instance.id %}
+        Update
+        {% else %}
+        Save
+        {% endif %}
+        &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    
+    <button type="button"  id="btn_clear"
+        class="btn btn-sm btn-secondary btn-hover-scale">
+        Clear&nbsp;<i class="fas  fa-times"></i>
+    </button>
+    {% if locationform.instance.id %}
+    <button type="button" onclick="deleteLocation(this)" data-id="{{ locationform.instance.id }}" id="id_deleteLocation"
+        class="btn btn-sm btn-danger btn-hover-scale">
+        Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+    </button>
+    {% endif %}
+
+</div>
+{% endblock ajax_page_actions %}
+
+{% block extra_scripts %}
+{{ locationform.media.js }}
+<script>
+	var map, userMarker, currinfowindow, currAddr;
+	function getLatLng(){
+		var gps  = '{% if locationform.instance.gpslocation != None %}{{ locationform.instance.gpslocation.y }},{{ locationform.instance.gpslocation.x }}{% else %}None{% endif %}';
+		if(gps != "None"){
+			console.log('{{ locationform.instance.gpslocation }}')
+			return { lat:parseFloat(gps.split(',')[0]), lng:parseFloat(gps.split(',')[1]) }
+		}return {lat:0.0, lng:0.0}
+	}
+</script>
+<script src="{{ static('assets/js/local/maps.js') }}"></script>
+<script>
+//delete asset 
+    function deleteLocation(elemt){
+        var id = "{{ locationform.instance.pk }}"
+        var viewname = 'Asset Form'
+        show_alert_before_delete(viewname)
+        .then((result) => {
+            if(result.isConfirmed){ //delete requested by user
+                let urlname = "{{ url('activity:location') }}"
+                const params = {url:`${urlname}?action=delete&id=${id}`}
+                fire_ajax_get(params)
+                .done((data, status, xhr) => {
+                    show_successful_delete_alert() //defined in customjs
+                    window.setTimeout(function() {
+                        window.location.href = "{{ url('activity:location') }}?template=true";
+                    }, 2000);
+                })
+                .fail((xhr, status, error) => {
+                    let err = typeof xhr.responseJSON.errors == 'string' ? xhr.responseJSON.errors : 'Something went wrong!'
+                    show_error_alert(err) //defined in custom.js
+                })
+            }
+        })
+    }
+
+    $(document).ready(function() {
+        //onclick id_setgps open popup open-map
+		$("#id_setgps").click(function(){
+			$("#open_map").modal('show');
+			initMap("map");
+		});
+        //on clear load new form
+        $("#btn_clear").click(() => {
+			location.href = "{{ url('activity:location') }}?action=form"
+		})
+        //onclick set the coords get lat and lng from useMarker and set to gpslocation field
+		$("#set_the_coords").click(function(){
+			var lat = userMarker.getPosition().lat();
+			var lng = userMarker.getPosition().lng();
+			$("#id_gpslocation").val(lat + ', ' + lng);
+			const geocoder = new google.maps.Geocoder()
+			getAddressOfPoint(geocoder, {lat:lat, lng:lng}, (address) => {
+				$("#id_address").val(address)
+			})
+			$("#open_map").modal('hide');
+		});
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        
+        $("#close_setgps").click(function(){
+			$("#open_map").modal('hide');
+		});
+        //hide the delete button when instance is not saved yet.
+		if ('{{locationform.instance.id}}' == 'None') {
+			$("#btn_del").hide()
+            $("#id_enable").prop("checked", true);
+		}else{
+			$("#id_gpslocation").val("{{ locationform.instance.gpslocation.coords[::-1] if locationform.instance.gpslocation is not none else 'NONE' }}")
+		}
+
+        //on form submit
+        $("#locationform").on('submit', function(e){
+            var form = $(this)
+            e.preventDefault()
+            const params = {url: "{{ url('activity:location') }}", modal:false}
+            const id = "{{ locationform.instance.pk }}"
+            var payLoad = {formData:form.serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'}//payload for post request
+            if(id != 'None'){
+				var newPayLoad = {...payLoad, 'pk':id}
+				payLoad = newPayLoad
+			}
+			fire_ajax_form_post(params, payLoad)
+			.done((data, status, xhr) => { //function to submit post request
+                show_successful_save_alert(update= id != 'None' ? true : false)
+                window.setTimeout(function() {
+                    window.location.href = `{{ url('activity:location') }}?id=${data.pk}`;
+                }, 2000);
+			})
+        })
+    })
+</script>
+{% endblock extra_scripts %}

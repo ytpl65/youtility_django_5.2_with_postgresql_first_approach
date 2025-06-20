@@ -1,0 +1,73 @@
+{% extends "onboarding/client_onboarding/base_wizard_form.html" %}
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Create Site Groups
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+	{% if wizard.form.non_field_errors() %}
+	<div id="non_field_error" class="alert alert-danger" style="width: 73%;">
+		{% for error in wizard.form.non_field_errors() %}
+		{{ error }}
+		{% endfor %}
+		<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% endif %}
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+<!----------- BEGIN FORM MESSGES --------------->
+{% block form_msgs %}
+    <p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+	{% for msg in get_msgs(request) %}
+	<div class="alert {% if msg.tags %} {{ msg.tags }} {% endif %} " id="alert_msg" style="width:73%;">
+		{{ msg }}
+		<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% endfor %}
+{% endblock form_msgs %}
+<!----------- END FORM MESSGES ----------------->
+
+<!-------------------- BEGIN FORM ---------------------->
+{% block custom_form %}
+<div class="mb-4 row">
+        <section class="mb-6">
+            <h6>Site Group And Template Information</h6>
+            <div class="mb-3 row g-3 gx-6">
+                <!--assignsitegroup-->
+                {{ wizard.form.assignsitegroup.label_tag() }}
+                <div class="col-md-4">
+                    {{ wizard.form.assignsitegroup }}
+                    {{ wizard.form.assignsitegroup.errors }}
+                </div>
+                <!--tempincludes-->
+                {{ wizard.form.tempincludes.label_tag() }}
+                <div class="col-md-4">
+                    {{ wizard.form.tempincludes }}
+                    {{ wizard.form.tempincludes.errors }}
+                </div>
+                <!------------ BEGIN CHECKBOXES  --------------------->
+                <div class="booleans col-md-6 d-flex justify-content-sm-start mt-5">
+                    <label for={{ wizard.form.showalltemplates.id_for_label }}
+                        class="form-check-label bool col-form-label me-5 text-sm-right">{{ wizard.form.showalltemplates.label }}
+                        &nbsp{{ wizard.form.showalltemplates }}</label>
+                    <label for={{ wizard.form.showtemplatebasedonfilter.id_for_label }}
+                        class="form-check-label bool col-form-label me-5 text-sm-right">{{ wizard.form.showtemplatebasedonfilter.label }}
+                        &nbsp{{ wizard.form.showtemplatebasedonfilter }}</label>
+                </div>
+                <!------------ END CHECKBOXES  --------------------->
+            </div>
+        </section>
+    </div>
+    <input type="submit" value="Next">
+{% endblock custom_form %}
+<!-------------------------- END FORM --------------------------->
+
+{% block forms_navigators %}
+{{ super() }}
+<button name="wizard_goto_step" formnovalidate="formnovalidate"  type="submit" value="{{ wizard.steps.next }}">Add Later</button>
+{% endblock forms_navigators %}

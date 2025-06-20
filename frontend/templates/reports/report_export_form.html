@@ -1,0 +1,889 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+Report Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Report Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ form.media.css }}
+{% endblock extra_css %}
+
+
+{% block form_title %}
+Report Form
+{% endblock form_title %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Report Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+
+{% block nonfield_errors %}
+{% if form.non_field_errors %}
+{% for err in form.non_field_errors() %}
+<div class="alert alert-danger w-100 alert-dismissible fade show">
+  {{ err }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert {{ msg.tags }} w-100 alert-dismissible fade show" role="alert">
+  {{ msg }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock nonfield_errors %}
+
+{% block form %}
+<form action="{{ url('reports:exportreports') }}" class="validate" novalidate="novalidate" method="post"
+  id="report_form">
+  <!-------------------------- CSRF MIDDLEWARE TOKEN --------------------->
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <input type="hidden" name="{{ form.ctzoffset.name }}" id="{{ form.ctzoffset.auto_id }}" value="-1">
+  {{ form.preview }}
+  <div class="row">
+    <div class="">
+      <div class="input-group mb-3">
+        <div class="col-2">
+          {{ form.report_name.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" select the desired report to download from the drop-down menu">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.report_name }}
+        </div>
+      </div>
+      <!--SITE/GROUP-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          <label for={{ form.site_or_people.id_for_label }} class="required">{{ form.site_or_people.label }}:</label>
+        </div>
+        <div class="col-5" id=id_site_or_people>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_people.name }} id="id_peopleradio"
+              value="PEOPLE" onchange="showHideSelectField('PEOPLE')">
+            <label class="form-check-label" for="id_peopleradio">People</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_people.name }} id="id_siteradio"
+              value="SITE" onchange="showHideSelectField('SITE')">
+            <label class="form-check-label" for="id_siteradio">Site</label>
+          </div>
+        </div>
+      </div>
+
+      <!--Assetmult-->
+      <div class="input-group datafield mult_asset d-none mb-3">
+        <div class="col-2">
+          <label for={{ form.site_or_asset.id_for_label }} class="required">{{ form.site_or_asset.label }}:</label>
+        </div>
+        <div class="col-5" id=id_site_or_asset>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_asset.name }} id="id_assetradio"
+              value="ASSET" onchange="showHideSelectField('ASSET')">
+            <label class="form-check-label" for="id_assetradio">Asset</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_asset.name }} id="id_siteradio"
+              value="SITE" onchange="showHideSelectField('SITE')">
+            <label class="form-check-label" for="id_siteradio">Site</label>
+          </div>
+        </div>
+      </div>
+
+      <!--Checkpointmult-->
+      <div class="input-group datafield mult_checkpoint d-none mb-3">
+        <div class="col-2">
+          <label for={{ form.site_or_checkpoint.id_for_label }} class="required">{{ form.site_or_checkpoint.label }}:</label>
+        </div>
+        <div class="col-5" id=id_site_or_checkpoint>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_checkpoint.name }} id="id_checkpointradio"
+              value="CHECKPOINT" onchange="showHideSelectField('CHECKPOINT')">
+            <label class="form-check-label" for="id_checkpointradio">Checkpoint</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_checkpoint.name }} id="id_siteradio"
+              value="SITE" onchange="showHideSelectField('SITE')">
+            <label class="form-check-label" for="id_siteradio">Site</label>
+          </div>
+        </div>
+      </div>
+
+      <!--Locationmult-->
+      <div class="input-group datafield mult_location d-none mb-3">
+        <div class="col-2">
+          <label for={{ form.site_or_location.id_for_label }} class="required">{{ form.site_or_location.label }}:</label>
+        </div>
+        <div class="col-5" id=id_site_or_location>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_location.name }} id="id_locationradio"
+              value="LOCATION" onchange="showHideSelectField('LOCATION')">
+            <label class="form-check-label" for="id_locationradio">Location</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_location.name }} id="id_siteradio"
+              value="SITE" onchange="showHideSelectField('SITE')">
+            <label class="form-check-label" for="id_siteradio">Site</label>
+          </div>
+        </div>
+      </div>
+
+      <!--SITE-->
+      <div class="input-group datafield site d-none mb-3">
+        <div class="col-2">
+          {{ form.site.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select the site from the drop-down menu for which you would like to download the report">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.site }}
+          {{ form.site.errors }}
+        </div>
+      </div>
+      <!--SITEGROUP-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.sitegroup.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select the desired site group from the dropdown menu to generate your report for the selected site group.">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.sitegroup }}
+          {{ form.sitegroup.errors }}
+        </div>
+      </div>
+      <!--PEOPLEGROUP-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.peoplegroup.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select the desired people group from the dropdown menu to generate your report for the selected people group.">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.peoplegroup }}
+          {{ form.peoplegroup.errors }}
+        </div>
+      </div>
+      <!--PEOPLE-->
+      <div class="input-group datafield  d-none mb-3">
+        <div class="col-2">
+          {{ form.people.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select the desired people from the dropdown menu to generate your report for the selected people.">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.people }}
+          {{ form.people.errors }}
+        </div>
+      </div>
+      <div class="input-group datafield people d-none mb-3">
+        <div class="col-2">
+          {{ form.mult_people.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.mult_people }}
+          {{ form.mult_people.errors }}
+        </div>
+      </div>
+      <!--AssetType-->
+      <div class="input-group datafield assettype d-none mb-3">
+        <div class="col-2">
+          {{ form.assettype.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.assettype }}
+          {{ form.assettype.errors }}
+        </div>
+      </div>
+      <!--ASSET-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.asset.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.asset }}
+          {{ form.asset.errors }}
+        </div>
+      </div>
+      <!--MULTASSET-->
+      <div class="input-group datafield asset d-none mb-3">
+        <div class="col-2">
+          {{ form.mult_asset.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.mult_asset }}
+          {{ form.mult_asset.errors }}
+        </div>
+      </div>
+      <!--MULTLOCATION-->
+      <div class="input-group datafield location d-none mb-3">
+        <div class="col-2">
+          {{ form.mult_location.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.mult_location }}
+          {{ form.mult_location.errors }}
+        </div>
+      </div>
+      <!--Qset-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.qset.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.qset }}
+          {{ form.qset.errors }}
+        </div>
+      </div>
+      <!--CHECKPOINT_TYPE-->
+      <div class="input-group datafield checkpointtype d-none mb-3">
+        <div class="col-2">
+          {{ form.checkpoint_type.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.checkpoint_type }}
+          {{ form.checkpoint_type.errors }}
+        </div>
+      </div>
+      <!--LOCATION_TYPE-->
+      <div class= "input-group datafield locationtype d-none mb-3">
+        <div class="col-2">
+          {{form.location_type.label_tag()}}
+        </div>
+        <div class="col-5">
+          {{ form.location_type}}
+          {{form.location_type.errors}}
+        </div>
+      </div>
+      <!--CHECKPOINT-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.checkpoint.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.checkpoint }}
+          {{ form.checkpoint.errors }}
+        </div>
+      </div>
+      <!--MULTCHECKPOINT-->
+      <div class="input-group datafield checkpoint d-none mb-3">
+        <div class="col-2">
+          {{ form.mult_checkpoint.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.mult_checkpoint }}
+          {{ form.mult_checkpoint.errors }}
+        </div>
+      </div>
+      <!--TICKETCATEGORY-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.ticketcategory.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select the desired Ticket Category from the dropdown menu to generate your report for the selected ticket category.">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.ticketcategory }}
+          {{ form.ticketcategory.errors }}
+        </div>
+      </div>
+      <!--ASSETCATEGORY-->
+      <div class="input-group datafield assetcategory d-none mb-3">
+        <div class="col-2">
+          {{ form.assetcategory.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.assetcategory }}
+          {{ form.assetcategory.errors }}
+        </div>
+      </div>
+      <!--qrsize-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.qrsize.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select the desired QR SIZE from the dropdown menu to generate your QR report.">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.qrsize }}
+          {{ form.qrsize.errors }}
+        </div>
+      </div>
+      <!--FROMDATE-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.fromdate.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select the desired start date for the report generation">
+            info
+          </span>
+        </div>
+        <div class="col-5 fv-row">
+          {{ form.fromdate }}
+          {{ form.fromdate.errors }}
+        </div>
+      </div>
+      <!--FROMDATETIME-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.fromdatetime.label_tag() }}
+          
+        </div>
+        <div class="col-5 fv-row">
+          {{ form.fromdatetime }}
+          {{ form.fromdatetime.errors }}
+        </div>
+      </div>
+      <!--UPTODATE-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.uptodate.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select the desired UpTo date for the report generation">
+            info
+          </span>
+        </div>
+        <div class="col-5 fv-row">
+          {{ form.uptodate }}
+          {{ form.uptodate.errors }}
+        </div>
+      </div>
+      <!--UPTODATETIME-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.uptodatetime.label_tag() }}
+        </div>
+        <div class="col-5 fv-row">
+          {{ form.uptodatetime }}
+          {{ form.uptodatetime.errors }}
+        </div>
+      </div>
+      <!--FORMAT-->
+      <div class="input-group mb-3">
+        <div class="col-2">
+          {{ form.format.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title="Select your preferred file format to download the report">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.format }}
+        </div>
+      </div>
+      <!--EXPORT_TYPE-->
+      <div class="input-group mb-3">
+        <div class="col-2">
+          {{ form.export_type.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" Select from the drop-down menu whether 'DOWNLOAD' you would like to download the report directly or 'EMAIL' have it emailed to you">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.export_type }}
+        </div>
+      </div>
+      <!--to_addr-->
+      <div class="input-group mb-3 d-none emailfile">
+        <div class="col-2">
+          {{ form.to_addr.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.to_addr }}
+        </div>
+      </div>
+      <!--CC-->
+      <div class="input-group mb-3 d-none emailfile">
+        <div class="col-2">
+          {{ form.cc.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.cc }}
+        </div>
+      </div>
+      <!--email_body-->
+      <div class="input-group mb-3 d-none emailfile">
+        <div class="col-2">
+          {{ form.email_body.label_tag() }}
+        </div>
+        <div class="col-5">
+          {{ form.email_body }}
+          {{ form.email_body.errors }}
+        </div>
+      </div>
+    </div>
+  </div><br>
+  <div class="form-actions">
+    <button type="submit" form="report_form" class="btn btn-sm btn-primary2 btn-hover-scale">
+      Submit &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+
+    <button type="button" id="btn_clear" class="btn btn-sm btn-secondary btn-hover-scale">
+      Clear&nbsp;<i class="fas  fa-times"></i>
+    </button>
+
+    <button type="button" id="btn_status" class="btn btn-sm btn-primary2 btn-hover-scale">
+      Check Report Status&nbsp;<i class="fas text-white fa-info-circle"></i>
+    </button>
+  </div>
+</form>
+{% endblock form %}
+
+{% block extra_scripts %}
+{{ form.media.js }}
+<script src="{{ static('assets/js/just-validate.production.min.js') }}"></script>
+
+{% if task_id is defined %}
+  <script>
+  window.onload = function() {
+    // Store the task ID in local storage
+    localStorage.setItem('task_id', '{{ task_id }}');
+  };
+  </script>
+{% endif %}
+
+<script>
+  const urlname = "{{ url('reports:exportreports') }}"
+
+  //hideing and showing fields for Asset,Checkpoint,People and location Qr reports.
+  function showHideSelectField(val) {
+    if (val == "PEOPLE") {
+      //$("#aatopdiv").show();
+      if ($(".people").is(":hidden")) {
+            $(".people").show();
+        }
+      $("#id_peopleradio").attr('checked', 'checked')
+      $(".site").hide();
+      $("#id_site").val(1)
+      toggleRequiredAttribute("id_mult_people")
+      toggleRequiredAttribute("id_site", set = false)
+
+    } else if (val == "ASSET") {
+        if ($(".asset").is(":hidden")) {
+              $(".asset").show();
+          }
+        $("#id_assetradio").attr('checked', 'checked')
+        $(".site").hide();
+        $(".assetcategory").addClass('d-none');
+        $(".assettype").addClass('d-none');
+        //$("#id_site").val(1)
+        toggleRequiredAttribute("id_mult_asset")
+        toggleRequiredAttribute("id_site", set = false)
+
+    } else if (val == "CHECKPOINT") {
+        if ($(".checkpoint").is(":hidden")){
+              $(".checkpoint").show();
+        }
+      $("#id_checkpointradio").attr('checked','checked')
+      $(".site").hide();
+      $(".checkpointtype").addClass('d-none');
+      toggleRequiredAttribute("id_mult_checkpoint")
+      toggleRequiredAttribute("id_site",set = false)
+    } else if (val == "LOCATION"){
+        if ($(".location").is(":hidden")){
+          $(".location").show();
+        }
+      $("#id_locationradio").attr('checked','checked')
+      $(".site").hide();
+      $(".locationtype").addClass('d-none');
+      toggleRequiredAttribute("id_mult_location")
+      toggleRequiredAttribute("id_site",set = false)
+    } else {
+      if ($(".site").is(":hidden")) {
+          $(".site").show();}
+      if ($(".mult_asset").is(":visible")){
+        $(".assetcategory").removeClass('d-none');
+        $(".assettype").removeClass('d-none')
+      }
+      if ($(".mult_checkpoint").is(":visible")){
+        $(".checkpointtype").removeClass('d-none');
+      }
+      if ($(".mult_location").is(":visible")){
+        $(".locationtype").removeClass('d-none');
+      }
+      $(".site").removeAttr("style");
+      $("#id_siteradio").attr('checked', 'checked')
+      $(".people").hide();
+      $(".asset").hide();
+      $(".checkpoint").hide();
+      $(".location").hide();
+      $("#id_mult_people").val(1)
+      //$("#id_mult_asset").val(1)
+      toggleRequiredAttribute("id_site")
+      toggleRequiredAttribute("id_mult_people", set = false)
+      toggleRequiredAttribute("id_mult_asset", set = false)
+      toggleRequiredAttribute("id_mult_checkpoint",set = false)
+      toggleRequiredAttribute("id_mult_location",set = false)
+    }
+  }
+  var formSaved = false;
+
+  $(document).ready(() => {
+    //set ctzoffset
+    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+    //validator for form
+    const validator = new JustValidate('#report_form', { errorFieldCssClass: 'is-invalid'});
+
+    validator.addField("#id_format", [
+      {
+        rule:'required',
+      }
+    ])
+    validator.addField("#id_export_type", [{
+      rule:'required',
+    }])
+    validator.addField("#id_report_name", [{
+      rule:'required',
+    }])
+    
+    //getFieldsFromServer()
+
+    emptyreportsdropdown()
+
+    InsertingReportsinDropdown()
+
+
+    //cron to readable format
+    $("#btn_clear").click(() => {
+      location.href = `${urlname}?template=true`
+    })
+
+    $("#id_site").val(null).trigger('change') //clear default selection of site
+
+    $("#id_fromdate, #id_uptodate").flatpickr({
+      dateFormat: 'd-M-Y'
+    })
+    $("#id_fromdatetime, #id_uptodatetime").flatpickr({
+      dateFormat: 'd-M-Y H:i',
+      enableTime:true,
+      time_24hr: true,
+    })
+
+    $("[multiple]").select2({
+      closeOnSelect: false
+    })
+
+    //on change the site selection 
+    $("#id_site").change((e) => {
+    const reportName = $('#id_report_name').val();
+    let optionId = "";
+    let typeId = "";
+
+    switch (reportName) {
+        case 'ASSETQR':
+            optionId = "#id_assettype";
+            typeId = 'ASSETTYPE';
+            break;
+        case 'CHECKPOINTQR':
+            optionId = "#id_checkpoint_type";
+            typeId = 'CHECKPOINTTYPE';
+            break;
+        case 'LOCATIONQR':
+            optionId = "#id_location_type";
+            typeId = 'LOCATIONTYPE';
+            break;
+        default:
+            return; // No action for other reports
+    }
+
+    fire_ajax_get({
+        url: urlname,
+        data: { 'action': "get_site", "of_site": $("#id_site").val(), 'of_type': typeId }
+    }).done((data, status, xhr) => {
+        const $option = $(optionId).empty().append(new Option("", "", false, false)); // First option is empty
+
+        if (data.options) {
+            data.options.forEach((item) => {
+                const newOption = new Option(item.taname, item.id, false, false);
+                $option.append(newOption);
+            });
+        }
+      });
+    });
+
+
+    // on change asset type
+    $("#id_assettype").change((e) => {
+        //reset asset options
+        if($("#id_asset").is(':visible')){
+          fire_ajax_get({
+              url:urlname,
+              data:{'action':"get_asset", "of_type":$("#id_assettype").val()}
+          }).done((data, status, xhr) => {
+              $("#id_asset").empty()
+              $("#id_asset").append(new Option("", "", false, false)) //first option is empty
+              if(data.options){
+                data.options.forEach((item) => {
+                    var newOption = new Option(item.assetname, item.id, false, false)
+                    $("#id_asset").append(newOption)
+                })
+              }
+          })
+        }
+    })
+
+    // on change asset
+    $("#id_asset").change((e) => {
+        //reset qset options
+        if($("#id_qset").is(':visible')){
+          fire_ajax_get({
+              url:urlname,
+              data:{'action':"get_qset", "of_asset":$("#id_asset").val()}
+          }).done((data, status, xhr) => {
+              $("#id_qset").empty()
+              $("#id_qset").append(new Option("", "", false, false)) //first option is empty
+              data.options.forEach((item) => {
+                  var newOption = new Option(item.qsetname, item.id, false, false)
+                  $("#id_qset").append(newOption)
+              })
+          })
+        }
+    })
+
+
+    //show preview button on format pdf only
+    $("#id_format").change((e) => {
+      if ($("#id_format").val() !== 'pdf') {
+        $("#btn_preview").addClass('d-none')
+      } else {
+        $("#btn_preview").removeClass('d-none')
+      }
+    })
+
+    //toggle email fields when export type EMAIL is selected
+    $("#id_export_type").change((e) => {
+      if ($("#id_export_type").val() === 'SEND') {
+        $('.emailfile').removeClass('d-none')
+        toggleRequiredAttribute('id_cc')
+        toggleRequiredAttribute('id_to_addr')
+      } else {
+        toggleRequiredAttribute('id_cc', false)
+        toggleRequiredAttribute('id_to_addr', false)
+        $('.emailfile').addClass('d-none')
+      }
+    })
+
+
+    //on click preview button
+    $("#btn_preview").click((e) => {
+      $("#id_preview").val("true")
+      var formData = $("#report_form").serialize();
+      //send ajax request
+      $.ajax({
+        url: urlname,
+        type: "POST",
+        data: formData,
+        xhrFields: {
+          responseType: 'blob'
+        },
+        success: function (response) {
+          // Create a Blob from the received binary data
+          var blob = new Blob([response], { type: 'application/pdf' });
+          // Create a temporary Object URL for the Blob
+          var objectUrl = URL.createObjectURL(blob);
+          // Open the Object URL in a new tab
+          window.open(objectUrl, "_blank");
+          // Release the Object URL after it's no longer needed
+          setTimeout(function () {
+            URL.revokeObjectURL(objectUrl);
+          }, 1000);
+        },
+        error: function (xhr, status, error) {
+          show_error_alert("Something went wrong!", "Server Error")
+        }
+      })
+
+    })
+
+    $("#btn_status").click((e) => {
+      e.preventDefault();
+
+      // Grab the task_id from local storage
+      const taskId = localStorage.getItem('task_id');
+
+      if (taskId) {
+        window.location.href = `{{ url('reports:report_status') }}?task_id=${taskId}`;
+      } else {
+        console.error("No task_id found in local storage.");
+      }
+    });
+
+    //if selected to dont show in cc
+    function onSelectionChanged(e) {
+      const currentSelect = e.target.id;
+      const otherSelect = currentSelect === 'id_cc' ? 'id_to_addr' : 'id_cc';
+      const otherSelectElement = $(`#${otherSelect}`);
+      const currentSelectElement = $(`#${currentSelect}`);
+
+      if (e.type === 'select2:select') {
+        // Hide the selected option from the other dropdown
+        otherSelectElement.find(`option[value="${e.params.data.id}"]`).hide();
+      } else {
+        // Show the deselected option in the other dropdown
+        otherSelectElement.find(`option[value="${e.params.data.id}"]`).show();
+      }
+
+      // If you still want to update the other select based on the current select
+      otherSelectElement.find(`option[value="${e.params.data.id}"]`).prop('selected', false);
+
+      // Trigger the change event to update the other dropdown
+      otherSelectElement.trigger('change');
+    }
+
+
+  function dynamicFormBehaviour(data) {
+      $('.datafield').addClass('d-none')
+      const { fields, unsupported_formats } = data.behaviour;
+      console.log(fields)
+
+      // Function to toggle visibility and required attribute
+      function toggleFieldBehavior(fieldname) {
+          const id = 'id_' + fieldname.replace('*','');
+          const $element = $('#' + id);
+
+          if ($element.length > 0) {
+              const closestInputGroup = $element.closest(".input-group");
+              closestInputGroup.toggleClass("d-none");
+              
+              if (fieldname.includes('*')) {
+                  toggleRequiredAttribute(id, set = true);  
+                  addValidationsToForm(id)
+              }
+          }
+      }
+
+      // Toggle behavior for each field
+      fields.forEach(fieldname => toggleFieldBehavior(fieldname));
+
+      // Hide options based on unsupported formats
+      if (unsupported_formats[0] !== 'None') {
+          $("#id_format option").each(function() {
+              const optionValue = $(this).val();
+              console.log(optionValue)
+              if (optionValue && unsupported_formats.includes(optionValue)) {
+                  $(this).prop('disabled', true);
+              }
+          });
+      }
+  }
+
+  function addValidationsToForm(id){
+      validator.addField('#'+id, [
+        { 
+          rule:'required'
+        }
+      ])
+  }
+
+  validator.onSuccess(e => {
+    var form = $("#report_form");
+    form.submit()
+  })
+
+
+//loading fields according to report
+  function getFieldsFromServer(){
+    let selected = $("#id_report_name").val()
+    console.log(selected)
+    if(!['', null, undefined].includes(selected)){
+      fire_ajax_get({
+        url:urlname,
+        data: {'action':'form_behaviour', 'report_name':selected}
+      }).done((data, status, error) => {
+        if(selected === 'PEOPLEQR'){
+          showHideSelectField('SITE')
+        }
+        if(selected === 'ASSETQR'){
+          showHideSelectField('SITE')
+        }
+        if(selected === 'CHECKPOINTQR'){
+          showHideSelectField('SITE')
+        }
+        if(selected === 'LOCATIONQR'){
+          showHideSelectField('SITE')
+        }
+        console.log(data)
+        //changes the form behaviour according to the fields in data.
+        dynamicFormBehaviour(data)
+      })
+    }
+  }
+
+
+  function emptyreportsdropdown(){
+    var dropdown = document.querySelector('select[name="{{form.report_name.name}}"]');
+    while (dropdown.options.length > 0){
+      dropdown.remove(0); 
+    }
+  }
+
+  function InsertingReportsinDropdown(){
+    var SessionReports = session['client_reportcaps']
+
+    SessionReports.unshift(['','Select Report']);
+
+    for (var i = 0; i < SessionReports.length; i++) {
+        $('#id_report_name').append($('<option>', {
+            value: SessionReports[i][0],
+            text:SessionReports[i][1]
+        }));
+    }
+
+  }
+
+    // Attach the event listeners
+    $('#id_cc, #id_to_addr').on('select2:select select2:unselect', onSelectionChanged);
+
+    //hide/show fields based on report_name
+    $("#id_report_name").change((e) => {
+      getFieldsFromServer()
+    })
+
+    
+  })
+</script>
+
+{% endblock extra_scripts %}

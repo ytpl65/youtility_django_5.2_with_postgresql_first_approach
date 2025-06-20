@@ -1,0 +1,192 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Site Report List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Site Report List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ load_leaflet_tags() }}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Site Report List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+
+{% block popup_alerts %}
+    {% call general_popup(popup_id = 'report_details', title = 'Site Report Details') %}
+    <div class="modal-body">
+        <h4 class="ch4">List Of Sections</h4>
+        <table id="tabSectionDetails" class="display  cell-border compact hover">
+        </table>
+        <br>
+        <h4 class="ch4">Questions In The Selcted Section</h4>
+        <table id="tabDetails" class="display compact hover"></table>
+    </div>
+    {% endcall %}
+
+
+    {% call general_popup(popup_id = 'att_list', title = 'List of Attachments') %}
+    <div class="modal-body">
+        <!--Attachemts List here -->
+    </div>
+    {% endcall %}
+
+
+    <!--Render Location on Leaflet Map -->
+    {% call general_popup(popup_id = "leafletmap", title="GPS Location") %}
+        <div class="modal-body">
+            <h4 class="ch4">Location where sitereport filled!</h4>
+            <div id="map" style="height: 400px;"></div>
+        </div>
+    {% endcall %}
+
+{% endblock popup_alerts %}
+
+<!-------------------------------------------- BEGIN TABLE ------------------------------------------->
+{% block table %}
+<table id="sitereport_table" class="display compact cell-border" style="width:100%">
+</table>
+
+{% endblock table %}
+<!-------------------------------------------- END TABLE ------------------------------------------->
+{% block extra_scripts %}
+<script>
+    var   table      = null;
+    var map;
+    const formFilter = '#sitereport_filter'
+    const table_id   = "#sitereport_table"
+    var sectionTable;
+    var answerTable;
+    //if you want to modifiy here, then modify in custom.js initDateRange also
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    
+    //show section+answer on modal details
+    function showSectionAnswers(templateData){
+        $("#report_details").modal('show')
+        $("#tabSectionDetails").DataTable().ajax.reload();
+    }
+
+    //show point on map
+    function showMap(lng, lat){
+        console.log("coords ", lng, lat)
+    }
+
+
+
+    $(document).ready(function (){
+        //datatable initialization
+        table = $(table_id).DataTable({
+            ajax:{
+                url: "{{ url('reports:sitereport_list') }}?action=list",
+                data:function(d){
+                    d.pd1 = from_pd,
+                    d.pd2 = to_pd
+                }
+            },
+			deferRender: true,
+			responsive : {
+                details:{
+                    display: $.fn.dataTable.Responsive.display.modal({
+                        header: function ( row ) {
+                            var data = row.data();
+                            return `Section Details for ${data[1]}`;
+                        }
+                    }),
+                    renderer:function(api, rowIdx, columns){
+                        return api.row(rowIdx).data()
+                    }
+                }
+            },
+            search      : {return: true},
+            pageLength:19,
+            lengthMenu: [[10, 20, 30], [10, 20, 30]],
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns     : [
+                { "data": "id", visible:false, searchable:false },
+                { "data": "plandatetime", title:'Plan Datetime' },
+                { "data": "jobdesc", title:'Site Report'},
+                { "data": "performedby__peoplename", title:'Surveyor' },
+                { "data": "buname", title:'SiteName' },
+                { "data": "starttime", title:'Startime' },
+                { "data": "endtime", title:'Endtime' },
+                { "data": "jobstatus", title:'Status' },
+                { "data": "gps" , title:'GPS', defaultContent:null, render:function(data, type, row, meta){
+                    let gps = JSON.parse(data)
+                    let coords = gps.coordinates == '0,0' ? '' : gps.coordinates
+                    return `<a href="javascript:void(0)" onclick="showMap(${coords})">${coords}</a>`
+                }
+                },
+                { "data": "distance", title:'Distance', visible:true},
+                { "data": "remarks", title:'Remarks' },
+                {data:null, visible:false, orderable:false, defaultContent:null, title:'Action'},
+            ],
+            columnDefs:[
+                {targets:1, render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }},
+                {targets:2, render:function(data, type, row, meta){
+                    let urlname = "{{ url('reports:sitereport_list') }}"
+                    return `<a id = "id_getSectionDetails" href="${urlname}?id=${row['id']}">${data}</a>`
+                }}
+            ],
+            buttons:[],
+            select: {
+                style: 'single'
+            }
+        })
+
+        //add input field to the datatables dom
+        initDateRangeHtml()
+        initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            table.ajax.reload()
+        })
+
+
+        sectionDetailsTable = $('#tabSection').DataTable({
+            ajax:{
+                url: "{{ url('reports:sitereport_list') }}",
+                data:function(d){
+                    data = table.row({'selected':true}).data()
+                    d.id = data.id
+                }
+            },
+			deferRender: true,
+			responsive : true,
+            search      : {return: true},
+            lengthMenu: [[10, 20, 30], [10, 20, 30]],                       
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns     : [
+                {data:'seqno', title:'SNo'},
+                {data:'question__quesname', title:'Question'},
+                {data:'answertype', title:'Type'}
+            ],
+            buttons:[]
+        })
+
+        //load map on bootstrap modal
+        //map = L.map('map').set
+
+
+
+        
+    })
+
+</script>
+{% endblock extra_scripts %}

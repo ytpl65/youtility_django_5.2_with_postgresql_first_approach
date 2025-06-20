@@ -1,0 +1,187 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Question Set List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Question Set List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Question Set List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN BU TABLE ------------------------------------------->
+{% block table %}
+    <!------------------ BEGIN TABLE --------------------->
+	<table id="qset_table" class="display compact cell-border" style="width:100%">
+        <thead class="fw-bold fs-6">
+        </thead>
+		<tbody></tbody>
+    </table>
+    <!------------------ END TABLE --------------------->
+{% endblock table %}
+<!------------------ --------------------------END BU TABLE ------------------------------------------------->
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING -->
+<div class="modal" tabindex="-1" aria-hidden="true"  aria-labelledby="exampleModalLabel" data-bs-keyboard="false" data-bs-backdrop="static" id="modal-qset">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="qset_content">
+		</div>
+	</div>
+</div>
+{% endblock popup_alerts %}
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script>
+	var Qsettable             = null;
+	const modal_id        = "#modal-qset"
+	const modalcontent_id = "#qset_content"
+	const formFilter      = "#qset_filter"
+	const table_id        = "#qset_table"
+	const formTable       = "#assigned_ques_table"
+	const formid          = "#id_qsetform"
+	const urlname         =  "{{ url('activity:checklist') }}"
+	const viewname        = "Questionset"
+	const rowlink         = "a.qset-link"
+	
+	$(document).ready(function () {
+	
+        //beforeSend of capability ajax request 
+        function qsetBeforeSend(){
+            $(modal_id).modal("show");
+        }
+		//datatable initialization
+        Qsettable = $(table_id).DataTable({
+			//orderCellsTop: true,
+			ajax:{
+				url: "{{ url('activity:checklist') }}?action=list&type=CHECKLIST"
+			},
+			lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            deferRender: true,
+			{# scrollY: 300,
+            scrollCollapse: true,
+            scrollX:true, #}
+			columns:[
+				{data: 'id', title:"ID", visible:false, className:'noVis'},
+				{data: 'ctzoffset', title:"Ctzoffset", visible:false, className:'noVis'},
+				{data: 'qsetname', title:'Name'},
+				{data: 'type', title:"Type"},
+				{data: 'cdtz', title:"Created Date Time"},
+				{data: 'mdtz', title:"Modified Date Time"},
+				{data: 'bu__bucode', title:"Site Code", visible:false},
+				{data: 'bu__buname', title:"Site"},
+			],
+			dom       : `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			columnDefs:[
+				{targets:0, data: "id", visible:false, searchable:false, orderable:false },
+				{
+					targets: 2,
+					data   : 'qsetname',
+					render : function ( data, type, row, meta ) {
+						let formUrl = "{{ url('activity:checklist') }}"
+						return `<a href="${formUrl}?id=${row['id']}">${data}</a>`
+					}
+				},
+				{targets:4, data:'cdtz', render: function(data, type, row, meta){
+						return convert_to_local(type, data, row)
+					}
+				},
+				{targets:5, data:'mdtz', render: function(data, type, row, meta){
+						return convert_to_local(type, data, row)
+					}
+				},
+			],
+
+			buttons:[
+			 {
+				extend: 'searchBuilder',
+				config: {
+				columns: [2, 3, 4, 5, 6, 7]
+				}
+			 },
+			 dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Question Set List`,
+                    columns = ':visible',
+                    filename="qset_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Question Set List`,
+                    columns = ':visible',
+                    filename="qset_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+					text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_questionset",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+                        const params = {
+                            'modal_id'    : modal_id,
+                            'url'         : `${urlname}?action=form&type=CHECKLIST`,
+                            'beforeSend'  : qsetBeforeSend }
+						fire_ajax_get(params)
+						.done((data, status, xhr) => {
+							location.href = '{{ url("activity:checklist") }}?action=form&type=CHECKLIST'
+                        })
+						.fail((xhr, status, error) => {
+							show_error_alert("Something went wrong!")
+						})
+					}
+				}
+			],
+		})
+
+	}); //END document.ready()
+
+	//delete ajax request 
+	function isQsetDeleted(id){
+		console.log("id ", id)
+		const params = {url:`${urlname}?action=delete&id=${id}`, beforeSend:function(){} }
+		fire_ajax_get(params)
+		.done((data, status, xhr) => {
+			if(!xhr.status === 200){
+				return false
+			}
+			return true
+		})
+		.fail((xhr, status, error) => {
+			console.log(xhr, "xhr")
+			show_error_alert('Something went wrong!')
+			debugger;//defined in custom.js
+			return false
+		})
+	}
+
+	//delete questionset 
+	function deleteQset(elemt){
+		var id = $(elemt).attr("data-id");
+		show_alert_before_delete('Checklist')
+		.then((result) => {
+			if(result.isConfirmed){ //delete requested by user
+				status = isQsetDeleted(id) //fire's request
+				console.log("status ", status)
+				if(status){
+					show_successful_delete_alert() //defined in customjs
+					$(modal_id).modal("hide")
+					Qsettable.row('.selected').remove().draw();
+				}else{
+					show_error_alert('Something went wrong!');
+				}
+			}
+		})
+	}
+</script>
+{% endblock extra_scripts %}

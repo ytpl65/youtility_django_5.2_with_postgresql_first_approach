@@ -1,0 +1,80 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ pgroup_form.media.css }}
+{% endblock head %}
+
+{% block body %}
+<form action="" method='post' id="id_pgroupform">
+	<input type="hidden" name="pk" id="pk" value="{{ pgroup_form.instance.pk }}">
+    <input type="hidden" name="{{ pgroup_form.ctzoffset.name }}" id = "{{ pgroup_form.ctzoffset.auto_id }}" value="-1">
+	<div class="modal-header border-0">
+		<h3 class="modal-title modal-heading" id="exampleModalLabel">Create People Group <i class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+		<button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	</div>
+    <div class="modal-body" id="partial">
+		<div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors"role="alert" style="display:none">
+			<strong>Error</strong> <span></span>
+			<button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+        <div class="mb-3 row gy-3">
+            {{ pgroup_form.identifier }}
+            {{ pgroup_form.groupname.label_tag() }}
+            <div class="input-group col-md-6">
+                {{ pgroup_form.groupname }}
+                {% if pgroup_form.groupname.help_text %}
+                <small>{{ pgroup_form.groupname.help_text }}</small>
+                {% endif %}
+                {{ pgroup_form.groupname.errors }}
+            </div>
+
+            {{ pgroup_form.peoples.label_tag() }}
+            <div class="input-group col-md-6">
+                {{ pgroup_form.peoples }}
+                {% if pgroup_form.peoples.help_text %}
+                <small>{{ pgroup_form.peoples.help_text }}</small>
+                {% endif %}
+                {{ pgroup_form.peoples.errors }}
+            </div>
+            <!----------- Checkboxes Rendering Last --------------------->
+            <div class="booleans col-md-4 d-flex justify-content-sm-between mt-5">
+                <label for={{ pgroup_form.enable.id_for_label }}
+                    class="form-check-label bool col-form-label me-5 text-sm-right">{{ pgroup_form.enable }}
+                    &nbsp{{ pgroup_form.enable.label }}</label>
+            </div>
+        </div>
+</form>
+    <div class="modal-footer border-0 pt-0">
+		<button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">Close <i class="fas  fa-times"></i></button>
+		{% if pgroup_form.instance.id %}
+		<button type="submit" id="submit" form="id_pgroupform" class="btn btn-sm btn-primary2 btn-hover-scale">Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		<button type="button" onclick="deletePgroup(this)" data-id="{{ pgroup_form.instance.id }}" id="deleteCap" class="btn btn-sm btn-hover-scale btn-danger">Delete&nbsp;<i class="fas text-white fa-trash-alt"></i></button>
+		{% else %}
+		<button type="submit" form="id_pgroupform" class="btn btn-sm btn-primary2 btn-hover-scale">Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		{% endif %}
+	</div>
+{% endblock body %}
+
+{% block js %}
+{{ pgroup_form.media.js }}
+<script>
+// remove classes for checkboxes which are added by default. 
+    $('.booleans label').removeClass("col-md-2 col-sm-2")
+    // add classes to checkboxes.
+    $(".booleans").addClass("form-check form-switch form-check-custom form-check-solid") 
+$(document).ready(() => {
+    //set ctzoffset
+    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+	
+    $("#modal-pgroup").find("select").select2({
+		dropdownParent: $('#modal-pgroup')
+    })
+    $("[multiple]").djangoSelect2({
+          closeOnSelect:false,
+          placeholder: "Search options to select!"
+      })
+    
+})
+</script>
+
+{% endblock js %}

@@ -1,0 +1,143 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Buisiness View
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Buisiness View
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!----------- BEGIN PAGE BREADCUMBS ----------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('onboarding:bu') }}?template=true" class="pe-3">BV List</a></li>
+{% endblock pagebreadcumb %}
+<!----------- END PAGE BREADCUMBS ------------->
+
+<!------------------ BEGIN BU TABLE ------------------------->
+{% block table %}
+<div class="table-responsive">
+	<table id="bt_table" class="display compact cell-border" style="width:100%">
+		<thead class="fw-bold fs-6">
+			<th>Id</th>
+			<th>Code</th>
+			<th>Sol Id</th>
+			<th>Name</th>
+			<th>Type</th>
+			<th>Enable</th>
+			<th>Belongs To</th>
+			<th>Site Type</th>
+		</thead>
+	</table>
+</div>
+{% endblock table %}
+<!------------------ END BU TABLE --------------------------->
+
+<!--------- BEGIN EXTRA SCRIPTS ------------------------------>
+{% block extra_scripts %}
+<script>
+	$(document).ready(function () {
+		//BEGIN DATATABLE INITIALIZATION
+		var table = $('#bt_table').DataTable({
+			ajax:{
+				url: '{{ url("onboarding:bu") }}?action=list',
+			},
+			serverSide:true,
+			deferRender: true,
+			responsive:true,
+			pageLength:250,
+			lengthMenu: [250,500,750,1000],
+			language: {
+				searchPlaceholder: "Search keyword"
+			},
+			initComplete:function(){
+                const input = $(`#bt_table_filter input`);
+                input.off();
+                input.on('keypress',function(e){
+                    if (e.which === 13) {
+                        table.search(this.value).draw();
+                    }
+                }) 
+            },
+			columns     : [
+                { "data": "id", className:'noVis' },
+                { "data": "bucode" },
+                { "data": "solid",	 visible:false, defaultContent:null},
+                { "data": "buname" },
+                { "data": "identifier__taname" },
+                { "data": "enable" },
+                { "data": "parent__buname" },
+                { "data": "butype__taname" },
+            ],
+			columnDefs:[
+				{targets:0, visible:false, searchable:false, orderable:false},
+				{
+					targets: 1,
+					data   : 'bucode',
+					render : function ( data, type, row, meta ) {
+						return `<a href={{ url('onboarding:bu') }}?id=${row['id']}>${data}</a>`
+					}
+				},
+				{targets:3, data:'buname', render:function(data, type, row, meta){
+					return `<a href={{ url('onboarding:bu') }}?id=${row['id']}>${data}</a>`}
+				},
+				
+				{targets:5,data:"enable",render:function(data,type,row,meta){
+					if(data === true){return '<i class="bi bi-check-circle-fill text-success"></i> Active';}
+					else if(data === false){return '<i class="bi bi-check-circle-fill text-danger"></i> Inactive';}
+					else{return data.toString();}
+					}
+					}
+				
+				
+			],
+			createdRow:function(row, data, dataIndex){
+				if(data['enable'] === false){
+					$(row).addClass('disabled-record text-white')
+				}
+			},
+			dom       : `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			<'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			buttons:[
+				{
+					extend: 'searchBuilder',
+					config: {
+					columns: [1, 2, 3, 4, 5, 6, 7]
+					}
+				},
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n BV List`,
+                    columns = ':visible',
+					filename = "bu_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n BV List`,
+                    columns = ':visible',
+					filename = "bu_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+					text     : `Add New &nbsp;<i class='fas fs-6 fa-plus'></i>`,
+					className: "btn btn-sm btn-light-primary border border-primary add_new_bu",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+						location.href =  "{{ url('onboarding:bu') }}?action=form"
+					}
+				}
+			]	
+		})
+		//END DATATABLE INITIALIZATION
+		//hide add new button for non-admin peoples
+		if(!session.is_admin){
+			$('.add_new_bu').hide()
+		}
+
+	});
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS ------------------------------->

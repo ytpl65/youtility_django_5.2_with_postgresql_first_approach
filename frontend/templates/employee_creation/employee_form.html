@@ -1,0 +1,1911 @@
+{% extends "globals/base_form.html" %}
+
+{% block page_title %}Employee Creation Form{% endblock page_title %}
+
+{% block extra_css %}
+{{ form.media.css }}
+<style>
+    .employee-form-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section {
+      padding: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 100%;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #333;
+      font-size: 0.95em;
+    }
+
+    .form-group label.required:after {
+      content: " *";
+      color: #dc3545;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 8px 10px;
+      height: 38px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 0.95em;
+      background: #fff;
+      transition: border-color 0.2s ease-in-out;
+    }
+
+    .form-control:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"] {
+      background: #fff;
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    .form-group textarea.form-control {
+      height: 72px;
+      resize: vertical;
+      overflow-y: auto;
+    }
+
+    .form-group 
+    #id_references-0-address,
+    #id_references-1-address,
+    #id_references-0-directions,
+    #id_references-1-directions {
+      height: 72px;
+      resize: vertical;
+      overflow-y: auto;
+    }
+
+    select.form-control {
+      appearance: none;
+      background: #f5f5f5 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 6.344C1.875 5.768 2.32 4.8 3.104 4.8h9.792c0.784 0 1.23 0.968 0.653 1.544L8.753 11.14a0.795 0.795 0 0 1-1.506 0Z'/%3E%3C/svg%3E") no-repeat right 10px center;
+      background-size: 12px;
+    }
+
+    .errorlist {
+      color: #dc3545;
+      font-size: 0.85em;
+      margin-top: 4px;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    h3 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 1200px) {
+      .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .nav-tabs {
+      display: flex;
+      border-bottom: 1px solid #dee2e6;
+      margin-bottom: 20px;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .nav-tabs .nav-item {
+      margin-right: 30px;
+    }
+
+    .nav-tabs .nav-link {
+      padding: 10px 5px;
+      border: none;
+      color: #6c757d;
+      text-decoration: none;
+      position: relative;
+    }
+
+    .nav-tabs .nav-link.active {
+      color: #000;
+      border-bottom: 2px solid #7366ff;
+      font-weight: 500;
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    .nav-tabs .nav-item.hidden {
+      display: none;
+    }
+
+    .error-field {
+      border-color: #dc3545 !important;
+    }
+
+    .validation-message {
+      color: #dc3545;
+      font-size: 0.9em;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .form-navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      padding: 0 20px;
+    }
+
+    .form-navigation button {
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-previous {
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      color: #495057;
+    }
+
+    .btn-previous:hover {
+      background-color: #e9ecef;
+    }
+
+    .btn-next {
+      background-color: #3498db;
+      border: 1px solid #3498db;
+      color: white;
+    }
+
+    .btn-next:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-submit {
+      background-color: #28a745;
+      border: 1px solid #28a745;
+      color: white;
+    }
+
+    .btn-submit:hover {
+      background-color: #218838;
+    }
+
+    .nav-tabs .nav-link .step-indicator {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background-color: #e9ecef;
+      color: #6c757d;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-tabs .nav-link.completed .step-indicator {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .nav-tabs .nav-link.active .step-indicator {
+      background-color: #7366ff;
+      color: white;
+    }
+
+    .photo-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      border: 2px solid #ddd;
+    }
+
+    input[type="date"] {
+      cursor: pointer;
+    }
+
+    .form-group 
+    #id_post_applied_for,
+    #id_marital_status,
+    #id_sex,
+    #id_civilian_or_ex_serviceman,
+    #id_police_verification,
+    #id_religion,
+    #id_nationality,
+    #id_state,
+    #id_salutation {
+      height: 40px;
+      width: 100%;
+      border-radius: 5px;
+      font-size: 1.1em;
+    }
+
+    .form-group 
+    #id_local_address,
+    #id_conviction_details,
+    #id_educational_qualification,
+    #id_experience_details,
+    #id_emergency_contact_address,
+    #id_emergency_contact_directions,
+    #id_children_details,
+    #id_relatives_details,
+    #id_hometown_directions,
+    #id_address,
+    #id_directions {
+      height: 60px;
+      width: 100%;
+      resize: vertical;
+    }
+
+    .references-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .reference-form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+    }
+
+    .reference-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+    #previewModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+    }
+
+    #previewModal > div {
+      background: #fff;
+      margin: 5% auto;
+      padding: 15px;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border-radius: 5px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .preview-section {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+    }
+
+    .preview-section h3 {
+      margin: 0 0 10px 0;
+      padding-bottom: 5px;
+      font-size: 1.5em;
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+    }
+
+    .preview-item {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 5px 0;
+      font-size: 1.2em;
+      color: #333;
+    }
+
+    .preview-item label {
+      font-weight: 600;
+      color: #495057;
+      min-width: 150px;
+      margin-right: 10px;
+    }
+
+    .preview-item span {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .preview-photo {
+      max-width: 85px;
+      max-height: 85px;
+      border-radius: 50%;
+      margin: 5px 0;
+      border: 1px solid #ddd;
+    }
+
+    #previewModal .form-navigation {
+      margin-top: 15px;
+      padding: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    input[type="text"]:not(#id_email),
+    textarea {
+      text-transform: uppercase;
+      border-radius: 8px;
+    }
+
+    #id_email {
+      text-transform: lowercase;
+    }
+
+    #preview-close-btn:hover {
+      color: #dc3545;
+    }
+
+    .experience-container {
+      max-width: 1600px;
+      margin: 20px auto;
+      display: none;
+  }
+
+  .experience-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .experience-table th, .experience-table td {
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      text-align: left;
+  }
+
+  .experience-table th {
+      background: #f5f5f5;
+      font-weight: 500;
+      color: #333;
+  }
+
+  .experience-table td input, 
+  .experience-table td textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 0.95em;
+  }
+
+  .experience-table td textarea {
+      height: 60px;
+      resize: vertical;
+  }
+
+  .experience-table .action-btn {
+      padding: 5px 10px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+  }
+
+  .edit-btn {
+      background-color: #3498db;
+      color: white;
+  }
+
+  .edit-btn:hover {
+      background-color: #2980b9;
+  }
+
+  .delete-btn {
+      background-color: #dc3545;
+      color: white;
+  }
+
+  .delete-btn:hover {
+      background-color: #c82333;
+  }
+
+  .action-btn.edit-btn {
+      margin-right: 10px; 
+      margin-bottom: 10px; 
+  }
+
+  .add-experience-btn {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+  }
+
+  .add-experience-btn:hover {
+      background-color: #218838;
+  }
+</style>
+{% endblock extra_css %}
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3">
+  <a href="javascript:void(0)" class="pe-3">Employee Creation Form</a>
+</li>
+{% endblock pagebreadcumb %}
+
+{% block form_title %}Employee Creation Form{% endblock form_title %}
+
+{% block form %}
+<div class="employee-form-container">
+    <ul class="nav nav-tabs" id="employeeTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="personal-tab" data-toggle="tab" href="#personal" role="tab">
+                <span class="step-indicator">1</span>Personal Information
+            </a>
+        </li>
+        <li class="nav-item hidden">
+            <a class="nav-link" id="qualification-tab" data-toggle="tab" href="#qualification" role="tab">
+                <span class="step-indicator">2</span>Qualification & Documents
+            </a>
+        </li>
+        <li class="nav-item hidden">
+            <a class="nav-link" id="emergency_contact-tab" data-toggle="tab" href="#emergency_contact" role="tab">
+                <span class="step-indicator">3</span>Emergency Contact
+            </a>
+        </li>
+        <li class="nav-item hidden">
+            <a class="nav-link" id="home_town-tab" data-toggle="tab" href="#home_town" role="tab">
+                <span class="step-indicator">4</span>Home Town
+            </a>
+        </li>
+        <li class="nav-item hidden">
+          <a class="nav-link" id="references-tab" data-toggle="tab" href="#references" role="tab">
+              <span class="step-indicator">5</span>References
+          </a>
+      </li>
+    </ul>
+
+    <form id="employeeForm" method="post" enctype="multipart/form-data" >
+        <div class="tab-content">
+            <!-- Personal Information Tab -->
+            <div class="tab-pane active" id="personal" role="tabpanel">
+                <div class="form-section">
+                    <h3>Personal Information</h3>
+                      <div class="form-grid">
+                        <div class="form-group">
+                          <label for="photo" class="required">Profile Photo</label>
+                          <img id="photoPreview" class="photo-preview" style="display:none;" />
+                          <input type="file" id="photo" name="photo" class="form-control" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.salutation.id_for_label }}" class="required">{{ form.salutation.label }}</label>
+                          {{ form.salutation }}
+                        </div>  
+                        <div class="form-group">
+                          <label for="{{ form.post_applied_for.id_for_label }}" class="required">{{ form.post_applied_for.label }}</label>
+                          {{ form.post_applied_for }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.first_name.id_for_label }}" class="required">{{ form.first_name.label }}</label>
+                          {{ form.first_name }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.middle_name.id_for_label }}" class="required">{{ form.middle_name.label }}</label>
+                          {{ form.middle_name }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.surname.id_for_label }}" class="required">{{ form.surname.label }}</label>
+                          {{ form.surname }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.full_name.id_for_label }}" class="required">{{ form.full_name.label }}</label>
+                          {{ form.full_name }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.height.id_for_label }}" class="required">{{ form.height.label }}</label>
+                          {{ form.height }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.weight.id_for_label }}" class="required">{{ form.weight.label }}</label>
+                          {{ form.weight }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.religion.id_for_label }}" class="required">{{ form.religion.label }}</label>
+                          {{ form.religion }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.nationality.id_for_label }}" class="required">{{ form.nationality.label }}</label>
+                          {{ form.nationality }}
+                        </div>
+                        <div class="form-group">
+                          <label for="date_of_birth" class="required">Date of Birth</label>
+                          <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="date_of_joining" class="required">Date of Joining</label>
+                            <input type="date" id="date_of_joining" name="date_of_joining" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.sex.id_for_label }}" class="required">{{ form.sex.label }}</label>
+                          {{ form.sex }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.marital_status.id_for_label }}" class="required">{{ form.marital_status.label }}</label>
+                          {{ form.marital_status }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.birth_place.id_for_label }}" class="required">{{ form.birth_place.label }}</label>
+                          {{ form.birth_place }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.local_address.id_for_label }}" class="required">{{ form.local_address.label }}</label>
+                          {{ form.local_address }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.pincode.id_for_label }}" class="required">{{ form.pincode.label }}</label>
+                          {{ form.pincode }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.mobile.id_for_label }}" class="required">{{ form.mobile.label }}</label>
+                          {{ form.mobile }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.email.id_for_label }}" class="required">{{ form.email.label }}</label>
+                          {{ form.email }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.civilian_or_ex_serviceman.id_for_label }}" class="required">{{ form.civilian_or_ex_serviceman.label }}</label>
+                          {{ form.civilian_or_ex_serviceman }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.identification_mark.id_for_label }}" class="required">{{ form.identification_mark.label }}</label>
+                          {{ form.identification_mark }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.conviction_details.id_for_label }}" class="required">{{ form.conviction_details.label }}</label>
+                          {{ form.conviction_details }}
+                        </div>                 
+                    </div>
+                    <div id="personal-validation-message" class="validation-message"></div>
+                    <div class="form-navigation">
+                        <div></div>
+                        <button type="button" class="btn-next" id="personal-next-btn">Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Qualification & Documents Tab -->
+            <div class="tab-pane" id="qualification" role="tabpanel">
+              <div class="form-section">
+                  <h3>Qualification & Documents</h3>
+                  <div class="form-grid">
+                      <div class="form-group">
+                          <label for="{{ form.educational_qualification.id_for_label }}" class="required">{{ form.educational_qualification.label }}</label>
+                          {{ form.educational_qualification }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.police_verification.id_for_label }}" class="required">{{ form.police_verification.label }}</label>
+                          {{ form.police_verification }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.aadhar_no.id_for_label }}" class="required">{{ form.aadhar_no.label }}</label>
+                          {{ form.aadhar_no }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.pan_card_no.id_for_label }}" class="required">{{ form.pan_card_no.label }}</label>
+                          {{ form.pan_card_no }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.ration_card.id_for_label }}" class="required">{{ form.ration_card.label }}</label>
+                          {{ form.ration_card }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.affidavit.id_for_label }}" class="required">{{ form.affidavit.label }}</label>
+                          {{ form.affidavit }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.has_experience.id_for_label }}">{{ form.has_experience.label }}</label>
+                          {{ form.has_experience }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.gun_license_no.id_for_label }}" class="required">{{ form.gun_license_no.label }}</label>
+                          {{ form.gun_license_no }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.gun_uin_no.id_for_label }}" class="required">{{ form.gun_uin_no.label }}</label>
+                          {{ form.gun_uin_no }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.gun_registration.id_for_label }}" class="required">{{ form.gun_registration.label }}</label>
+                          {{ form.gun_registration }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.gun_issue_place.id_for_label }}" class="required">{{ form.gun_issue_place.label }}</label>
+                          {{ form.gun_issue_place }}
+                      </div>
+                      <div class="form-group">
+                          <label for="{{ form.gun_issue_authority.id_for_label }}" class="required">{{ form.gun_issue_authority.label }}</label>
+                          {{ form.gun_issue_authority }}
+                      </div>
+                      <div class="form-group">
+                          <label for="gun_license_expiry" class="required">Gun License Expiry</label>
+                          <input type="date" id="gun_license_expiry" name="gun_license_expiry" class="form-control" required>
+                      </div>
+                  </div>
+
+                  <div class="experience-container" id="experience-container">
+                      <h3>Experience Details</h3>
+                      {{ experience_formset.management_form }}
+                      <table class="experience-table">
+                          <thead>
+                              <tr>
+                                  <th>Company Name</th>
+                                  <th>Designation</th>
+                                  <th>Salary (INR)</th>
+                                  <th>Address</th>
+                                  <th>Years of Experience</th>
+                                  <th>Actions</th>
+                              </tr>
+                          </thead>
+                          <tbody id="experience-tbody">
+                              {% for form in experience_formset %}
+                                  <tr class="experience-row" data-editing="false">
+                                      <td>{{ form.company_name }}</td>
+                                      <td>{{ form.designation }}</td>
+                                      <td>{{ form.salary }}</td>
+                                      <td>{{ form.address }}</td>
+                                      <td>{{ form.years_of_experience }}</td>
+                                      <td>
+                                           {{ form.id }}
+                                          <button type="button" class="action-btn edit-btn">Edit</button>
+                                          <button type="button" class="action-btn delete-btn">Delete</button>
+                                      </td>
+                                  </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                      <button type="button" class="add-experience-btn" id="add-experience">Add Experience</button>
+                  </div>
+
+                  <div id="qualification-validation-message" class="validation-message"></div>
+                  <div class="form-navigation">
+                      <button type="button" class="btn-previous" id="qualification-prev-btn">Previous</button>
+                      <button type="button" class="btn-next" id="qualification-next-btn">Next</button>
+                  </div>
+              </div>
+          </div>
+
+            <!-- Emergency Contact Tab -->
+            <div class="tab-pane" id="emergency_contact" role="tabpanel">
+                <div class="form-section">
+                    <h3>Emergency Contact</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                          <label for="{{ form.emergency_contact_name.id_for_label }}" class="required">{{ form.emergency_contact_name.label }}</label>
+                          {{ form.emergency_contact_name }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.emergency_contact_relationship.id_for_label }}" class="required">{{ form.emergency_contact_relationship.label }}</label>
+                          {{ form.emergency_contact_relationship }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.emergency_contact_phone.id_for_label }}" class="required">{{ form.emergency_contact_phone.label }}</label>
+                          {{ form.emergency_contact_phone }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.emergency_contact_pin.id_for_label }}" class="required">{{ form.emergency_contact_pin.label }}</label>
+                          {{ form.emergency_contact_pin }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.emergency_contact_address.id_for_label }}" class="required">{{ form.emergency_contact_address.label }}</label>
+                          {{ form.emergency_contact_address }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.emergency_contact_directions.id_for_label }}">{{ form.emergency_contact_directions.label }}</label>
+                          {{ form.emergency_contact_directions }}
+                        </div>
+                    </div>
+                    <div id="emergency_contact-validation-message" class="validation-message"></div>
+                    <div class="form-navigation">
+                        <button type="button" class="btn-previous" id="emergency-prev-btn">Previous</button>
+                        <button type="button" class="btn-next" id="emergency-next-btn">Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Town Tab -->
+            <div class="tab-pane" id="home_town" role="tabpanel">
+                <div class="form-section">
+                    <h3>Home Town Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                          <label for="{{ form.mother_name.id_for_label }}" class="required">{{ form.mother_name.label }}</label>
+                          {{ form.mother_name }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.father_name.id_for_label }}" class="required">{{ form.father_name.label }}</label>
+                          {{ form.father_name }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.children_details.id_for_label }}" class="required">{{ form.children_details.label }}</label>
+                          {{ form.children_details }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.spouse_name.id_for_label }}" class="required">{{ form.spouse_name.label }}</label>
+                          {{ form.spouse_name }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.relatives_details.id_for_label }}" class="required">{{ form.relatives_details.label }}</label>
+                          {{ form.relatives_details }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.village.id_for_label }}" class="required">{{ form.village.label }}</label>
+                          {{ form.village }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.tehsil.id_for_label }}" class="required">{{ form.tehsil.label }}</label>
+                          {{ form.tehsil }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.district.id_for_label }}" class="required">{{ form.district.label }}</label>
+                          {{ form.district }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.post_office.id_for_label }}" class="required">{{ form.post_office.label }}</label>
+                          {{ form.post_office }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.police_station.id_for_label }}" class="required">{{ form.police_station.label }}</label>
+                          {{ form.police_station }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.state.id_for_label }}" class="required">{{ form.state.label }}</label>
+                          {{ form.state }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.hometown_pin_code.id_for_label }}" class="required">{{ form.hometown_pin_code.label }}</label>
+                          {{ form.hometown_pin_code }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.hometown_phone.id_for_label }}" class="required">{{ form.hometown_phone.label }}</label>
+                          {{ form.hometown_phone }}
+                        </div>
+                        <div class="form-group">
+                          <label for="{{ form.hometown_directions.id_for_label }}">{{ form.hometown_directions.label }}</label>
+                          {{ form.hometown_directions }}
+                        </div>
+                    </div>
+                    <div id="home_town-validation-message" class="validation-message"></div>
+                    <div class="form-navigation">
+                      <button type="button" class="btn-previous" id="home_town-prev-btn">Previous</button>
+                      <button type="button" class="btn-next" id="home_town-next-btn">Next</button>
+                  </div>
+                </div>
+            </div>
+
+            <!-- References Information Tab -->
+           <div class="tab-pane" id="references" role="tabpanel">
+            <div class="form-section">
+              <h3>References</h3>
+              {{ reference_formset.management_form }}
+              <div class="references-container">
+                  {% for form in reference_formset %}
+                      <div class="reference-form">
+                          <h4>Reference </h4>
+                          {{ form.id }}
+                          <div class="reference-grid">
+                              <div class="form-group">
+                                  <label for="{{ form.name.id_for_label }}" class="required">{{ form.name.label }}</label>
+                                  {{ form.name }}
+                                  {% if form.name.errors %}
+                                      <div class="errorlist">{{ form.name.errors }}</div>
+                                  {% endif %}
+                              </div>
+                              <div class="form-group">
+                                  <label for="{{ form.relationship.id_for_label }}" class="required">{{ form.relationship.label }}</label>
+                                  {{ form.relationship }}
+                                  {% if form.relationship.errors %}
+                                      <div class="errorlist">{{ form.relationship.errors }}</div>
+                                  {% endif %}
+                              </div>
+                              <div class="form-group">
+                                  <label for="{{ form.time_known.id_for_label }}" class="required">{{ form.time_known.label }}</label>
+                                  {{ form.time_known }}
+                                  {% if form.time_known.errors %}
+                                      <div class="errorlist">{{ form.time_known.errors }}</div>
+                                  {% endif %}
+                              </div>
+                              <div class="form-group">
+                                  <label for="{{ form.occupation.id_for_label }}" class="required">{{ form.occupation.label }}</label>
+                                  {{ form.occupation }}
+                                  {% if form.occupation.errors %}
+                                      <div class="errorlist">{{ form.occupation.errors }}</div>
+                                  {% endif %}
+                              </div>
+                              <div class="form-group">
+                                  <label for="{{ form.phone.id_for_label }}" class="required">{{ form.phone.label }}</label>
+                                  {{ form.phone }}
+                                  {% if form.phone.errors %}
+                                      <div class="errorlist">{{ form.phone.errors }}</div>
+                                  {% endif %}
+                              </div>
+                              <div class="form-group">
+                                  <label for="{{ form.address.id_for_label }}" class="required">{{ form.address.label }}</label>
+                                  {{ form.address }}
+                                  {% if form.address.errors %}
+                                      <div class="errorlist">{{ form.address.errors }}</div>
+                                  {% endif %}
+                              </div>
+                              <div class="form-group">
+                                  <label for="{{ form.directions.id_for_label }}">{{ form.directions.label }}</label>
+                                  {{ form.directions }}
+                                  {% if form.directions.errors %}
+                                      <div class="errorlist">{{ form.directions.errors }}</div>
+                                  {% endif %}
+                              </div>
+                          </div>
+                      </div>
+                  {% endfor %}
+                  </div>
+                  <div id="references-validation-message" class="validation-message"></div>
+                  <div class="form-navigation">
+                      <button type="button" class="btn-previous" id="references-prev-btn">Previous</button>
+                      <button type="button" class="btn-next" id="references-preview-btn">Preview</button>
+                  </div>
+              </div>
+            </div>
+
+            <!-- Preview Modal -->
+            <div id="previewModal">
+              <div>
+                  <div style="position: relative; margin-bottom: 15px;">
+                      <h2 style="margin: 0; font-size: 1.5em; color: #2c3e50; display: inline-block;">Employee Form Preview</h2>
+                      <button type="button" id="preview-close-btn" style="position: absolute; top: 0; right: 0; padding-bottom:8px; background: none; border: none; font-size: 1.6em; cursor: pointer; color: #333;">×</button>
+                  </div>
+                  <div id="previewContent"></div>
+                  <div id="loader" style="display: none; text-align: center; margin: 10px 0;">Processing...</div>
+                  <div class="form-navigation">
+                      <button type="button" id="preview-back-btn" class="btn-previous">Back</button>
+                      <button type="button" id="preview-submit-btn" class="btn-submit">Submit</button>
+                  </div>
+              </div>
+          </div>
+          <div id="otpModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000;">
+            <div style="background: #fff; margin: 15% auto; padding: 20px; max-width: 400px; border-radius: 5px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);">
+                <h2 style="margin: 0 0 15px 0; font-size: 1.5em; color: #2c3e50;">Enter OTP</h2>
+                <p style="margin-bottom: 15px;">An OTP has been sent to your email. Please enter it below:</p>
+                <input type="text" id="otpInput" placeholder="Enter OTP" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                <div id="otp-error" class="validation-message" style="display: none;"></div>
+                <div class="form-navigation" style="justify-content: flex-end; gap: 10px;">
+                    <button type="button" id="otp-cancel-btn" class="btn-previous">Cancel</button>
+                    <button type="button" id="otp-submit-btn" class="btn-submit">Verify</button>
+                </div>
+            </div>
+        </div>
+          </div>
+          </div>
+          </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Define helper functions first
+        function updateDisplayValues(row) {
+            row.querySelectorAll('td').forEach(td => {
+                const input = td.querySelector('input, textarea');
+                const display = td.querySelector('.display-value');
+                if (input && display) {
+                    display.textContent = input.value || 'N/A'; // Update the display value with the input's value
+                    display.style.display = 'block'; // Ensure the display value is visible
+                    input.style.display = 'none'; // Hide the input field
+                }
+            });
+        }
+    
+        function attachRowEventListeners(row) {
+            const editBtn = row.querySelector('.edit-btn');
+            const deleteBtn = row.querySelector('.delete-btn');     
+            if (editBtn) {
+                editBtn.addEventListener('click', function() {
+                    const isEditing = row.getAttribute('data-editing') === 'true';
+                    if (isEditing) {
+                        // Save and switch to display mode
+                        row.classList.remove('editing');
+                        row.setAttribute('data-editing', 'false');
+                        editBtn.textContent = 'Edit';
+                        updateDisplayValues(row); // Update and hide inputs, show display values
+                    } else {
+                        // Switch to edit mode
+                        row.classList.add('editing');
+                        row.setAttribute('data-editing', 'true');
+                        editBtn.textContent = 'Save';
+                        // Show input fields and hide display values
+                        row.querySelectorAll('td').forEach(td => {
+                            const input = td.querySelector('input, textarea');
+                            const display = td.querySelector('.display-value');
+                            if (input && display) {
+                                input.style.display = 'block';
+                                display.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            }
+        
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function() {
+                    const deleteCheckbox = row.querySelector('[name$="-DELETE"]');
+                    if (deleteCheckbox) {
+                        deleteCheckbox.checked = true;
+                        row.style.display = 'none';
+                        const totalForms = document.getElementById('id_experiences-TOTAL_FORMS');
+                        const visibleRows = document.querySelectorAll('.experience-row:not([style*="display: none"])').length;
+                        totalForms.value = visibleRows;
+                        if (visibleRows === 0 && hasExperienceCheckbox.checked) {
+                            addExperienceRow();
+                        }
+                    }
+                });
+            }
+        }
+    
+        function addExperienceRow() {
+            const formsetPrefix = 'experiences';
+            const totalForms = document.getElementById(`id_${formsetPrefix}-TOTAL_FORMS`);
+            const formCount = parseInt(totalForms.value);
+            const tbody = document.getElementById('experience-tbody');
+            const newRow = document.createElement('tr');
+            newRow.classList.add('experience-row');
+            newRow.setAttribute('data-editing', 'true'); // Start in editing mode
+            newRow.innerHTML = `
+                <td>
+                    <span class="display-value" style="display: none;"></span>
+                    <input type="text" name="${formsetPrefix}-${formCount}-company_name" id="id_${formsetPrefix}-${formCount}-company_name" class="form-control" required>
+                </td>
+                <td>
+                    <span class="display-value" style="display: none;"></span>
+                    <input type="text" name="${formsetPrefix}-${formCount}-designation" id="id_${formsetPrefix}-${formCount}-designation" class="form-control" required>
+                </td>
+                <td>
+                    <span class="display-value" style="display: none;"></span>
+                    <input type="number" step="0.01" name="${formsetPrefix}-${formCount}-salary" id="id_${formsetPrefix}-${formCount}-salary" class="form-control" required>
+                </td>
+                <td>
+                    <span class="display-value" style="display: none;"></span>
+                    <textarea name="${formsetPrefix}-${formCount}-address" id="id_${formsetPrefix}-${formCount}-address" class="form-control" required></textarea>
+                </td>
+                <td>
+                    <span class="display-value" style="display: none;"></span>
+                    <input type="number" step="0.1" name="${formsetPrefix}-${formCount}-years_of_experience" id="id_${formsetPrefix}-${formCount}-years_of_experience" class="form-control" required>
+                </td>
+                <td>
+                    <input type="checkbox" name="${formsetPrefix}-${formCount}-DELETE" id="id_${formsetPrefix}-${formCount}-DELETE" class="delete-checkbox" style="display:none;">
+                    <input type="hidden" name="${formsetPrefix}-${formCount}-id" id="id_${formsetPrefix}-${formCount}-id">
+                    <button type="button" class="action-btn edit-btn">Save</button>
+                    <button type="button" class="action-btn delete-btn">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+            totalForms.value = formCount + 1;
+            attachRowEventListeners(newRow);
+            document.getElementById('add-experience').style.display = 'block'; // Show "Add" button
+        }
+    
+        // Toggle Experience Container and Table Visibility
+        const hasExperienceCheckbox = document.getElementById('id_has_experience');
+        const experienceContainer = document.getElementById('experience-container');
+        const experienceTable = document.querySelector('.experience-table');
+        if (hasExperienceCheckbox && experienceContainer && experienceTable) {
+            function toggleExperienceContainer() {
+                const isChecked = hasExperienceCheckbox.checked;
+                experienceContainer.style.display = isChecked ? 'block' : 'none';
+                if (isChecked) {
+                    const visibleRows = document.querySelectorAll('.experience-row:not([style*="display: none"])');
+                    if (visibleRows.length === 0) {
+                        experienceTable.style.display = 'table';
+                        addExperienceRow();
+                    } else {
+                        experienceTable.style.display = 'table';
+                        document.getElementById('add-experience').style.display = 'block';
+                    }
+                } else {
+                    experienceTable.style.display = 'none';
+                    document.getElementById('add-experience').style.display = 'none';
+                    // Clear rows when unchecked
+                    const tbody = document.getElementById('experience-tbody');
+                    while (tbody.firstChild) {
+                        tbody.removeChild(tbody.firstChild);
+                    }
+                    document.getElementById('id_experiences-TOTAL_FORMS').value = 0;
+                }
+            }
+            toggleExperienceContainer();
+            hasExperienceCheckbox.addEventListener('change', toggleExperienceContainer);
+        }
+    
+        // Add Experience Row on Button Click
+        const addExperienceBtn = document.getElementById('add-experience');
+        if (addExperienceBtn && experienceTable) {
+            addExperienceBtn.addEventListener('click', function() {
+                addExperienceRow();
+            });
+        }
+    
+        // Initialize existing rows
+        document.querySelectorAll('.experience-row').forEach(row => {
+            // Ensure initial state is display mode unless explicitly in edit mode
+            if (row.getAttribute('data-editing') !== 'true') {
+                row.setAttribute('data-editing', 'false');
+                updateDisplayValues(row); // Set initial display values and hide inputs
+            }
+            attachRowEventListeners(row);
+            if (row.style.display !== 'none' && experienceTable) {
+                experienceTable.style.display = 'table';
+                document.getElementById('add-experience').style.display = 'block';
+            }
+        });
+    
+        // Validation Functions
+        function validateQualificationDetails() {
+            let isValid = true;
+            const requiredFields = [
+                { id: "id_educational_qualification", message: "Educational Qualification is required." },
+                { id: "id_police_verification", message: "Police Verification is required.", isDropdown: true },
+                { id: "id_ration_card", message: "Ration Card is required." },
+                { id: "id_aadhar_no", message: "Aadhar Number must be 12 digits.", isAadhar: true },
+                { id: "id_pan_card_no", message: "PAN Card Number must be 10 characters.", isPan: true },
+                { id: "id_affidavit", message: "Affidavit is required." }
+            ];
+    
+            const postAppliedFor = document.getElementById("id_post_applied_for");
+            if (postAppliedFor?.value === "Gunman") {
+                requiredFields.push(
+                    { id: "id_gun_license_no", message: "Gun License Number is required." },
+                    { id: "id_gun_uin_no", message: "Gun UIN Number is required." },
+                    { id: "id_gun_registration", message: "Gun Registration is required." },
+                    { id: "id_gun_issue_place", message: "Gun Issue Place is required." },
+                    { id: "id_gun_issue_authority", message: "Gun Issue Authority is required." },
+                    { id: "gun_license_expiry", message: "Gun License Expiry is required." }
+                );
+            }
+    
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (!input) return;
+                const value = input.value.trim();
+                input.classList.remove("error-field");
+                let existingError = document.getElementById(field.id + "-error");
+                if (existingError) existingError.remove();
+                if (value === "") {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isAadhar && !/^\d{12}$/.test(value)) {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isPan && !/^[A-Z0-9]{10}$/.test(value)) {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isDropdown && value === "Select") {
+                    isValid = false;
+                    showError(input, field.message);
+                }
+            });
+    
+            if (hasExperienceCheckbox.checked) {
+                const experienceRows = document.querySelectorAll('.experience-row:not([style*="display: none"])');
+                if (experienceRows.length === 0) {
+                    isValid = false;
+                    document.getElementById('qualification-validation-message').textContent = 
+                        "At least one experience entry is required when 'Has Prior Experience' is checked.";
+                } else {
+                    document.getElementById('qualification-validation-message').textContent = "";
+                    experienceRows.forEach((row, index) => {
+                        const fields = [
+                            { selector: 'company_name', message: `Experience ${index + 1}: Company Name is required.` },
+                            { selector: 'designation', message: `Experience ${index + 1}: Designation is required.` },
+                            { selector: 'salary', message: `Experience ${index + 1}: Salary must be a positive number.`, isNumber: true },
+                            { selector: 'address', message: `Experience ${index + 1}: Address is required.` },
+                            { selector: 'years_of_experience', message: `Experience ${index + 1}: Years of Experience must be a positive number.`, isNumber: true },
+                        ];
+                        fields.forEach(field => {
+                            const input = row.querySelector(`[name$="${field.selector}"]`);
+                            if (!input) return;
+                            const value = input.value.trim();
+                            input.classList.remove("error-field");
+                            let existingError = document.getElementById(input.id + "-error");
+                            if (existingError) existingError.remove();
+                            if (value === "") {
+                                isValid = false;
+                                showError(input, field.message);
+                            } else if (field.isNumber && (isNaN(value) || parseFloat(value) <= 0)) {
+                                isValid = false;
+                                showError(input, field.message);
+                            }
+                        });
+                    });
+                }
+            } else {
+                document.getElementById('qualification-validation-message').textContent = "";
+            }
+            return isValid;
+        }
+    
+        function forceUpperCase(event) {
+            event.target.value = event.target.value.toUpperCase();
+        }
+    
+        function forceLowerCase(event) {
+            event.target.value = event.target.value.toLowerCase();
+        }
+    
+        const upperCaseFields = document.querySelectorAll('input[type="text"]:not(#id_email), textarea');
+        const emailField = document.getElementById('id_email');
+        upperCaseFields.forEach(field => {
+            field.addEventListener("input", forceUpperCase);
+            field.addEventListener("paste", function(event) {
+                setTimeout(() => {
+                    event.target.value = event.target.value.toUpperCase();
+                }, 0);
+            });
+        });
+    
+        if (emailField) {
+            emailField.addEventListener("input", forceLowerCase);
+            emailField.addEventListener("paste", function(event) {
+                setTimeout(() => {
+                    event.target.value = event.target.value.toLowerCase();
+                }, 0);
+            });
+        }
+    
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        const csrftoken = getCookie('csrftoken');
+        const previewSubmitBtn = document.getElementById('preview-submit-btn');
+        if (previewSubmitBtn) {
+            previewSubmitBtn.addEventListener('click', function() {
+                const form = document.getElementById("employeeForm");
+                const formData = new FormData(form);
+                formData.append('action', 'request_otp');
+                const loader = document.getElementById('loader');
+                if (loader) loader.style.display = 'block';
+                fetch(form.action, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": csrftoken
+                    }
+                })
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.status === 'success') {
+                            document.getElementById('previewModal').style.display = 'none';
+                            document.getElementById('otpModal').style.display = 'block';
+                            if (loader) loader.style.display = 'none';
+                        } else {
+                            if (loader) loader.style.display = 'none';
+                            alert(data.message || "An error occurred.");
+                        }
+                    } catch (e) {
+                        if (loader) loader.style.display = 'none';
+                        alert("Server returned an invalid response.");
+                    }
+                })
+                .catch(error => {
+                    if (loader) loader.style.display = 'none';
+                    alert("An error occurred while requesting OTP.");
+                });
+            });
+        }
+    
+        const otpCancelBtn = document.getElementById('otp-cancel-btn');
+        if (otpCancelBtn) {
+            otpCancelBtn.addEventListener('click', function() {
+                document.getElementById('otpModal').style.display = 'none';
+            });
+        }
+    
+        const otpSubmitBtn = document.getElementById('otp-submit-btn');
+        if (otpSubmitBtn) {
+            otpSubmitBtn.addEventListener('click', function() {
+                const otpInput = document.getElementById('otpInput').value.trim();
+                const emailInput = document.getElementById('id_email').value.trim();
+                const form = document.getElementById("employeeForm");
+                const formData = new FormData(form);
+                formData.append('action', 'verify_otp');
+                formData.append('otp', otpInput);
+                formData.append('email', emailInput);
+                fetch(form.action, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": csrftoken
+                    }
+                })
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.status === 'success') {
+                            document.getElementById('otpModal').style.display = 'none';
+                            alert("Employee created successfully!");
+                            window.location.href = data.redirect_url;
+                        } else {
+                            const otpError = document.getElementById('otp-error');
+                            otpError.textContent = data.message || "An error occurred.";
+                            otpError.style.display = 'block';
+                        }
+                    } catch (e) {
+                        alert("Server returned an invalid response.");
+                    }
+                })
+                .catch(error => {
+                    alert("An error occurred during OTP verification.");
+                });
+            });
+        }
+    
+        let references = document.querySelectorAll(".reference-form h4");
+        references.forEach((ref, index) => {
+            ref.textContent = "Reference " + (index + 1);
+        });
+        const photoInput = document.getElementById("photo");
+        if (photoInput) {
+            photoInput.addEventListener("change", function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.getElementById("photoPreview");
+                        if (img) {
+                            img.src = e.target.result;
+                            img.style.display = "block";
+                            let existingBr = document.getElementById("photoPreviewBr");
+                            if (!existingBr) {
+                                const br = document.createElement("br");
+                                br.id = "photoPreviewBr";
+                                img.parentNode.insertBefore(br, img.nextSibling);
+                            }
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    
+        const form = document.getElementById("employeeForm");
+        const postAppliedFor = document.getElementById("id_post_applied_for");
+        const gunFields = [
+            "id_gun_license_no", "id_gun_uin_no", "id_gun_registration",
+            "id_gun_issue_place", "id_gun_issue_authority", "gun_license_expiry"
+        ];
+
+        function toggleGunFields() {
+            const isGunman = postAppliedFor?.value === "Gunman";
+            gunFields.forEach(fieldId => {
+                const fieldGroup = document.getElementById(fieldId)?.parentElement;
+                if (fieldGroup) {
+                    fieldGroup.style.display = isGunman ? "block" : "none";
+                    const input = document.getElementById(fieldId);
+                    if (input && !isGunman) {
+                        input.value = "";
+                    }
+                }
+            });
+        }
+    
+        if (postAppliedFor) {
+            toggleGunFields();
+            postAppliedFor.addEventListener("change", toggleGunFields);
+        }
+    
+        const today = new Date();
+        const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+        const maxDateString = maxDate.toISOString().split('T')[0];
+        document.getElementById('date_of_birth').setAttribute('max', maxDateString);    
+        const dateOfJoining = document.getElementById('date_of_joining');
+        if (dateOfJoining) {
+            const twoMonthsBefore = new Date(today);
+            twoMonthsBefore.setMonth(today.getMonth() - 2);
+            const twoMonthsAfter = new Date(today);
+            twoMonthsAfter.setMonth(today.getMonth() + 2);
+            const minDateString = twoMonthsBefore.toISOString().split('T')[0];
+            const maxDateJoiningString = twoMonthsAfter.toISOString().split('T')[0];
+            dateOfJoining.setAttribute('min', minDateString);
+            dateOfJoining.setAttribute('max', maxDateJoiningString);
+        }
+    
+        function validatePersonalDetails() {
+            let isValid = true;
+            const requiredFields = [
+                { id: "id_salutation", message: "Salutation is required." },
+                { id: "id_first_name", message: "First Name is required." },
+                { id: "id_middle_name", message: "Middle Name is required." },
+                { id: "id_surname", message: "Surname is required." },
+                { id: "id_full_name", message: "Full Name is required." },
+                { id: "id_religion", message: "Religion is required." },
+                { id: "id_nationality", message: "Nationality is required." },
+                { id: "id_birth_place", message: "Birth Place is required." },
+                { id: "id_local_address", message: "Local Address is required." },
+                { id: "id_identification_mark", message: "Identification Mark is required." },
+                { id: "id_conviction_details", message: "Conviction Details is required." },
+                { id: "id_height", message: "Height must be a positive number.", isNumber: true },
+                { id: "id_weight", message: "Weight must be a positive number.", isNumber: true },
+                { id: "id_pincode", message: "Pincode must be a positive number.", isNumber: true },
+                { id: "id_mobile", message: "Mobile number must be 10 digits.", isMobile: true },
+                { id: "date_of_birth", message: "Date of Birth is required." },
+                { id: "date_of_joining", message: "Date of Joining is required." },
+                { id: "id_sex", message: "Gender is required.", isDropdown: true },
+                { id: "id_marital_status", message: "Marital Status is required.", isDropdown: true },
+                { id: "id_post_applied_for", message: "Post Applied For is required.", isDropdown: true },
+                { id: "id_civilian_or_ex_serviceman", message: "Civilian or ex serviceman is required.", isDropdown: true },
+                { id: "photo", message: "Profile Picture is required.", isFile: true },
+            ];
+    
+            const emailInput = document.getElementById("id_email");
+            const firstNameInput = document.getElementById("id_first_name");
+            const lastNameInput = document.getElementById("id_surname");
+            const mobileInput = document.getElementById("id_mobile");
+    
+            if (emailInput && firstNameInput && lastNameInput && mobileInput) {
+                const emailValue = emailInput.value.trim();
+                const firstNameValue = firstNameInput.value.trim().toLowerCase();
+                const lastNameValue = lastNameInput.value.trim().toLowerCase();
+                const mobileValue = mobileInput.value.trim();
+                emailInput.classList.remove("error-field");
+                let existingEmailError = document.getElementById("id_email-error");
+                if (existingEmailError) existingEmailError.remove();
+                const expectedEmail = `${firstNameValue}.${lastNameValue}.${mobileValue}@gmail.com`;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailValue === "") {
+                    isValid = false;
+                    showError(emailInput, "Email is required.");
+                } else if (!emailRegex.test(emailValue)) {
+                    isValid = false;
+                    showError(emailInput, "Invalid email format.");
+                } else if (emailValue !== expectedEmail) {
+                    isValid = false;
+                    showError(emailInput, `Email must be in the format: ${expectedEmail}`);
+                }
+            }
+    
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (!input) return;
+                const value = input.value.trim();
+                input.classList.remove("error-field");
+                let existingError = document.getElementById(field.id + "-error");
+                if (existingError) existingError.remove();
+                if (field.isFile && input.files.length === 0) {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (value === "" || (field.isNumber && (isNaN(value) || value <= 0))) {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isMobile && !/^\d{10}$/.test(value)) {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isDropdown && value === "Select") {
+                    isValid = false;
+                    showError(input, field.message);
+                }
+            });
+    
+            const postValue = postAppliedFor.value;
+            const exemptPosts = ["Staff", "House Keeping", "Driver"];
+            if (!exemptPosts.includes(postValue)) {
+                const gender = document.getElementById('id_sex').value;
+                const heightInput = document.getElementById('id_height');
+                const weightInput = document.getElementById('id_weight');
+                const height = parseFloat(heightInput.value);
+                const weight = parseFloat(weightInput.value);
+                if (gender === 'male') {
+                    if (height < 160) {
+                        isValid = false;
+                        showError(heightInput, 'Height must be at least 160 cm for males.');
+                    }
+                    if (weight < 50) {
+                        isValid = false;
+                        showError(weightInput, 'Weight must be at least 50 kg for males.');
+                    }
+                } else if (gender === 'female') {
+                    if (height < 150) {
+                        isValid = false;
+                        showError(heightInput, 'Height must be at least 150 cm for females.');
+                    }
+                    if (weight < 40) {
+                        isValid = false;
+                        showError(weightInput, 'Weight must be at least 40 kg for females.');
+                    }
+                }
+            }
+            return isValid;
+        }
+    
+        function validateEmergencyContactDetails() {
+            let isValid = true;
+            const requiredFields = [
+                { id: "id_emergency_contact_name", message: "Name is required." },
+                { id: "id_emergency_contact_relationship", message: "Relationship is required." },
+                { id: "id_emergency_contact_phone", message: "Phone number must be 10 digits.", isMobile: true },
+                { id: "id_emergency_contact_pin", message: "Pincode must be a 6-digit number.", isPincode: true },
+                { id: "id_emergency_contact_address", message: "Address is required." },
+            ];
+    
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (!input) return;
+                const value = input.value.trim();
+                input.classList.remove("error-field");
+                let existingError = document.getElementById(field.id + "-error");
+                if (existingError) existingError.remove();
+                if (value === "") {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isMobile && !/^\d{10}$/.test(value)) {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isPincode && !/^\d{6}$/.test(value)) {
+                    isValid = false;
+                    showError(input, field.message);
+                }
+            });
+            return isValid;
+        }
+    
+        function validateHomeTownDetails() {
+            let isValid = true;
+            const requiredFields = [
+                { id: "id_mother_name", message: "Mother's Name is required." },
+                { id: "id_father_name", message: "Father's Name is required." },
+                { id: "id_children_details", message: "Children Details are required." },
+                { id: "id_spouse_name", message: "Spouse Name is required." },
+                { id: "id_relatives_details", message: "Relatives Details are required." },
+                { id: "id_village", message: "Village is required." },
+                { id: "id_tehsil", message: "Tehsil is required." },
+                { id: "id_district", message: "District is required." },
+                { id: "id_post_office", message: "Post Office is required." },
+                { id: "id_police_station", message: "Police Station is required." },
+                { id: "id_state", message: "State is required." },
+                { id: "id_hometown_pin_code", message: "Pincode must be a 6-digit number.", isPincode: true },
+                { id: "id_hometown_phone", message: "Phone number must be 10 digits.", isMobile: true },
+            ];
+    
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (!input) return;
+                const value = input.value.trim();
+                input.classList.remove("error-field");
+                let existingError = document.getElementById(field.id + "-error");
+                if (existingError) existingError.remove();
+                if (value === "") {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isMobile && !/^\d{10}$/.test(value)) {
+                    isValid = false;
+                    showError(input, field.message);
+                } else if (field.isPincode && !/^\d{6}$/.test(value)) {
+                    isValid = false;
+                    showError(input, field.message);
+                }
+            });
+            return isValid;
+        }
+    
+        function validateReferencesDetails() {
+            let isValid = true;
+            const references = document.querySelectorAll(".reference-form");
+            const validationMessage = document.getElementById("references-validation-message");
+            if (references.length < 2) {
+                isValid = false;
+                if (validationMessage) {
+                    validationMessage.textContent = "At least 2 references are required.";
+                }
+                return isValid;
+            } else if (validationMessage) {
+                validationMessage.textContent = "";
+            }
+            references.forEach((ref, index) => {
+                const requiredFields = [
+                    { selector: '[id$="-name"]', message: `Reference ${index + 1}: Name is required.`, isRequired: true },
+                    { selector: '[id$="-relationship"]', message: `Reference ${index + 1}: Relationship is required.`, isRequired: true },
+                    { selector: '[id$="-time_known"]', message: `Reference ${index + 1}: Time Known is required.`, isRequired: true },
+                    { selector: '[id$="-occupation"]', message: `Reference ${index + 1}: Occupation is required.`, isRequired: true },
+                    { selector: '[id$="-phone"]', message: `Reference ${index + 1}: Phone must be 10 digits.`, isMobile: true, isRequired: true },
+                    { selector: '[id$="-address"]', message: `Reference ${index + 1}: Address is required.`, isRequired: true },
+                ];
+                requiredFields.forEach(field => {
+                    const input = ref.querySelector(field.selector);
+                    if (!input) return;
+                    const value = input.value.trim();
+                    input.classList.remove("error-field");
+                    let existingError = document.getElementById(input.id + "-error");
+                    if (existingError) existingError.remove();
+                    if (field.isRequired && value === "") {
+                        isValid = false;
+                        showError(input, field.message);
+                    } else if (field.isMobile && value !== "" && !/^\d{10}$/.test(value)) {
+                        isValid = false;
+                        showError(input, field.message);
+                    }
+                });
+            });
+            return isValid;
+        }
+    
+        const previewBtn = document.getElementById("references-preview-btn");
+        if (previewBtn) {
+            previewBtn.addEventListener("click", function() {
+                const isReferencesValid = validateReferencesDetails();
+                if (!isReferencesValid) {
+                    alert("Please fix the errors in the References section before previewing.");
+                    return;
+                }
+                const isPersonalValid = validatePersonalDetails();
+                const isQualificationValid = validateQualificationDetails();
+                const isEmergencyValid = validateEmergencyContactDetails();
+                const isHomeTownValid = validateHomeTownDetails();
+                if (isPersonalValid && isQualificationValid && isEmergencyValid && isHomeTownValid) {
+                    let previewContent = '';
+                    const formatValue = (value, fieldId) => {
+                        if (fieldId === 'id_email') {
+                            return value;
+                        } else if (fieldId === 'id_height' && value) {
+                            return `${value} cm`;
+                        } else if (fieldId === 'id_weight' && value) {
+                            return `${value} kg`;
+                        }
+                        return value.toUpperCase();
+                    };
+    
+                    previewContent += '<div class="preview-section"><h3>Personal Information</h3>';
+                    const photoPreview = document.getElementById('photoPreview');
+                    previewContent += photoPreview?.src
+                        ? `<div class="preview-item"><label>Photo:</label><img class="preview-photo" src="${photoPreview.src}" alt="Profile Photo"></div>`
+                        : `<div class="preview-item"><label>Photo:</label><span>No photo uploaded</span></div>`;
+    
+                    const personalFields = [
+                        { id: 'id_post_applied_for', label: 'Post Applied For' },
+                        { id: 'id_first_name', label: 'First Name' },
+                        { id: 'id_middle_name', label: 'Middle Name' },
+                        { id: 'id_surname', label: 'Surname' },
+                        { id: 'id_height', label: 'Height' },
+                        { id: 'id_weight', label: 'Weight' },
+                        { id: 'id_religion', label: 'Religion' },
+                        { id: 'id_nationality', label: 'Nationality' },
+                        { id: 'date_of_birth', label: 'Date of Birth' },
+                        { id: 'date_of_joining', label: 'Date of Joining' },
+                        { id: 'id_sex', label: 'Sex' },
+                        { id: 'id_marital_status', label: 'Marital Status' },
+                        { id: 'id_birth_place', label: 'Birth Place' },
+                        { id: 'id_local_address', label: 'Local Address' },
+                        { id: 'id_pincode', label: 'Pincode' },
+                        { id: 'id_mobile', label: 'Mobile' },
+                        { id: 'id_email', label: 'Email' },
+                        { id: 'id_civilian_or_ex_serviceman', label: 'Civilian/Ex-Serviceman' },
+                        { id: 'id_identification_mark', label: 'Identification Mark' },
+                        { id: 'id_conviction_details', label: 'Conviction Details' }
+                    ];
+    
+                    personalFields.forEach(field => {
+                        const element = document.getElementById(field.id);
+                        const value = element ? formatValue(element.value, field.id) : 'N/A';
+                        previewContent += `<div class="preview-item"><label>${field.label}:</label><span>${value}</span></div>`;
+                    });
+                    previewContent += '</div>';
+    
+                    previewContent += '<div class="preview-section"><h3>Qualification & Documents</h3>';
+                    const qualFields = [
+                        { id: 'id_educational_qualification', label: 'Educational Qualification' },
+                        { id: 'id_police_verification', label: 'Police Verification' },
+                        { id: 'id_aadhar_no', label: 'Aadhar No' },
+                        { id: 'id_pan_card_no', label: 'PAN Card No' },
+                        { id: 'id_ration_card', label: 'Ration Card' },
+                        { id: 'id_affidavit', label: 'Affidavit' },
+                        { id: 'id_has_experience', label: 'Has Prior Experience' }
+                    ];
+    
+                    qualFields.forEach(field => {
+                        const element = document.getElementById(field.id);
+                        const value = element ? (field.id === 'id_has_experience' ? (element.checked ? 'Yes' : 'No') : formatValue(element.value, field.id)) : 'N/A';
+                        previewContent += `<div class="preview-item"><label>${field.label}:</label><span>${value}</span></div>`;
+                    });
+    
+                    if (hasExperienceCheckbox.checked) {
+                        previewContent += '<div class="preview-item"><strong><u>Experience Details</u></strong></div>';
+                        const experienceRows = document.querySelectorAll('.experience-row:not([style*="display: none"])');
+                        experienceRows.forEach((row, index) => {
+                            const getValue = (fieldName) => {
+                                const input = row.querySelector(`[name$="${fieldName}"]`);
+                                return input ? formatValue(input.value, input.id) : 'N/A';
+                            };
+                            previewContent += `<div class="preview-item"><strong><u>Experience ${index + 1}</u></strong></div>`;
+                            previewContent += `<div class="preview-item"><label>Company Name:</label><span>${getValue('company_name')}</span></div>`;
+                            previewContent += `<div class="preview-item"><label>Designation:</label><span>${getValue('designation')}</span></div>`;
+                            previewContent += `<div class="preview-item"><label>Salary (INR):</label><span>${getValue('salary')}</span></div>`;
+                            previewContent += `<div class="preview-item"><label>Address:</label><span>${getValue('address')}</span></div>`;
+                            previewContent += `<div class="preview-item"><label>Years of Experience:</label><span>${getValue('years_of_experience')}</span></div>`;
+                        });
+                    }
+    
+                    if (postAppliedFor?.value === 'Gunman') {
+                        const gunFieldsPreview = [
+                            { id: 'id_gun_license_no', label: 'Gun License No' },
+                            { id: 'id_gun_uin_no', label: 'Gun UIN No' },
+                            { id: 'id_gun_registration', label: 'Gun Registration' },
+                            { id: 'id_gun_issue_place', label: 'Gun Issue Place' },
+                            { id: 'id_gun_issue_authority', label: 'Gun Issue Authority' },
+                            { id: 'gun_license_expiry', label: 'Gun License Expiry' }
+                        ];
+                        gunFieldsPreview.forEach(field => {
+                            const element = document.getElementById(field.id);
+                            const value = element ? formatValue(element.value, field.id) : 'N/A';
+                            previewContent += `<div class="preview-item"><label>${field.label}:</label><span>${value}</span></div>`;
+                        });
+                    }
+                    previewContent += '</div>';
+    
+                    previewContent += '<div class="preview-section"><h3>Emergency Contact</h3>';
+                    const emergencyFields = [
+                        { id: 'id_emergency_contact_name', label: 'Name' },
+                        { id: 'id_emergency_contact_relationship', label: 'Relationship' },
+                        { id: 'id_emergency_contact_phone', label: 'Phone' },
+                        { id: 'id_emergency_contact_pin', label: 'Pin' },
+                        { id: 'id_emergency_contact_address', label: 'Address' },
+                        { id: 'id_emergency_contact_directions', label: 'Directions' }
+                    ];
+    
+                    emergencyFields.forEach(field => {
+                        const element = document.getElementById(field.id);
+                        const value = element ? formatValue(element.value, field.id) : 'N/A';
+                        previewContent += `<div class="preview-item"><label>${field.label}:</label><span>${value}</span></div>`;
+                    });
+                    previewContent += '</div>';
+    
+                    previewContent += '<div class="preview-section"><h3>Home Town Details</h3>';
+                    const homeTownFields = [
+                        { id: 'id_mother_name', label: 'Mother Name' },
+                        { id: 'id_father_name', label: 'Father Name' },
+                        { id: 'id_children_details', label: 'Children Details' },
+                        { id: 'id_spouse_name', label: 'Spouse Name' },
+                        { id: 'id_relatives_details', label: 'Relatives Details' },
+                        { id: 'id_village', label: 'Village' },
+                        { id: 'id_tehsil', label: 'Tehsil' },
+                        { id: 'id_district', label: 'District' },
+                        { id: 'id_post_office', label: 'Post Office' },
+                        { id: 'id_police_station', label: 'Police Station' },
+                        { id: 'id_state', label: 'State' },
+                        { id: 'id_hometown_pin_code', label: 'Pin Code' },
+                        { id: 'id_hometown_phone', label: 'Phone' },
+                        { id: 'id_hometown_directions', label: 'Directions' }
+                    ];
+    
+                    homeTownFields.forEach(field => {
+                        const element = document.getElementById(field.id);
+                        const value = element ? formatValue(element.value, field.id) : 'N/A';
+                        previewContent += `<div class="preview-item"><label>${field.label}:</label><span>${value}</span></div>`;
+                    });
+                    previewContent += '</div>';
+    
+                    previewContent += '<div class="preview-section"><h3>References</h3>';
+                    const references = document.querySelectorAll('.reference-form');
+                    references.forEach((ref, index) => {
+                        const getValue = (fieldName) => {
+                            const input = ref.querySelector(`[id$="${fieldName}"]`);
+                            return input ? formatValue(input.value, input.id) : 'N/A';
+                        };
+                        previewContent += `<div class="preview-item"><strong><u>Reference ${index + 1}</u></strong></div>`;
+                        previewContent += `<div class="preview-item"><label>Name:</label><span>${getValue('-name')}</span></div>`;
+                        previewContent += `<div class="preview-item"><label>Relationship:</label><span>${getValue('-relationship')}</span></div>`;
+                        previewContent += `<div class="preview-item"><label>Time Known:</label><span>${getValue('-time_known')}</span></div>`;
+                        previewContent += `<div class="preview-item"><label>Occupation:</label><span>${getValue('-occupation')}</span></div>`;
+                        previewContent += `<div class="preview-item"><label>Phone:</label><span>${getValue('-phone')}</span></div>`;
+                        previewContent += `<div class="preview-item"><label>Address:</label><span>${getValue('-address')}</span></div>`;
+                        previewContent += `<div class="preview-item"><label>Directions:</label><span>${getValue('-directions')}</span></div>`;
+                    });
+                    previewContent += '</div>';
+    
+                    const previewContentElement = document.getElementById('previewContent');
+                    const previewModal = document.getElementById('previewModal');
+                    if (previewContentElement && previewModal) {
+                        previewContentElement.innerHTML = previewContent;
+                        previewModal.style.display = 'block';
+                    }
+                } else {
+                    alert("Please fix all errors in the form before previewing.");
+                }
+            });
+        }
+    
+        const previewBackBtn = document.getElementById('preview-back-btn');
+        if (previewBackBtn) {
+            previewBackBtn.addEventListener('click', function() {
+                const previewModal = document.getElementById('previewModal');
+                if (previewModal) previewModal.style.display = 'none';
+            });
+        }
+    
+        const previewCloseBtn = document.getElementById('preview-close-btn');
+        if (previewCloseBtn) {
+            previewCloseBtn.addEventListener('click', function() {
+                const previewModal = document.getElementById('previewModal');
+                if (previewModal) previewModal.style.display = 'none';
+            });
+        }
+    
+        function showError(input, message) {
+            const error = document.createElement("div");
+            error.className = "validation-message";
+            error.id = input.id + "-error";
+            error.textContent = message;
+            input.parentNode.appendChild(error);
+            input.classList.add("error-field");
+        }
+    
+        function navigateToTab(tabId) {
+            document.querySelectorAll(".tab-pane").forEach(tab => tab.classList.remove("active"));
+            document.querySelectorAll(".nav-tabs .nav-link").forEach(tab => tab.classList.remove("active"));
+            const tabPane = document.getElementById(tabId);
+            const tabLink = document.querySelector(`#${tabId}-tab`);
+            if (tabPane) tabPane.classList.add("active");
+            if (tabLink) {
+                tabLink.classList.add("active");
+                if (tabId !== "personal") {
+                    tabLink.parentElement.classList.remove("hidden");
+                }
+            }
+        }
+    
+        const personalNextBtn = document.getElementById("personal-next-btn");
+        if (personalNextBtn) {
+            personalNextBtn.addEventListener("click", function () {
+                if (validatePersonalDetails()) {
+                    navigateToTab("qualification");
+                } else {
+                    alert("Please fix the errors in the Personal Information section.");
+                }
+            });
+        }
+    
+        const qualPrevBtn = document.getElementById("qualification-prev-btn");
+        if (qualPrevBtn) {
+            qualPrevBtn.addEventListener("click", function () {
+                navigateToTab("personal");
+            });
+        }
+    
+        const qualNextBtn = document.getElementById("qualification-next-btn");
+        if (qualNextBtn) {
+            qualNextBtn.addEventListener("click", function () {
+                if (validateQualificationDetails()) {
+                    navigateToTab("emergency_contact");
+                } else {
+                    alert("Please fix the errors in the Qualification & Documents section.");
+                }
+            });
+        }
+    
+        const emergencyPrevBtn = document.getElementById("emergency-prev-btn");
+        if (emergencyPrevBtn) {
+            emergencyPrevBtn.addEventListener("click", function () {
+                navigateToTab("qualification");
+            });
+        }
+    
+        const emergencyNextBtn = document.getElementById("emergency-next-btn");
+        if (emergencyNextBtn) {
+            emergencyNextBtn.addEventListener("click", function () {
+                if (validateEmergencyContactDetails()) {
+                    navigateToTab("home_town");
+                } else {
+                    alert("Please fix the errors in the Emergency Contact section.");
+                }
+            });
+        }
+    
+        const homeTownPrevBtn = document.getElementById("home_town-prev-btn");
+        if (homeTownPrevBtn) {
+            homeTownPrevBtn.addEventListener("click", function () {
+                navigateToTab("emergency_contact");
+            });
+        }
+    
+        const homeTownNextBtn = document.getElementById("home_town-next-btn");
+        if (homeTownNextBtn) {
+            homeTownNextBtn.addEventListener("click", function () {
+                if (validateHomeTownDetails()) {
+                    navigateToTab("references");
+                } else {
+                    alert("Please fix the errors in the Home Town Details section.");
+                }
+            });
+        }
+    
+        const referencesPrevBtn = document.getElementById("references-prev-btn");
+        if (referencesPrevBtn) {
+            referencesPrevBtn.addEventListener("click", function () {
+                navigateToTab("home_town");
+            });
+        }
+    });
+</script>
+{% endblock form %}

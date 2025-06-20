@@ -1,0 +1,57 @@
+{% extends "base_ajax_list.html" %}
+
+{% block tab_grp %}
+    <div class="btn-group">
+        <a href="#" class="btn btn-primary2 active" aria-current="page">List View</a>
+        <a href="#" class="btn btn-primary2">Form View</a>
+        <a href="#" class="btn btn-primary2">Dashboard</a>
+    </div>
+{% endblock tab_grp %}
+
+{% block tatble_title %}
+Capability List
+{% endblock tatble_title %}
+
+{% block table %}
+    <!------------------ BEGIN TABLE --------------------->
+    <table id="cap_table" class="display compact cell-border" style="width:100%">
+        <thead class="fw-bold fs-6">
+            <th>Code</th>
+            <th>Name</th>
+            <th>Capability for</th>
+            <th>Belongs To</th>
+        </thead>
+		<!---------- BEGIN TABLE FILTER FIELDS --------->
+		<thead id="filter_row">
+		<form action="" id='cap_filter' method='get'>
+			<input type="hidden" name="search_term" value="true">
+			{% for field in cap_filter %}
+			<th>
+				<input type="text" 
+				id="{{ field.auto_id }}" 
+				name="{{ field.name }}" 
+				placeholder ="Search {{ field.label }}">
+			</th>
+			{% endfor %}
+		</form>
+		</thead>
+		<!---------- END TABLE FILTER FIELDS --------->
+        {% for cap in cap_list %}
+        <tr>
+			<!--"{{ url('peoples:cap_update', args=[cap['id']]) }}"-->
+            <td><a href="{{ url('peoples:cap_update', args=[cap['id']]) }}">{{ cap['capscode'] }}</a></td>
+            <td>{{ cap['capsname'] }}</td>
+            <td>{{ cap['cfor'] }}</td>
+            <td>{{ cap['parent__capscode'] }}</td>
+        </tr>
+        {% endfor %}
+		
+    </table>
+    <!------------------ END TABLE --------------------->
+
+    {% if cap_list and cap_list.has_other_pages %}
+    <!-- BEGIN PAGINATOIN -->
+    {{ paginator(cap_list) }}
+    <!-- END PAGINATOIN ---->
+    {% endif %}
+{% endblock table %}

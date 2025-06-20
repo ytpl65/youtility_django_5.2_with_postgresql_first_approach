@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        table {
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+            color: #202124;
+        }
+
+        .bgy {
+            background-color: #eaf1fb !important;
+            font-weight: normal;
+        }
+        .ybtn-success{
+            background-color: green;
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 2px;
+            color: white !important;
+        }
+        .ybtn-warn{
+            background-color: orangered;
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 2px;
+            color: white !important;
+        }
+        .ybtn-prime{
+            background-color: rgb(47, 143, 233);
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 2px;
+            color: white !important;
+        }
+    </style>
+</head>
+    <body>
+        <p>
+            Dear {{ vendorname }}, <br>
+
+            I hope this email finds you well.
+            I am reaching out to you to request a work order #{{ workorderid }} for the following project/task: "{{ description }}".
+            <br>
+
+            Please find the following work order details and
+            we would like to know whether you are interested in proceeding with the work order or if you would like to
+            decline it. <br>
+            <table>
+                <tbody>
+                    <tr>
+                        <td class="bgy">Vendor</td>
+                        <td>{{ vendorname }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bgy">Description</td>
+                        <td>{{ description }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bgy">Priority</td>
+                        <td>{{ priority }}</td>
+                    </tr>
+                    {% if asset is not none %}
+                    <tr>
+                        <td class="bgy">Asset</td>
+                        <td>{{ asset }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="bgy">Planned Datetime</td>
+                        <td>{{ plandatetime.strftime('%d-%b-%Y %H:%M:%S') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bgy">Expiry Datetime</td>
+                        <td>{{ expirydatetime.strftime('%d-%b-%Y %H:%M:%S') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bgy">Created by</td>
+                        <td>{{ cusername }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bgy">Created on</td>
+                        <td>{{ cdtz.strftime('%d-%b-%Y %H:%M:%S') }}</td>
+                    </tr>
+                </tbody>
+            </table><br>
+            If you are interested in proceeding with the work order, click on 
+            <a class="ybtn-success" 
+            href="{{ HOST }}{{ url('work_order_management:reply_workorder') }}?action=accepted&womid={{workorderid}}" 
+            target="_blank">Accepted</a><br>
+            <hr>
+            If you are not interested in proceeding with the work order, 
+            please let us know your reasons for declining it so that we can explore alternative options.
+            <a class="ybtn-warn" 
+            href="{{ HOST }}{{ url('work_order_management:reply_workorder') }}?action=declined&womid={{workorderid}}" 
+             target="_blank">Declined</a>
+            <hr>
+            Please click on this link to submit the work order details, since you have completed the work
+            <a class="ybtn-prime"  
+            href="{{ HOST }}{{ url('work_order_management:reply_workorder') }}?action=request_for_submit_wod&womid={{workorderid}}"  
+            target="_blank">Submit Workorder Details</a>
+        </p>
+    </body>
+</html>

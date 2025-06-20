@@ -1,0 +1,140 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+Generate Declaration Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Generate Declaration Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{{ form.media.css }}
+<!-- ------------------------ BEGIN PAGE BREADCUMB --------------------- -->
+{% block pagebreadcumb %}
+
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Generate Declaration Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ----------------------- -->
+
+{% block form_title %}
+Generate Declaration Form
+{% endblock form_title %}
+
+{% block form %}     
+ 
+<form action="{{ url('reports:generate_declaration_form') }}" class="validate" method="post" enctype="multipart/form-data"
+  id="generate_pdf_form">
+  <!-- ------------------------ CSRF MIDDLEWARE TOKEN ------------------ -->
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <div class="row">
+    <div class="">
+      <div class="input-group mb-3" id="ticket_no">
+        <div class="col-2">
+          {{ form.ticket_no.label_tag() }}
+          <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip"
+				    data-bs-placement="right" style="vertical-align: middle; font-size: 19px;"
+            title=" enter ticket no.">
+            info
+          </span>
+        </div>
+        <div class="col-5">
+          {{ form.ticket_no }}
+          <div id="error_ticket_no" class="mt-3 d-none"></div>
+        </div>
+      </div>
+
+      <br/>
+    <br>  
+  </div><br>
+  <div class="form-actions">
+    <button type="submit" form="report_form" id="submit" class="btn btn-sm btn-primary2 btn-hover-scale">
+      Generate &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+
+    <button type="button" id="btn_clear" class="btn btn-sm btn-secondary btn-hover-scale">
+      Clear&nbsp;<i class="fas  fa-times"></i>
+    </button>
+  </div>
+</form>
+{% endblock form %}
+
+{% block extra_scripts %}
+<script src="{{ static('assets/js/just-validate.production.min.js') }}"></script>
+    <script>
+    $(document).ready(function(){
+      
+      $("#btn_clear").click(() => {
+            location.href = "{{ url('reports:generate_declaration_form') }}"
+      })
+        
+      function requiredOnLabel(label){
+        if (label) {
+          label.classList.add('required');
+        } 
+      }
+        
+      requiredOnLabel(document.querySelector('label[for="ticket_no"]'));
+      
+      $('#ticket_no').change(function() {
+        if ($(this).val() !== '') {
+          error_ticket_no.classList.add('d-none')
+        }        
+      });
+        
+        //on form submit
+        $("#submit").on('click', function(e){
+          e.preventDefault()
+
+          function downloadedFileName(){
+            const ticketNo = $('#id_ticket_no').val();
+            return ticketNo;
+          }
+          
+          const formData = {
+            ticket_no: $('#id_ticket_no').val(),           
+          }
+          
+          if ($('#id_ticket_no').val()){ //&& $('#id_number_of_period').val() commented
+            const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+            $.ajax({
+              type: 'POST',
+              url: "{{ url('reports:generate_declaration_form') }}",
+              data: JSON.stringify(formData),
+              contentType: 'application/json',
+              headers: {
+                'X-CSRFToken': csrfToken
+              },
+              xhrFields: {
+                responseType: 'blob'
+              },
+              success: function(response) {
+                var blob = new Blob([response], {type: 'application/pdf' });
+                  var link = document.createElement('a');
+                  link.href = URL.createObjectURL(blob);
+                  //window.open(link.href, "_blank");
+                  link.download = downloadedFileName();
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(link.href);
+                  $('#response').html(`<p>PDF generated successfully! ID: ${response.item_id}</p>`);
+              },
+              error: function(xhr, status, error) {
+                  //$('#response').html('<p>Error generating PDF.</p>');
+                  if (xhr.status === 404) {
+                    alert('Data Not Found');
+                  }
+                  else {
+                    console.error('Error:', error);
+                  }
+              }
+            });
+          }
+      })
+      })
+    </script>
+{% endblock extra_scripts %}

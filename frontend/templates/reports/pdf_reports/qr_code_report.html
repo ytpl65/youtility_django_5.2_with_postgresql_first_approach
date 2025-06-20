@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    .grid-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        align-content:space-around;
+    }
+    .nodata-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 300px;
+        background-color: DodgerBlue;
+    }
+    @page{
+        size: portrait;
+        margin: 0;
+        margin-bottom: 3cm;
+        padding-bottom: 3cm;
+        
+        @bottom-right:{
+            content:""
+        }
+        @bottom-left:{
+            content:""
+        }
+    }
+    </style>
+</head>
+<body>
+    {% if qr_file_paths  %}
+    <div class="grid-container">
+        {% for img_src, qset in qr_file_paths|zip(names_and_codes) %}
+        <div>
+            <img src="{{ img_src }}" width="{{ size }}px" height="{{ size }}px" style="margin: 1.2rem; margin-bottom:0" >
+            <p style="margin:0;text-align:center;font-size:10px">
+            {% if  qr_type in ['assets','checkpoint'] %}
+            {{ qset['name'] }}
+            {% else  %}
+            {{ qset['name'] }}
+            {% endif %}
+            {{ qset['code'] }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <div class="nodata-container">
+            <div>No Data Available</div>
+        </div>
+    {% endif %}
+</body>
+</html>

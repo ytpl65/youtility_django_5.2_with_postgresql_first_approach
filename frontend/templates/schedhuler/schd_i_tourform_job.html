@@ -1,0 +1,775 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Schedule Tour Setup
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extra_css %}
+{{ schdtourform.media.css }}
+<link  href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css"/>
+<link  href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" href="{{ static('assets/css/jqCron.css') }}" type="text/css">
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('schedhuler:schd_internal_tour') }}?template=true" class="pe-3">Scheduled Tours</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Schedule Tour Setup</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Schedule Tour
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+{% block form %}
+<form action="" method="post" id="id_schdtourform">
+<input type="hidden" name="{{ schdtourform.ctzoffset.name }}" id = "{{ schdtourform.ctzoffset.auto_id }}" value="-1">
+    {{ schdtourform.identifier }}
+    {{ schdtourform.frequency }}
+    {{ schdtourform.expirytime }}
+    {{ schdtourform.starttime }}
+    {{ schdtourform.endtime }}
+    <input type="hidden" name="{{ schdtourform.seqno.name }}" id="{{ schdtourform.seqno.auto_id }}" value="1">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label for={{ schdtourform.jobname.id_for_label }}
+                        class="required">{{ schdtourform.jobname.label }}:</label>
+                </div>
+                <div class="col-md-8">
+                    {{ schdtourform.jobname }}
+                    {{ schdtourform.jobname.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label for={{ schdtourform.jobdesc.id_for_label }}
+                        class="">{{ schdtourform.jobdesc.label }}:</label>
+                </div>
+                <div class="col-md-8">
+                    {{ schdtourform.jobdesc }}
+                    {{ schdtourform.jobdesc.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label class="required">Assign to:</label>
+                </div>
+                <div class="col-md-8">
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name={{ schdtourform.assign_to.name }}
+                            id="id_peopleradio" value="PEOPLE" checked onchange="showHideSelectField('PEOPLE')">
+                        <label class="form-check-label" for="{{ schdtourform.assign_to.auto_id }}">People</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name={{ schdtourform.assign_to.name }}
+                            id="id_groupradio" value="GROUP" onchange="showHideSelectField('GROUP')">
+                        <label class="form-check-label" for="{{ schdtourform.assign_to.auto_id }}">Group</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <!-- ASSIGN TO PEOPLE ---->
+                <div class="col-md-4 people">
+                    <label for={{ schdtourform.people.id_for_label }} class="">{{ schdtourform.people.label }}:</label>
+                </div>
+                <div class="col-md-8 people">
+                    {{ schdtourform.people }}
+                    {{ schdtourform.people.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <!-- ASSIGN TO GROUP ---->
+                <div class="col-md-4 pgroup">
+                    <label for={{ schdtourform.pgroup.id_for_label }} class="">{{ schdtourform.pgroup.label }}:</label>
+                </div>
+                <div class="col-md-8 pgroup">
+                    {{ schdtourform.pgroup }}
+                    {{ schdtourform.pgroup.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label for="{{ schdtourform.priority.id_for_label }}"
+                        class="required">{{ schdtourform.priority.label }}:</label>
+                </div>
+                <div class="col-md-8">
+                    {{ schdtourform.priority }}
+                    {{ schdtourform.priority.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label for="{{ schdtourform.ticketcategory.id_for_label }}"
+                        class="required">{{ schdtourform.ticketcategory.label }}:</label>
+                </div>
+                <div class="col-md-8">
+                    {{ schdtourform.ticketcategory }}
+                    {{ schdtourform.ticketcategory.errors }}
+                </div>
+            </div>
+            <div class="input-group">
+                <div class="mb-6">
+                    <label for="{{ schdtourform.istimebound.id_for_label }}"
+                        class="form-check-label bool text-sm-right">{{ schdtourform.istimebound.label }}
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip"
+                            data-bs-custom-class="tooltip" data-bs-placement="top"
+                            style="vertical-align: middle; font-size: 19px;"
+                            title="Uncheck the checkbox if tour can be perform without any time restrictions">
+                            info
+                        </span>
+                    </label>
+                </div>
+                <div class="ms-4 form-check form-switch form-check-solid">
+                    {{ schdtourform.istimebound }}
+                </div>
+                <div class="mx-6">
+                    <label for="{{ schdtourform.isdynamic.id_for_label }}"
+                        class="form-check-label bool text-sm-right">{{ schdtourform.isdynamic.label }}
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip"
+                            data-bs-custom-class="tooltip" data-bs-placement="top"
+                            style="vertical-align: middle; font-size: 19px;"
+                            title="Uncheck the checkbox if tour can be perform without any time restrictions">
+                            info
+                        </span>
+                    </label>
+                </div>
+                <div class="ms-4 form-check form-switch form-check-solid">
+                    {{ schdtourform.isdynamic }}
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-6">
+            <div class="input-group mb-3 dynamic_">
+                <div class="col-md-4">
+                    <label for={{ schdtourform.planduration.id_for_label }}
+                        class="required">{{ schdtourform.planduration.label }}:</label>
+                </div>
+                <div class="col-md-4 pe-2">
+                    {{ schdtourform.freq_duration }}
+                    {{ schdtourform.freq_duration.errors }}
+                </div>
+                <div class="col-md-4">
+                    {{ schdtourform.planduration }}
+                    <div id="error_planduration" class="mt-3 d-none"></div>
+                    {{ schdtourform.planduration.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3 dynamic_">
+                <div class="col-md-4">
+                    <label for={{ schdtourform.gracetime.id_for_label }}
+                        class="required">{{ schdtourform.gracetime.label }}:</label>
+                </div>
+                <div class="col-md-4 pe-2">
+                    {{ schdtourform.freq_duration2 }}
+                    {{ schdtourform.freq_duration2.errors }}
+                </div>
+                <div class="col-md-4">
+                    {{ schdtourform.gracetime }}
+                    <div id="error_gracetime" class="mt-3 d-none"></div>
+                    {{ schdtourform.gracetime.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3 dynamic_">
+                <div class="col-md-4">
+                    <label for="{{ schdtourform.cron.id_for_label }}"
+                        class="required">{{ schdtourform.cron.label }}:</label>
+                </div>
+                <div class="col-md-8 d-flex">
+                    <input type="text" name="{{ schdtourform.cron.name }}" value="{{ schdtourform.cron.value() }}"
+                        id="id_cron" readonly required class="form-control d-none" maxlength="250" />
+                    {{ schdtourform.cronstrue }}
+                    <a class="btn btn-circle btn-icon-only btn-default " id="cron_selector">
+                        <i class="fa fa-clock fs-4 text-primary" aria-hidden="true"></i>
+                    </a>
+                    {{ schdtourform.cron.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3 dynamic_">
+                <div class="col-md-4">
+                    <label for="{{ schdtourform.fromdate.id_for_label }}"
+                        class="required">{{ schdtourform.fromdate.label }}:</label>
+                </div>
+                <div class="col-md-8">
+                    {{ schdtourform.fromdate }}
+                    {{ schdtourform.fromdate.errors }}
+                </div>
+            </div>
+
+            <div class="input-group mb-3 dynamic_">
+                <div class="col-md-4">
+                    <label for="{{ schdtourform.uptodate.id_for_label }}"
+                        class="required">{{ schdtourform.uptodate.label }}:</label>
+                </div>
+                <div class="col-md-8">
+                    {{ schdtourform.uptodate }}
+                    {{ schdtourform.uptodate.errors }}
+                </div>
+            </div>
+            
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label for="{{ schdtourform.scantype.id_for_label }}"
+                        class="required">{{ schdtourform.scantype.label }}:</label>
+                </div>
+                <div class="col-md-8">
+                    {{ schdtourform.scantype }}
+                    {{ schdtourform.scantype.errors }}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock form %}
+
+
+
+{% block extras %}
+<br><br>
+<div class="row">
+    <h4 class="ch4">Assign Checkpoints</h4>
+    <table id="tourCheckpoints" class="display compact hover row-bordered"></table>
+    <br>    
+</div>
+
+
+
+{% endblock extras %}
+
+{% block popup_alerts %}
+    {% call general_popup(popup_id = "cron_scheduler", title="Cron Scheduler", modal_size='modal-lg') %}
+        <div class="modal-body">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet-body form">
+                        <div class="jqCronEditor"></div><br><br>
+                        <div>
+                            <p>Cron Value : <input type="text" id="cron_selected_val" readonly class="form-control input-inline input-large"/></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" id="btnSetCron"  class="btn btn-sm  btn-success rounded-1">Set</button>
+        </div>
+    {% endcall %}
+{% endblock popup_alerts %}
+
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    {% if schdtourform.instance.id %}
+    <button type="button" id="runScheduler"  class="btn btn-sm btn-info btn-hover-scale">
+        Run Scheduler&nbsp;<i class="far text-white fa-clock"></i>
+    </button>
+    
+    <button type="submit" id="submitTour" form="id_schdtourform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Update Tour&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    {% else %}
+    <button type="submit" form="id_schdtourform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Save Tour&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+    {% endif %}
+    <button type="button" id="id_cleanrbtn" class="btn btn-sm btn-secondary btn-hover-scale">
+        Clear&nbsp;<i class="fas  fa-trash-alt"></i>
+    </button>
+</div>
+{% endblock ajax_page_actions %}
+
+{% block extra_scripts %}
+{{ schdtourform.media.js }}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/editor.select2.js') }}" type="text/javascript"></script>
+
+<script src="{{ static('assets/js/jqCron.js') }}"></script>
+<script src="{{ static('assets/js/jqCron.en.js') }}"></script>
+<script src="{{ static('assets/js/local/cronstrue.min.js') }}"></script>
+<script>
+    var table = null;
+    var editor = null;
+    const createUrl = "{{ url('schedhuler:create_tour') }}"
+    // add classes to label tags.
+    $('label').removeClass("col-form-label col-md-2 col-sm-2 text-sm-right")
+
+    function showHideSelectField(val) {
+        if (val == "PEOPLE") {
+            //$("#aatopdiv").show();
+            $(".people").show();
+            $("#id_peopleradio").attr('checked', 'checked')
+            $("#id_pgroup").val(1)
+            $(".pgroup").hide();
+            toggleRequiredAttribute("id_people")
+            toggleRequiredAttribute("id_pgroup", set=false)
+        } else {
+            //$("#aatopdiv").hide();
+            $(".pgroup").show();
+            $("#id_groupradio").attr('checked', 'checked')
+            $(".people").hide();
+            $("#id_people").val(1)
+            toggleRequiredAttribute("id_pgroup")
+            toggleRequiredAttribute("id_people", set=false)
+        }
+    }
+    //return selected value of a field
+    function getSelectedValue(id) {
+        var data = $(id).select2('data')[0]
+        if (typeof data !== 'undefined') {
+            return data.text
+        }
+        return "NONE"
+    }
+
+
+    function deleteCheckpointRequest(checpointid, checklistid, job) {
+        var deleted = false
+        const params = {
+            'url': `{{ url('schedhuler:delete_checkpointTour') }}?checkpointid=${checpointid}&checklistid=${checklistid}&job=${job}&datasource = job`,
+            'beforeSend': function () {}
+        }
+        fire_ajax_get(params)
+            .done((data, status, xhr) => {
+                show_successful_delete_alert()
+                deleted = true
+            })
+            .fail((xhr, status, error) => {
+                show_error_alert('Something went wrong!')
+            })
+        return deleted
+    }
+
+    function addRemoveClass(ele){
+        if ($(ele).hasClass('selected')) {
+            $(ele).removeClass('selected');
+        } else {
+            table.$('tr.selected').removeClass('selected');
+            $(ele).addClass('selected');
+        }
+    }
+
+
+    function deleteMainJob(ele){
+        var id = $(ele).attr('data-id')
+        show_alert_before_delete('Guard Tour')
+		.then((result) => {
+			if(result.isConfirmed){ //delete requested by user
+				let urlname = "{{ url('schedhuler:schd_internal_tour') }}"
+                const params = {url:`${urlname}?action=delete&id=${id}`, 'beforeSend':function (){} }
+                fire_ajax_get(params)
+                .done((data, status, xhr) => {
+                    show_successful_delete_alert() //defined in customjs
+                    window.setTimeout(function() {
+                        window.location.href = "{{ url('schedhuler:schd_internal_tour') }}?action=form";
+                    }, 2000);
+                })
+                .fail((xhr, status, error) => {
+                    let err = typeof xhr.responseJSON.errors == 'string' ? xhr.responseJSON.errors : 'Something went wrong!'
+                    show_error_alert(err) //defined in custom.js
+                })
+			}
+		})
+    }
+
+    function properCron(cron){
+        return cron === '* * * * *' ? false :true
+    }
+    function handleDynamicCheckbox(element){
+        if($(element).is(":checked")){
+            // Disable fields
+            $("#id_planduration, #id_gracetime, #id_cron, #id_fromdate, #id_uptodate, #cron_selector, #id_cronstrue").attr("disabled", "disabled")
+            set = false
+            $("#id_istimebound").prop("checked", false)
+            $(".dynamic_").addClass("d-none")
+        }else{
+            set=true
+            $("#id_planduration, #id_gracetime, #id_cron, #id_fromdate, #id_uptodate, #cron_selector, #id_cronstrue").removeAttr("disabled")
+            $(".dynamic_").removeClass("d-none")
+            $("#id_istimebound").prop("checked", true)
+        }
+        toggleRequiredAttribute('id_planduration', set=set)
+        toggleRequiredAttribute('id_gracetime', set=set)
+        toggleRequiredAttribute('id_cron', set=set)
+        toggleRequiredAttribute('id_fromdate', set=set)
+        toggleRequiredAttribute('id_uptodate', set=set)
+    }
+
+    function isValidPositiveNumber(value) {
+        if (value === '') {
+            return true;
+        }
+        // Check if the value is a string that matches the pattern for a positive number
+        // with no 'e', no special characters, and no alphabets.
+        const regex = /^[0-9]*[.,]?[0-9]+$/;
+    
+        // Check if the value is a string, then match against the regex
+        if (typeof value === 'string' && regex.test(value)) {
+            // Convert string to number
+            const number = parseFloat(value);
+            // Check if the number is greater than 0
+            return number >= 0 && !isNaN(number);
+        }
+    
+        // Return false for non-string values
+        return false;
+    }
+    
+    function handleChange(inputId, errorId) {
+        $(inputId).change(function() {
+            var inputValue = $(this).val();
+            var errorDiv = document.getElementById(errorId);
+            
+            if (!isValidPositiveNumber(inputValue)) {
+                errorDiv.innerHTML = '';
+                var newChild = document.createElement('div');
+                newChild.className = 'text-danger';
+                newChild.textContent = "Enter Positive Integer Number Only";
+                errorDiv.appendChild(newChild);
+                errorDiv.classList.remove('d-none');
+            } else {
+                errorDiv.classList.add('d-none');
+                errorDiv.innerHTML = '';
+            }
+        });
+    }
+    
+    // Call the function for each ID pair
+    handleChange('#id_planduration', 'error_planduration');
+    handleChange('#id_gracetime', 'error_gracetime');
+
+    $(document).ready(() => {
+        //set ctzoffset
+  	    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        //Checkpoints & Checklist Mapping 
+
+        editor = new $.fn.dataTable.Editor({
+            table:"#tourCheckpoints",
+            ajax:{
+                url:"{{ url('schedhuler:schd_internal_tour') }}",
+                data:function(d){
+                    let currentRow = getCurrentEditingRow(editor, table)
+                    d.csrfmiddlewaretoken = "{{ csrf_token }}"
+                    d.seqno = $("#DTE_Field_seqno").val()
+                    d.pk = currentRow !== 'None' ? currentRow['pk'] : currentRow
+                    d.asset_id = $("#DTE_Field_asset").val()
+                    d.qset_id = $("#DTE_Field_qset").val()
+                    d.expirytime = $("#DTE_Field_expirytime").val()
+                    d.ctzoffset = $("#id_ctzoffset").val()
+                    d.postType = 'saveCheckpoint'
+                    d.parentid = '{{schdtourform.instance.id}}'
+                    d.qsetname = $("#DTE_Field_qset").text()
+                
+                }
+            },
+            idSrc:  'pk',
+            fields:[
+                {data:'pk', type:'hidden', name:'pk', def:'None'},
+                {label: 'Seq No', name: 'seqno', type:"readonly", data:'seqno'},
+                {label: 'Asset/Checkpoint', name: 'asset', type: 'select', data:'asset__assetname'},
+                {label: 'Question Set', name: 'qset', type: 'select', data:'qset__qsetname'},
+                {label: 'Expiry Time', name: 'expirytime', type: 'text', data:'expirytime', def:0},
+            ]
+        })
+        function handleEmptyChecklist(e) {
+            var text = getSelectedValue("#DTE_Field_qset");
+            console.log(text);
+            if (text === 'NONE') {
+                let msg =
+                    'We see you are attempting to add a question set without any questions\n' +
+                    'Please confirm if you intend to submit an empty set by clicking OK';
+                if (!confirm(msg)) {
+                    $('#DTE_Field_qset').val(null).trigger('change');
+                    return false
+                }
+            }
+        }
+
+        editor.on('preSubmit', function (e, mode, action) {
+            if (action === 'create' || action === 'edit') {
+                return handleEmptyChecklist(e);
+            }
+        });
+
+        editor.on('open', function(e, mode, action){
+            $(".DTE_Field").addClass('p-1') // add css to form fields
+            if(action == 'create' || action == "edit"){
+                // initialize select field question
+            $("#DTE_Field_asset, #DTE_Field_qset").addClass("form-control form-select") // add css to alerton form field
+
+                let url = "{{ url('schedhuler:schd_internal_tour') }}"
+                init_select_field({
+                    url: `${url}?action=loadAssetChekpointsForSelectField`,
+                    id: "#DTE_Field_asset",
+                    item: 'Assets'
+                })
+                
+                init_select_field({
+                    url: `${url}?action=loadQuestionSetsForSelectField`,
+                    id: "#DTE_Field_qset",
+                    item: 'Assets'
+                })
+                
+            }
+              if(action == "create"){
+                editor.field('seqno').set(table.data().count() + 1) //update seqno for new entry
+                $("#DTE_Field_asset").val(null)
+                $("#DTE_Field_qset").val(null)
+                
+            }
+            if(action == 'edit'){
+                var data = getCurrentEditingRow(editor, table);
+                //init qset
+                var newOption = new Option(
+                data.qset__qsetname,
+                data.qset_id,
+                true,
+                true
+                );
+                $("#DTE_Field_qset").append(newOption);
+                
+                //init asset
+                var newOption = new Option(
+                data.asset__assetname,
+                data.asset_id,
+                true,
+                true
+                );
+                $("#DTE_Field_asset").append(newOption);
+
+                
+            }
+        })
+
+        //isdynamic is true disable appropriate fields
+        $('#id_isdynamic').change(function(){
+            var set=null
+            handleDynamicCheckbox("#id_isdynamic")
+        });
+
+
+
+        table = $("#tourCheckpoints").DataTable({
+            ajax:{
+                url:"{{ url('schedhuler:schd_internal_tour') }}?action=loadTourCheckpoints&parentid={{ schdtourform.instance.id }}",
+            },
+            scrollY: 150,
+            paging:false,
+            scrollCollapse: true,
+            pageLength:50,
+            responsive: true,
+            order:[0, 'asc'],
+            ordering:false,
+            dom: '<"float-right"B>rt',
+            columns:[
+                {title:'SNo.', data:"seqno"},
+                {title:'SNo.', data:"pk", visible:false},
+                {title:'Asset/Checkpoint', data:'asset__assetname'},
+                {visible:false, data:'asset_id'},
+                { title:'Checklist', data:'qset__qsetname'},
+                {visible:false,  data:'qset_id'},
+                {title:'Expiry Time', data:'expirytime'}
+            ],
+            columnDefs:[
+                {targets:0, render:function(data, type, row, meta){
+                    return data ? data : meta.row + 1
+                }
+                }
+            ],
+            select:{
+                style:'single'
+            },
+            buttons:[
+                    { extend: "create", editor: editor },
+                    { extend: "edit",   editor: editor },
+                    { extend: "remove", editor: editor }
+                ],
+        })
+
+        //hide the delete button when instance is not saved yet.
+        if ('{{schdtourform.instance.id}}' == 'None') {
+            $("#btn_del").hide()
+            $("#tourCheckpoints_wrapper .buttons-create").addClass('disabled')
+            //toggle people and pgroup field based on radio button value
+            showHideSelectField('PEOPLE')
+            
+        }else{
+            $("#tourCheckpoints_wrapper .buttons-create").removeClass('disabled')
+            //toggle people and pgroup field based on radio button value
+            var assignto = ['1', 'None'].includes('{{schdtourform.instance.people_id }}') == '1' ? "GROUP" : "PEOPLE"
+            showHideSelectField(assignto)
+            //cron to readable format
+            $("#id_cronstrue").val(cronstrue.toString($("#id_cron").val()))
+            if($("#id_isdynamic").is(":checked")){
+                $("#id_isdynamic").attr("disabled", 'disabled')
+                handleDynamicCheckbox("#id_isdynamic")
+            }
+        }
+
+
+
+        $("#id_schdtourform").on('submit', function (e) {
+
+            var form = $(this);
+            e.preventDefault()
+            if (isValidPositiveNumber($('#id_planduration').val()) && isValidPositiveNumber($('#id_gracetime').val()))
+            {
+                const params = {
+                    url: "{{ url('schedhuler:schd_internal_tour') }}",
+                    modal: false
+                } //checklist view
+                const formtype = '{{schdtourform.instance.id}}' == 'None' ? "create" : "update" //form-type (create/update)
+                const id = '{{schdtourform.instance.id}}' //form instance id
+                var payLoad = {
+                    formData: form.serialize(),
+                    asssigned_checkpoints: JSON.stringify(table.rows().data().toArray()),
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                } //payload for post request
+                if (formtype === 'update') {
+                    var newPayLoad = {
+                        ...payLoad,
+                        'pk': id
+                    }
+                    payLoad = newPayLoad
+                }
+                submit_form_alert().then((res) => {
+                    if(res.isConfirmed){
+                        fire_ajax_form_post(params, payLoad)
+                        .done((data, status, xhr) => { //function to submit post request
+                            Swal.fire(
+                                `Guard Tour saved`,
+                                `Guard Tour with this name <strong>${data.jobname}</strong> has been saved successfully`,
+                                'success'
+                            ).then(function () {
+                                window.location.replace(data.url);
+                            })
+                        })
+                        .fail((xhr, status, error) => {
+                            console.log(xhr)
+                            show_error_alert(xhr.responseJSON.errors, "Failed to save!")
+                        })
+                    }
+                    
+                })
+            }
+            
+        })
+
+        $("#runScheduler").click(function() {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Run Tour Scheduler, you won't be able to revert this!",
+                icon: "warning",
+                showCancelButton:true,
+                confirmButtonText: "Schedule it!"
+            }).then((result) => {
+                if(result.isConfirmed){
+                    const params = {url: "{{ url('schedhuler:runJob') }}"}
+                    var payLoad = {job_id: '{{ schdtourform.instance.id }}', csrfmiddlewaretoken: '{{ csrf_token }}'}
+                    fire_ajax_form_post(params, payLoad)
+                    .done((data, status, xhr) => {
+                        Swal.fire({
+                            showConfirmButton:false,
+                            timer:1500,
+                            icon: 'success',
+                            title:  data.count ? `${data.count} Tours scheduled successfully!` : data.msg
+                        })
+                    })
+                    .fail((xhr, status, error) => {
+                        Swal.fire({
+                            showConfirmButton:false,
+                            icon: "error",
+                            timer:1500,
+                            title: "Failed to schedhule successfully!"
+                        })
+                    })
+                }
+            })
+        })
+        
+        //after cron set hide the modal
+        $("#btnSetCron").click(function(){
+            var cron_val= $("#cron_selected_val").val();
+            $("#id_cron").val(cron_val);
+            if(!properCron(cron_val)){
+                show_error_alert( "Please change your cron expression and update the job record.", "Problematic Cron")
+                return
+            }
+            $('#cron_scheduler').modal('hide');
+        });
+
+        //show cron editor on bootstrap modal
+        $("#cron_selector").click(function(){
+            var old_cron_val= $("#id_cron").val();
+            $('#cron_selected_val').val(old_cron_val);
+            if(old_cron_val == '') old_cron_val="* * * * *";
+            console.log("@@@@",old_cron_val);
+            if(old_cron_val != ''){
+                $(function(){
+                    $('.jqCronEditor').html('');
+                    $('.jqCronEditor').jqCron({
+                        enabled_minute: true,
+                        multiple_dom: true,
+                        multiple_month: true,
+                        multiple_mins: true,
+                        multiple_dow: true,
+                        multiple_time_hours: true,
+                        multiple_time_minutes: true,
+                        default_period: 'week',
+                        default_value: old_cron_val,
+                        no_reset_button: false,
+                        lang: 'en',
+                        numeric_zero_pad: true,
+                        bind_to: $('#cron_selected_val'),
+                        bind_method: {
+                            set: function($element, value) {
+                            $element.val(value);
+                            //cron to readable format
+                            $("#id_cronstrue").val(cronstrue.toString(value))
+                            }
+                        }
+                    });
+                });
+            }
+            $('#cron_scheduler').modal('show');
+        });
+
+        if(!$("#checkpoints_tour tbody tr").hasClass("selected")){
+            resetForm()
+        }
+
+        //Add Calendar To Date Fields
+        $("#id_fromdate, #id_uptodate").flatpickr({
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: 'Y-m-d:H:S'
+        })
+
+        $("#id_cleanrbtn").click(() => {
+            location.href = "{{ url('schedhuler:schd_internal_tour') }}?action=form"
+        })
+    })
+</script>
+{% endblock extra_scripts %}

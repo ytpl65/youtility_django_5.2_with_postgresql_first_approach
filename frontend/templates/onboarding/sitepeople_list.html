@@ -1,0 +1,103 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Capability's
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Capability's
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!----------- BEGIN PAGE BREADCUMBS ----------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Site-People List</a></li>
+{% endblock pagebreadcumb %}
+<!----------- END PAGE BREADCUMBS ------------->
+
+<!-------- BEGIN PAGE ACTIONS ---------->
+{% block page_actions %}
+{{ form_add('onboarding:sitepeople_form') }}
+{% endblock page_actions %}
+<!-------- END PAGE ACTIONS ------------>
+
+<!------------------ BEGIN SITEPEOPLE TABLE ------------------------->
+{% block table %}
+<div class="table-responsive">
+	<!------------------ BEGIN TABLE --------------------->
+	<table id="sitepeople_table" class="display table gy-2 compact" style="width:100%">
+		<thead class="fw-bold fs-6">
+			<th>Code</th>
+			<th>Name</th>
+			<th>Capability for</th>
+			<th>Belongs To</th>
+		</thead>
+		<!---------- BEGIN TABLE FILTER FIELDS --------->
+		<thead id="filter_row">
+			<form action="" id='sitepeople_filter' method='get'>
+				{% for field in sitepeople_filter %}
+				<th>
+					<input type="text" id="{{ field.auto_id }}" name="{{ field.name }}"
+						placeholder="Search {{ field.label }}">
+				</th>
+				{% endfor %}
+			</form>
+		</thead>
+		<!---------- END TABLE FILTER FIELDS --------->
+		{% for sp in sitepeople_list %}
+		<tr>
+			<td><a href="{{ url('onboarding:sitepeople_update', args=[sp['id']]) }}">{{ sp['capscode'] }}</a></td>
+			<td>{{ cap['capsname'] }}</td>
+			<td>{{ cap['cfor'] }}</td>
+			<td>{{ cap['parent__capscode'] }}</td>
+		</tr>
+		{% endfor %}
+
+	</table>
+	<!------------------ END TABLE --------------------->
+</div>
+
+{% if sitepeople_list and sitepeople_list.has_other_pages %}
+<!-- BEGIN PAGINATOIN -->
+{{ paginator(sitepeople_list) }}
+<!-- END PAGINATOIN ---->
+{% endif %}
+
+{% endblock table %}
+<!------------------ END SITEPEOPLE TABLE --------------------------->
+
+<!--------- BEGIN EXTRA SCRIPTS ----------------------------->
+{% block extra_scripts %}
+<script>
+	$(document).ready(function () {
+		$("input").keypress(function (event) {
+			if (event.which == 13) {
+				event.preventDefault();
+				$("#sitepeople_filter").submit();
+			}
+		});
+		var table = $('#sitepeople_table').DataTable({
+			orderCellsTop: true,
+			responsive: true,
+			fixedHeader: true,
+			paging: false,
+			scrollCollapse: true,
+			sDom: '<>'
+		})
+		//BEGIN STYLING DATATABLE
+		$("th > input").addClass('form-control')
+		$("th > input").css('height', '35px')
+		var styles = {
+			"border-bottom": "none",
+			"background-color": "#f1f4f7"
+		}
+		$('#sitepeople_table thead tr:eq(1)').css(styles)
+		//END STYLING DATATABLE
+	});
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS ------------------------------->

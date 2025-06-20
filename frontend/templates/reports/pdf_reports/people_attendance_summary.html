@@ -1,0 +1,199 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+
+{% endblock header_end %}
+
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle_site }}</p>
+        <p id="subtitle">{{ report_subtitle_date }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block inline_css %}
+<style>
+#subtitle{
+    text-align: center;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt; /* Reduce font size */
+}
+th, td {
+    border: 1px solid black;
+    padding: 2px; /* Reduce padding */
+    text-align: center;
+}
+.department-col { width: 6%; }
+.designation-col { width: 6%; }
+.name-col { width: 8%; }
+.date-col { width: 2.1%; } /* (100% - 28% - 7%) / 31 days */
+.total-col { width: 6%; }
+.time-difference {
+    font-weight: bold;
+}
+.background-dept-design-name-time {
+    background-color: white;
+}
+.background-total-col {
+    background-color: #e0e8f1; 
+    font-weight: bold;
+}
+.sunday-col {
+    background-color: #FF6F6F !important;
+}
+.less-than-4-hours {
+    background-color: #FFA500 !important;
+}
+.less-than-8-hours {
+    background-color: yellow !important;
+}
+@media print {
+    @page {
+        size: 380mm 216mm;
+        margin: 5mm; /* Reduce margins */
+    }
+    thead {
+        display: table-header-group;
+    }
+    tfoot {
+        display: table-footer-group;
+    }
+    tr {
+        page-break-inside: avoid;
+    }
+    th, td {
+        page-break-inside: auto;
+    }
+}
+</style>
+{% endblock inline_css %}
+
+{% block table %}
+
+<table id="tasksummary">
+    <thead>
+        <tr>
+            <th scope="col" rowspan="2" class="department-col">Department</th>
+            <th scope="col" rowspan="2" class="designation-col">Designation</th>
+            <th scope="col" rowspan="2" class="name-col">People Code</th>
+            <th scope="col" rowspan="2" class="name-col">People Name</th>
+            <th scope="col" rowspan="2" class="values-col">Values</th>
+            {% for day_number in header.0 %}
+                <th scope="col" class="date-col">{{ day_number }}</th>
+            {% endfor %}
+            <th scope="col" rowspan="2" class="total-col">Total Hr's</th>
+        </tr>
+        <tr>
+            {% for day_name in header.1 %}
+                <th scope="col" class="date-col">{{ day_name }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for department, designations in data.0.items() %}
+            {% set dept_rows = namespace(count=0) %}
+            {% for designation, people in designations.items() %}
+                {% set dept_rows.count = dept_rows.count + people|length * 3 %}
+            {% endfor %}
+            <tr>
+                <td class="department-col background-dept-design-name-time" rowspan="{{ dept_rows.count }}">{{ department }}</td>
+                {% for designation, people in designations.items() %}
+                    <td class="designation-col background-dept-design-name-time" rowspan="{{ people|length * 3 }}">{{ designation }}</td>
+                    {% for person_code, records in people.items() %}
+                        <td class="name-col background-dept-design-name-time" rowspan="3">{{ person_code }}</td>
+                        <td class="name-col background-dept-design-name-time" rowspan="3">{{ records[0].peoplename }}</td>
+                        <td class="values-col background-dept-design-name-time">IN</td>
+                        {% for day_number in header.0 %}
+                            <td class="date-col background-dept-design-name-time {% if header.1[loop.index0] == 'Sun' %}sunday-col{% endif %}">
+                                {% for record in records %}
+                                    {% if record.day == day_number %}
+                                        {{ record.punch_intime }}
+                                    {% else %}
+                                        {{""}}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                        <td class="total-col background-total-col" rowspan="3">
+                            {% set total_hrs = namespace(hours=0, minutes=0) %}
+                            {% for record in records %}
+                                {% set time_parts = record.totaltime.split(':') %}
+                                {% set total_hrs.hours = total_hrs.hours + time_parts[0]|int %}
+                                {% set total_hrs.minutes = total_hrs.minutes + time_parts[1]|int %}
+                            {% endfor %}
+                            {% set total_hrs.hours = total_hrs.hours + (total_hrs.minutes // 60) %}
+                            {% set total_hrs.minutes = total_hrs.minutes % 60 %}
+                            {{ '%02d:%02d'|format(total_hrs.hours, total_hrs.minutes) }}
+                        </td>
+                        </tr><tr>
+                        <td class="values-col background-dept-design-name-time">OUT</td>
+                        {% for day_number in header.0 %}
+                            <td class="date-col background-dept-design-name-time {% if header.1[loop.index0] == 'Sun' %}sunday-col{% endif %}">
+                                {% for record in records %}
+                                    {% if record.day == day_number %}
+                                        {{ record.punch_outtime }}
+                                    {% else %}
+                                        {{""}}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                        </tr><tr>
+                        <td class="values-col background-dept-design-name-time">Total Hrs</td>
+                        {% for day_number in header.0 %}
+                            <td class="date-col background-dept-design-name-time {% if header.1[loop.index0] == 'Sun' %}sunday-col{% endif %}">
+                                {% for record in records %}
+                                    {% if record.day == day_number %}
+                                        {% set hours, minutes = record.totaltime.split(':') %}
+                                        {% set total_minutes = hours|int * 60 + minutes|int %}
+                                        {% if total_minutes < 240 %}
+                                            {% set time_class = 'less-than-4-hours' %}
+                                        {% elif total_minutes < 480 %}
+                                            {% set time_class = 'less-than-8-hours' %}
+                                        {% else %}
+                                            {% set time_class = '' %}
+                                        {% endif %}
+                                        <span class="time-difference {{ time_class }}">{{ record.totaltime }}</span>
+                                    {% else %}
+                                        {{""}}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                        {% if not loop.last %}
+                            </tr><tr>
+                        {% endif %}
+                    {% endfor %}
+                    {% if not loop.last %}
+                        </tr><tr>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock table %}
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

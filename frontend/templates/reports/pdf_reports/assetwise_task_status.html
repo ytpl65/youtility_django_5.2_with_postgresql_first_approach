@@ -1,0 +1,46 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+{% endblock header_end %}
+
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block table %}
+<table id="assetwisetaskstatus" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Asset Name</th>
+            <th scope="col">AutoClosed</th>
+            <th scope="col">Completed</th>
+            <th scope="col">Total Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['Asset Name'] }}</td>
+            <td>{{ row['AutoClosed'] }}</td>
+            <td>{{ row['Completed'] }}</td>
+            <td>{{ row['Total Tasks'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}

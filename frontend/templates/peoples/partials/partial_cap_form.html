@@ -1,0 +1,59 @@
+{% extends "globals/partial_base.html" %}
+
+{% block body %}
+<form action="" method="post" id="id_capform">
+	<input type="hidden" name="{{ cap_form.ctzoffset.name }}" id = "{{ cap_form.ctzoffset.auto_id }}" value="-1">
+	<input type="hidden" name="pk" id="pk" value="{{ cap_form.instance.pk }}">
+	<div class="modal-header border-0">
+		<h3 class="modal-title modal-heading" id="exampleModalLabel">Create Capability <i class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+		<button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	</div>
+	<div class="modal-body" id="partial">
+		<div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors"role="alert" style="display:none">
+			<strong>Error</strong> <span></span>
+			<button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+		<div class="row mb-3">
+			{{ cap_form.capscode.label_tag() }}
+			{{ cap_form.capscode }}
+		</div>
+		<div class="row mb-3">
+			{{ cap_form.capsname.label_tag() }}
+			{{ cap_form.capsname }}
+		</div>
+		<div class="row mb-3">
+			{{ cap_form.parent.label_tag() }}
+			{{ cap_form.parent }}
+		</div>
+		<div class="row mb-3">
+			{{ cap_form.cfor.label_tag() }}
+			{{ cap_form.cfor }}
+		</div>
+	</div>
+</form>
+	
+	<div class="modal-footer border-0 pt-0">
+		<button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">Close <i class="fas  fa-times"></i></button>
+		{% if cap_form.instance.capscode %}
+		<button type="submit" id="submit" form="id_capform" class="btn btn-sm btn-primary2 btn-hover-scale">Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		<button type="button" onclick="deleteCapability(this)" data-id="{{ cap_form.instance.id }}" id="deleteCap" class="btn btn-sm btn-hover-scale btn-danger">Delete&nbsp;<i class="fas text-white fa-trash-alt"></i></button>
+		{% else %}
+		<button type="submit" form="id_capform" class="btn btn-sm btn-primary2 btn-hover-scale">Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+		{% endif %}
+	</div>
+
+{% endblock body %}
+
+
+{% block js %}
+<script>
+$(document).ready(() => {
+	//set ctzoffset
+  	$("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+	
+	$("#modal-cap").find("select").select2({
+		dropdownParent: $('#modal-cap')
+    })
+})
+</script>
+{% endblock js %}

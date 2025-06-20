@@ -1,0 +1,860 @@
+  {% extends "globals/base.html" %}
+
+<!------------------------------------------------ BEGIN MACROS ------------------------------------------------------->
+<!-------------------- BEGIN PAGINATOR MACRO ------------------------->
+{% macro paginator(list) %}
+<div class="d-flex justify-content-end cell-border my-2">
+  <ul class="pagination">
+    {% if list.has_previous() %}
+    <li class="page-item"><a class="page-link" href="?page = 1&action=list">&laquo; First</a>
+    </li>
+    <li class="page-item"><a class="page-link" href="?page={{ list.previous_page_number() }}&action=list">&laquo; Prev</a>
+    </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
+    {% endif %}
+
+    {% for i in list.paginator.page_range %}
+      {% if list.number == i %}
+        <li class="active page-item" aria-current="page"><a href="#" class="page-link">{{ i }} </a></li>
+      {% else %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}&action=list">{{ i }}</a></li>
+      {% endif %}
+    {% endfor %}
+
+    {% if list.has_next() %}
+    <li class="page-item"><a class="page-link" href="?page={{ list.next_page_number() }}&action=list">&raquo; Next</a></li>
+    <li class="page-item"><a class="page-link" href="?page={{ list.paginator.num_pages }}&action=list">&raquo; Last</a></li>
+    {% else %}
+    <li class="disabled page-item"><span class="page-link">&raquo; Next</span></li>
+    {% endif %}
+  </ul>
+</div>
+{% endmacro %}
+<!------------------- END PAGINATOR MACRO ------------------------>
+
+{% macro report_parameters_form(form) %}
+<div class="row">
+      <!--SITE/GROUP-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          <label for={{ form.site_or_people.id_for_label }} class="required">{{ form.site_or_people.label }}:</label>
+        </div>
+        <div class="col-10" id=id_site_or_people>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_people.name }} id="id_peopleradio"
+              value="PEOPLE" onchange="showHideSelectField('PEOPLE')">
+            <label class="form-check-label" for="id_peopleradio">People</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" name={{ form.site_or_people.name }} id="id_siteradio"
+              value="SITE" onchange="showHideSelectField('SITE')">
+            <label class="form-check-label" for="id_siteradio">Site</label>
+          </div>
+        </div>
+      </div>
+
+      <!--SITE-->
+      <div class="input-group datafield site d-none mb-3">
+        <div class="col-2">
+          {{ form.site.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.site }}
+          {{ form.site.errors }}
+        </div>
+      </div>
+      <!--SITEGROUP-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.sitegroup.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.sitegroup }}
+          {{ form.sitegroup.errors }}
+        </div>
+      </div>
+      <!--PEOPLEGROUP-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.peoplegroup.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.peoplegroup }}
+          {{ form.peoplegroup.errors }}
+        </div>
+      </div>
+      <!--PEOPLE-->
+      <div class="input-group datafield  d-none mb-3">
+        <div class="col-2">
+          {{ form.people.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.people }}
+          {{ form.people.errors }}
+        </div>
+      </div>
+      <div class="input-group datafield people d-none mb-3">
+        <div class="col-2">
+          {{ form.mult_people.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.mult_people }}
+          {{ form.mult_people.errors }}
+        </div>
+      </div>
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.assettype.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.assettype }}
+          {{ form.assettype.errors }}
+        </div>
+      </div>
+      <!--ASSET-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.asset.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.asset }}
+          {{ form.asset.errors }}
+        </div>
+      </div>
+      <!--Qset-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.qset.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.qset }}
+          {{ form.qset.errors }}
+        </div>
+      </div>
+      <!--CHECKPOINT_TYPE-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.checkpoint_type.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.checkpoint_type }}
+          {{ form.checkpoint_type.errors }}
+        </div>
+      </div>
+      <!--CHECKPOINT-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.checkpoint.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.checkpoint }}
+          {{ form.checkpoint.errors }}
+        </div>
+      </div>
+      <!--TICKETCATEGORY-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.ticketcategory.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.ticketcategory }}
+          {{ form.ticketcategory.errors }}
+        </div>
+      </div>
+      <!--ASSETCATEGORY-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.assetcategory.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.assetcategory }}
+          {{ form.assetcategory.errors }}
+        </div>
+      </div>
+      <!--qrsize-->
+      <div class="input-group datafield d-none mb-3">
+        <div class="col-2">
+          {{ form.qrsize.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.qrsize }}
+          {{ form.qrsize.errors }}
+        </div>
+      </div>
+      <!--FORMAT-->
+      <div class="input-group mb-3">
+        <div class="col-2">
+          {{ form.format.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.format }}
+        </div>
+      </div>
+      <!--email_body-->
+      <div class="input-group mb-3 d-none emailfile">
+        <div class="col-2">
+          {{ form.email_body.label_tag() }}
+        </div>
+        <div class="col-10">
+          {{ form.email_body }}
+          {{ form.email_body.errors }}
+        </div>
+      </div>
+    </div>
+{% endmacro %}
+
+{% macro fileupoad(create) %}
+<!--begin::Form-->
+<div class="accordion" id="kt_accordion_1">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="kt_accordion_1_header_1">
+      <button class="accordion-button fs-4 fw-semibold" type="button" data-bs-toggle="collapse"
+        data-bs-target="#kt_accordion_1_body_1" aria-expanded="true" aria-controls="kt_accordion_1_body_1">
+        View or Add Attachments
+      </button>
+    </h2>
+    <div id="kt_accordion_1_body_1" class="accordion-collapse collapse" aria-labelledby="kt_accordion_1_header_1"
+      data-bs-parent="#kt_accordion_1">
+      <div class="accordion-body">
+        <form class="form" action="" method="post">
+          <!--begin::Input group-->
+          <div class="fv-row">
+            <!--begin::Dropzone-->
+            <div class="dropzone d-flex justify-content-start" id="dropzone_file">
+              <!--begin::Message-->
+              <div class="dz-message needsclick">
+                <!--begin::Icon-->
+                <i class="bi bi-file-earmark-arrow-up text-primary fs-3x"></i>
+                <!--end::Icon-->
+
+                <!--begin::Info-->
+                <div class="ms-4">
+                  <h3 class="fs-5 fw-bold text-gray-900 mb-1">Drop files here or click to upload.</h3>
+                  <span class="fs-7 fw-semibold text-gray-400">Upload up to 5 files</span>
+                </div>
+                <!--end::Info-->
+              </div>
+            </div>
+            <!--end::Dropzone-->
+          </div>
+          <!--end::Input group-->
+        </form>
+        <!--end::Form-->
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+<!------------------ BEGIN FORM CREATE MACRO ----------------------->
+{% macro form_create(form_id) %}
+<div class="d-flex align-items-center py-1">
+  <div id="form_actions">
+    <!--Save Button-->
+    <button type="submit" form="{{ form_id }}"
+      id="savebtn" class="btn btn-sm  btn-primary2 rounded-1">Save It!&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+    <!--Clear Button-->
+    <a href="#" class="btn btn-sm btn-secondary rounded-1" id="btn_clear">Clear&nbsp;<i class="fas  fa-times-circle"></i></a>
+  </div>
+</div>
+{% endmacro %}
+<!------------------ END FORM CREATE MACRO ----------------------->
+
+<!------------------ BEGIN FORM UPDATE MACRO ----------------------->
+{% macro form_update(form_id) %}
+<div class="d-flex align-items-center py-1">
+  <div id="form_actions">
+    <!--Save Button-->
+    <button type="submit" form="{{ form_id }}" id="form_update" class="btn btn-sm  btn-primary2 rounded-1">Save&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i></button>
+    <!--Clear Button-->
+    <a href="#" class="btn btn-sm  btn-secondary rounded-1" id='btn_clear'>Clear&nbsp;<i class="fas  fa-times-circle"></i></a>
+
+    <button id="btn_del" type="button" data-bs-toggle="modal" data-bs-target="#{{ kwargs['popup_id'] }}"
+      class="btn btn-sm btn-danger rounded-1">Delete&nbsp;<i class="fas text-white fa-trash-alt"></i></button>
+  </div>
+</div>
+{% endmacro %}
+<!------------------ END FORM UPDATE MACRO ----------------------->
+
+<!------------------ BEGIN FORM ADD MACRO ----------------------->
+{% macro form_add(url_path) %}
+<div class="d-flex align-items-center py-1">
+  <div id="form_actions">
+    <a href="{{ url(url_path) }}" class="btn btn-sm rounded-1" style="background-color:#189D54; color:white;">Add New
+      <span class="svg-icon svg-icon-2">
+       <i class="fas text-white fa-plus text-white"></i></a>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro form_addnew(url_path) %}
+<div class="d-flex align-items-center py-1">
+  <div id="form_actions">
+    <a href="{{ url(url_path) }}?action=form" class="btn btn-sm rounded-1" style="background-color:#189D54; color:white;">Add New
+      <span class="svg-icon svg-icon-2">
+       <i class="fas text-white fa-plus text-white"></i></a>
+  </div>
+</div>
+{% endmacro %}
+<!---------------- END FORM ADD MACRO ------------------>
+
+{% macro general_popup() %}
+<div class="modal fade" id="{{ kwargs['popup_id'] }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+		aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered {{ kwargs.get('modal_size') }}">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-heading ch4" id="staticBackdropLabel" >{{ kwargs['title'] }}</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+        {{ caller() }}<!--define modal-body, modal-footer classes -->
+			</div>
+		</div>
+	</div>
+{% endmacro %}
+<!--------------- END POP-UP DELETE_ALERT MACRO ------------------>
+
+
+{% macro mainattachment() %}
+<div class="modal fade" id="popup_attachment" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-heading" id="staticBackdropLabel" style="color:#3a3b40de">Attachments</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <!--define modal-body, modal-footer classes -->
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <input type="hidden" id="id_att_owner" name="owner" value="{{ kwargs.get('owner') }}">
+              <input type="hidden" id="id_att_datasource" name="datasource" value="{{ kwargs.get('datasource') }}">
+              <input type="file" id="attachmentfile" name="attachmentfile"><br>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="form-group">
+              <button type="button" class="btn btn-sm rounded-0 btn-success" name="btnuploadattachment"
+                id="btnuploadattachment">Save<i class="fa fa-save"></i></button>
+              <button type="button" class="btn btn-sm rounded-0 btn-secondary" name="clearattachment"
+                id="clearattachment">Clear<i class="fa fa-refresh"></i></button>
+              <button type="button" class="btn btn-sm rounded-0 btn-danger" name="cancelattachment"
+                id="cancelattachment" data-dismiss="modal">Cancel<i class="fa fa-remove"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="portlet-body form">
+          <div class="alert alert-danger fade show" id="nonfield_errors" role="alert" style="display:none">
+            <strong>Error</strong> <span></span>
+          </div>
+          <!-- BEGIN LIST-->
+          <table id="tabAttachment" class="display cell-border hover" style="width:100%">
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro modal_for_table_view() %}
+<div class="modal fade" id="popup_table" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+		aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-heading" id="staticBackdropLabel" style="color:#3a3b40de">Data</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+        <!--define modal-body, modal-footer classes -->
+        <div class="modal-body">
+            <div class="portlet-body form">
+              <div class="alert alert-danger fade show" id="nonfield_errors"role="alert" style="display:none">
+                  <strong>Error</strong> <span id="table_error"></span>
+              </div>
+                <!-- BEGIN LIST-->
+                <table id="dashboardTable" class="display cell-border hover" style="width:100%">
+                </table>
+            </div>
+        </div>
+      </div>
+		</div>
+	</div>
+{% endmacro %}
+
+
+{% macro reset_form_btn() %}
+<div class="d-flex justify-content-end">
+ <button type="button" class="btn btn-secondary btn-sm btn-hover-scale" onclick="location.reload();$('{{ kwargs['id'] }}').trigger('reset')">Reset Form</button>
+</div>
+{% endmacro %}
+
+{% macro render_questions(section, formsection) %}
+<!-----------------------------------------------Render Question and answer fields--------------------------------------------------->
+  <!-- Render all other fields -->
+  {% for question in section['questions'] %}
+    {% set fieldID = question['id'] %}
+    {% set name = question['id']|string + '_' + question['qset_id']|string %}
+    <div class="col-sm-6 mb-3">
+      <!-- [ Your answer field code here ] -->
+        {% if question['answertype'] in ['DROPDOWN', 'CHECKBOX','MULTISELECT'] %}
+       <div class="input-group-sm input-group {{ formsection }}">
+        <label class="input-group-text" for="inputGroupSelect01">{{ question['question__quesname'] }}</label>
+        <select name="{{ name }}" {% if question['answertype'] == 'MULTISELECT'%} multiple {% endif %} {% if question['ismandatory'] %} required {% endif %} id="{{ fieldID }}_field"
+          class="form-select">
+          <option value="">select from menu</option>
+          {% if question['question__quesname'] == 'Permit Authorized by' and question['answertype'] == 'MULTISELECT' %}
+            {% for approver in approvers %}
+              <option value="{{ approver.peoplename }}" {% if 'answer' in question and approver.peoplename in question['answer'].split(',') %} selected {% endif %}>{{ approver.peoplename }}</option>
+            {% endfor %}
+          {% else %}
+          {% set options = question['options'].split(',') %}
+          {% for opt in options %}
+            <option value="{{ opt }}" {% if 'answer' in question and opt in question['answer'].split(',') %} selected {% elif opt == ' N/A' and 'answer' not in question %} selected {% endif %}>{{ opt }}
+            </option>
+          {% endfor %}
+          {% endif %}
+        </select>
+      </div>
+      {% elif question['answertype'] == 'TIME' or question['answertype'] == 'DATE' %}
+      <div class="input-group-sm input-group {{ formsection }}">
+        <span class="input-group-text" id="inputGroup-sizing-default">{{ question['question__quesname'] }}</span>
+        <input type="datetime-local" class="form-control datetimes" aria-label="Sizing example input" {% if question['ismandatory'] %}
+          required {% endif %} aria-describedby="inputGroup-sizing-default" id="{{ fieldID }}_field" name="{{ name }}" {%
+          if 'answer' in question %} value="{{ question['answer'] }}" {% endif %}>
+      </div>
+      {% elif question['answertype'] == 'MULTILINE' %}
+        <div class="input-group-sm input-group {{ formsection }}">
+        <span class="input-group-text">{{ question['question__quesname'] }}</span>
+        <textarea class="form-control" aria-label="With textarea" id="{{ fieldID }}_field" {% if question['ismandatory'] %}
+          required {% endif %} rows="1"
+          name="{{ name }}">{% if 'answer' in question %} {{ question['answer'] }} {% endif %}</textarea>
+      </div>
+      {% elif question['answertype'] == 'NUMERIC' %}
+      <div class="input-group-sm input-group {{ formsection }}">
+        <span class="input-group-text" id="inputGroup-sizing-default">{{ question['question__quesname'] }}</span>
+        <input type="text" class="form-control" aria-label="Sizing example input"
+          aria-describedby="inputGroup-sizing-default" id="{{ fieldID }}_field" {% if question['ismandatory'] %} required {%
+          endif %} name='{{ name }}' {% if 'answer' in question %} value="{{ question['answer'] }}" {% endif %}>
+      </div>
+      <p class="text-muted">The input should be in between {{ question['min'] }} and {{ question['max'] }}</p>
+      {% elif question['answertype'] in ['SINGLELINE', 'SIGNATURE', 'EMAIL'] %}
+      <div class="input-group-sm input-group {{ formsection }}">
+        <span class="input-group-text" id="inputGroup-sizing-default">{{ question['question__quesname'] }}</span>
+        <input type="text" class="form-control" aria-label="Sizing example input"
+          aria-describedby="inputGroup-sizing-default" id="{{ fieldID }}_field" {% if question['ismandatory'] %} required {%
+          endif %} name="{{ name }}" {% if 'answer' in question %} value="{{ question['answer'] }}" {% endif %}>
+      </div>
+      {% elif question['answertype'] in ['EMAILID'] %}
+      <div class="input-group-sm input-group {{ formsection }}">
+        <span class="input-group-text" id="inputGroup-sizing-default">{{ question['question__quesname'] }}</span>
+        <input type="email" class="form-control" multiple aria-label="Sizing example input"
+          aria-describedby="inputGroup-sizing-default" id="{{ fieldID }}_field" {% if question['ismandatory'] %} required {%
+          endif %} name="{{ name }}" {% if 'answer' in question %} value="{{ question['answer'] }}" {% endif %}>
+      </div>
+      {% elif question['answertype'] == 'RATING' %}
+      <div class="{{ formsection }}">
+        <label for="customRange3" class="form-label">{{ question['question__quesname'] }}&nbsp;&nbsp;&nbsp;<span
+            id="range_value" class="border border-2 px-4">
+            {% if 'answer' in question %} {{ question['answer'] }} {% endif %}</span></label>
+        <input type="range" step="0.5" class="form-range" min="{{ question['min'] }}" max="{{ question['max'] }}" {% if
+          question['ismandatory'] %} required {% endif %} step="1" id="{{ fieldID }}_field" name="{{ name }}" {% if 'answer'
+          in question %} value="{{ question['answer'] }}" {% endif %}>
+      </div>
+      {% endif %}
+    </div>
+  {% endfor %}            
+{% endmacro %}
+
+
+<!------------Workpermit Sectoin and question plotter-------------->
+{% macro plot_sections_questions(wp_details, id, formsection) %}
+      {% for section in wp_details %}
+            {% set accordionID = "accordion_" + section['sectionID']|string %}  
+              <div class="accordion-item">
+                  <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                          data-bs-target="#{{ accordionID }}" aria-expanded="false" aria-controls="{{ accordionID }}">
+                          <!--Render Section Name-->
+                          {{ section["sectionID"] }}. {{ section['section'] }}
+
+                      </button>
+                  </h2>
+                  <div id="{{ accordionID }}" class="accordion-collapse" data-bs-parent="#{{ id }}" aria-labelledby="flush-headingOne">
+                      <div class="accordion-body">
+                          <div class="row">
+                              {{ render_questions(section, formsection) }}
+                          </div>
+                      </div>
+                  </div>  
+              </div>
+      {% endfor %}
+{% endmacro %}
+
+
+{% macro load_leaflet_tags() %}
+  <link href="{{ static('assets/plugins/custom/leaflet/leaflet.css') }}" rel="stylesheet" type="text/css" />
+  <script src="{{ static('assets/plugins/custom/leaflet/leaflet.js') }}"></script>
+  <link href="{{ static('assets/plugins/custom/leaflet.fullscreen/Control.FullScreen.css') }}" rel="stylesheet" type="text/css" />
+  <script src="{{ static('assets/plugins/custom/leaflet.fullscreen/Control.FullScreen.js') }}"></script>
+{% endmacro %}
+
+{% macro load_google_maps() %}
+<script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3PUZCB7u2PiV8whHeAshweOPIK_d690o&libraries=places&v=weekly&loading=async"
+></script>
+{% endmacro %}
+<!------------------------------------------------ END MACROS ------------------------------------------------------->
+
+{# ======= ==  HEAD START=========== #}
+{% block extra_css %}
+
+{% endblock extra_css %}
+{# ======= ==  HEAD END=========== #}
+
+{# === ==  BODY START====== #}
+{% block body %}
+
+{# === ==  BEGIN MAIN===== #}
+{# === ==  BEGIN ROOT===== #}
+<div class="d-flex flex-column flex-root">
+  {# BEGIN PAGE #}
+  <div class="page d-flex flex-row flex-column-fluid">
+    {# BEGIN ASIDE #}
+    <div id="kt_aside" class="aside aside-dark" data-kt-drawer="true" data-kt-drawer-name="aside"
+      data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true"
+      data-kt-drawer-width="{default: '200px', '300px': '250px'}" data-kt-drawer-direction="start"
+      data-kt-drawer-toggle="#kt_aside_mobile_toggle">
+      {# BEGIN BRAND #}
+      <div class="aside-logo flex-column-auto" id="kt_aside_logo">
+        {# BEGIN LOGO #}
+        <a href="{% if request.session.sitecode not in ["SPSESIC", "SPSPAYROLL", "SPSOPS", "SPSOPERATION", "SPSHR"] %}
+            {{ url('onboarding:rp_dashboard') }}
+        {% elif request.session.sitecode == "SPSOPS" %}
+            {{ url('reports:generateattendance') }}
+         {% elif request.session.sitecode == "SPSOPERATION" %}
+            {{ url('reports:generate_declaration_form') }}
+        {% elif request.session.sitecode == "SPSHR" %}
+            {{ url('employee_creation:employee_creation') }}
+        {% else %}
+            {{ url('reports:generatepdf') }}
+        {% endif %}">
+</a>
+
+          <img alt="Logo" src="{{static('assets/media/logos/youtilitylogo1.png')}}"
+            class="h-150px ml-3 mt-3 logo w-180px" style="border-radius: 3px;">
+        </a>
+        {# END LOGO #}
+        {# BEGIN ASIDE TOGGLER #}
+        <div id="kt_aside_toggle" class="btn btn-icon w-auto px-0 btn-active-color-primary aside-toggle"
+          data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body"
+          data-kt-toggle-name="aside-minimize">
+          <!--begin::Svg Icon | path: icons/duotone/Navigation/Angle-double-left.svg-->
+          <span class="svg-icon svg-icon-1 rotate-180">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px"
+              height="24px" viewBox="0 0 24 24" version="1.1">
+              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <polygon points="0 0 24 0 24 24 0 24"></polygon>
+                <path
+                  d="M5.29288961,6.70710318 C4.90236532,6.31657888 4.90236532,5.68341391 5.29288961,5.29288961 C5.68341391,4.90236532 6.31657888,4.90236532 6.70710318,5.29288961 L12.7071032,11.2928896 C13.0856821,11.6714686 13.0989277,12.281055 12.7371505,12.675721 L7.23715054,18.675721 C6.86395813,19.08284 6.23139076,19.1103429 5.82427177,18.7371505 C5.41715278,18.3639581 5.38964985,17.7313908 5.76284226,17.3242718 L10.6158586,12.0300721 L5.29288961,6.70710318 Z"
+                  fill="#000000" fill-rule="nonzero"
+                  transform="translate(8.999997, 11.999999) scale(-1, 1) translate(-8.999997, -11.999999)"></path>
+                <path
+                  d="M10.7071009,15.7071068 C10.3165766,16.0976311 9.68341162,16.0976311 9.29288733,15.7071068 C8.90236304,15.3165825 8.90236304,14.6834175 9.29288733,14.2928932 L15.2928873,8.29289322 C15.6714663,7.91431428 16.2810527,7.90106866 16.6757187,8.26284586 L22.6757187,13.7628459 C23.0828377,14.1360383 23.1103407,14.7686056 22.7371482,15.1757246 C22.3639558,15.5828436 21.7313885,15.6103465 21.3242695,15.2371541 L16.0300699,10.3841378 L10.7071009,15.7071068 Z"
+                  fill="#000000" fill-rule="nonzero" opacity="0.5"
+                  transform="translate(15.999997, 11.999999) scale(-1, 1) rotate(-270.000000) translate(-15.999997, -11.999999)">
+                </path>
+              </g>
+            </svg>
+          </span>
+          {# END SVG ICON #}
+        </div>
+        {# END ASIDE TOGGLER #}
+      </div>
+      {# BEGIN BRAND #}
+      {# BEGIN ASIDE MENU #}
+      <div class="aside-menu flex-column-fluid">
+        {# BEGIN ASIDE MENU #}
+        <div class="hover-scroll-overlay-y my-5 my-lg-5" id="kt_aside_menu_wrapper" data-kt-scroll="true"
+          data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-height="auto"
+          data-kt-scroll-dependencies="#kt_aside_logo, #kt_aside_footer" data-kt-scroll-wrappers="#kt_aside_menu"
+          data-kt-scroll-offset="0" style="height: 798px;">
+          {# BEGIN MENU #}
+          {% include "globals/updated_sidebarmenus.html" %}
+          {# END MENU #}
+        </div>
+      </div>
+      <!--end::Aside menu-->
+      <!--begin::Footer-->
+      <div class="aside-footer flex-column-auto pt-5 pb-7 px-5" id="kt_aside_footer">
+      </div>
+      <!--end::Footer-->
+    </div>
+    <!--end::Aside-->
+    <!--begin::Wrapper-->
+    <div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper">
+      <!--begin::header-->
+      <div id="kt_header" class="header align-items-stretch h-65px">
+        <!--begin::Container-->
+        <div class="container-fluid d-flex align-items-stretch justify-content-between"
+          style="border-bottom: 1px solid #7e7e7e3d;">
+          <!--begin::Aside mobile toggle-->
+          <div class="d-flex align-items-center d-lg-none ms-n3 me-1" title="Show aside menu">
+            <div class="btn btn-icon btn-active-light-primary w-30px h-30px w-md-40px h-md-40px"
+              id="kt_aside_mobile_toggle">
+              <!--begin::Svg Icon | path: icons/duotone/Text/Menu.svg-->
+              <span class="svg-icon svg-icon-2x mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px"
+                  height="24px" viewBox="0 0 24 24" version="1.1">
+                  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                    <rect x="0" y="0" width="24" height="24"></rect>
+                    <rect fill="#000000" x="4" y="5" width="16" height="3" rx="1.5"></rect>
+                    <path
+                      d="M5.5,15 L18.5,15 C19.3284271,15 20,15.6715729 20,16.5 C20,17.3284271 19.3284271,18 18.5,18 L5.5,18 C4.67157288,18 4,17.3284271 4,16.5 C4,15.6715729 4.67157288,15 5.5,15 Z M5.5,10 L18.5,10 C19.3284271,10 20,10.6715729 20,11.5 C20,12.3284271 19.3284271,13 18.5,13 L5.5,13 C4.67157288,13 4,12.3284271 4,11.5 C4,10.6715729 4.67157288,10 5.5,10 Z"
+                      fill="#000000" opacity="0.3"></path>
+                  </g>
+                </svg>
+              </span>
+              <!--end::Svg Icon-->
+            </div>
+          </div>
+          <!--end::Aside mobile toggle-->
+          <!--begin::Mobile logo-->
+          <div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
+            <a href="index.html" class="d-lg-none">
+              {# <img alt="Logo" src="assets/media/logos/logo-3.svg" class="h-30px"> #}
+            </a>
+          </div>
+          <!--end::Mobile logo-->
+          <!--begin::Wrapper-->
+          <div class="d-flex align-items-stretch justify-content-between flex-lg-grow-1">
+            <div></div>
+            <div class="d-flex align-items-stretch flex-shrink-0 d-inline">
+              <div id="site-info" class="mt-5 mx-2">
+                <a href="#" class="align-middle text-dark"><span>Site:</span>
+                  <b id="client_site_info"> {{ request.session['sitename'] }}</b>
+                </a>
+              </div>
+              <div>
+                <div class="dropdown mt-5 mx-3">
+                  <a id="user-info" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" href="">
+                    <span class="svg-icon svg-icon-1">
+                      <span class="material-icons align-middle dark">
+                        person
+                      </span>
+                    </span>
+
+                    <b class="mt-5 text-dark">{% if request.user.is_authenticated %}{{ request.user }}{% endif %}</b>
+                  </a>
+                  <ul class="dropdown-menu" aria-labelledby="user-info">
+                    <li><a class="dropdown-item" href="#">Change Password</a></li>
+                    <li><a class="dropdown-item" href="javascript:changeSiteReq();">Switch Site</a></li>
+                    <li><a class="dropdown-item" href="{{ url('logout') }}">Log Out</a></li>
+                  </ul>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <!--end::Wrapper-->
+        </div>
+        <!--end::Container-->
+      </div>
+      <!--end::header-->
+      <!--begin::Content-->
+      <div class="content d-flex flex-column flex-column-fluid{% block content_padding %}{% endblock %}" id="kt_content">
+        <!--begin::toolbar-->
+        <div class="toolbar h-50px" id="kt_toolbar">
+          <!--begin::Container-->
+          <div id="kt_toolbar_container" class="container-fluid d-flex flex-stack">
+            <!--begin::Page title-->
+            <ol class="breadcrumb breadcrumb-dot text-muted fs-6 fw-bold">
+              {% block pagebreadcumb %}
+              <li class="breadcrumb-item pe-3"><a href="{{ url('onboarding:rp_dashboard') }}" class="pe-3">Home</a></li>
+              {% endblock pagebreadcumb %}
+            </ol>
+            
+            
+            <div class="breadcumb_actions d-flex justify-content-end">
+              <div class="dropdown">
+                {% block breadcumbactions %}
+                
+                {% endblock breadcumbactions %}
+              </div>
+            </div>
+            
+            
+            <!--begin::actions-->
+
+            {# {% block ajax_page_actions %}
+            
+            {% endblock ajax_page_actions %} #}
+            <!--end::actions-->
+            <!--end::Page title-->
+          </div>
+          <!--end::Container-->
+        </div>
+        <!--end::toolbar-->
+        <!--begin Post-->
+        <div class="post d-flex flex-column-fluid" id="kt_post">
+          {% block pagebody_container_fluid %}
+          {# <table id="example" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Office</th>
+                    <th>Extn.</th>
+                    <th>Start date</th>
+                    <th>Salary</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Office</th>
+                    <th>Extn.</th>
+                    <th>Start date</th>
+                    <th>Salary</th>
+                </tr>
+            </tfoot>
+        </table> #}
+          {% endblock pagebody_container_fluid %}
+          <!---BEGIN CONTAINER-->
+          
+          <div id="kt_content_container" class="container-fluid">
+            {% block pagebody_container %}
+            {% endblock pagebody_container %}
+          </div>
+          <!--END CONTAINER -->
+        </div>
+        <!--end post-->
+      </div>
+      <!--end::Content-->
+      <!--begin::footer-->
+      <div class="footer py-1 d-flex flex-lg-column" id="kt_footer"
+      style="background-color: #ffffff;">
+        <!--begin::Container-->
+        <div class="container-fluid d-flex flex-column flex-md-row align-items-center justify-content-end">
+          <!--begin::Copyright-->
+          <div></div>
+          <!--end::Copyright-->
+          <div class="page-footer-inner" style="color: #01579B"> <span id="copyRightYear ">{{ current_year }} © Powered by</span>
+            <a target="_blank"   style="color: #01579B" href="https://sukhi.work/">Security & Personnel Services Pvt. Ltd. </a>
+          </div>
+        </div>
+        <!--end::Container-->
+      </div>
+      <!--end::footer-->
+    </div>
+    <!--end::Wrapper-->
+  </div>
+  <!--end::PAGE-->
+</div>
+<!--end::ROOT-->
+
+<!-- END wrapper -->
+
+<!-- bundle -->
+
+<!-- end demo js-->
+
+
+{% endblock body %}
+{# ==== ==  BODY END======= #}
+{% block switchSiteScript %}
+<script>
+  //get_sites to poulate the site dropdown
+  function getSites(url){
+    fire_ajax_get({'url':url})
+    .done((data, status, xhr) => {
+      var client_site= "{{ request.session.clientcode }}.{{ request.session.sitecode }}"
+      $("#id_defaultsite").val(client_site);
+      $("#id_assignesite").empty();
+      $("#id_assignesite").append($("<option></option>").val(" ").html("----------"));
+      if(data!=undefined){
+        console.log("data.rows :", data);
+        data.forEach(function(row, idx) {
+            if(row.id != session.bu_id){
+                $("#id_assignesite").append($("<option></option>").val(row.id).html(row.buname + " - [" + row.bucode +"]"));
+            }
+        });
+      }
+    })
+    .fail((xhr, status, error) =>{
+      console.log("getSites error", error);
+    })
+  }
+
+  function changeSiteReq(){
+    var session = "{{ request.session.bu_id }}";
+    if ("{{ request.session }}".toUpperCase() == "TRUE"){
+      let url = "{{ url('onboarding:get_allsites') }}"
+      getSites(url)
+    }
+    else{
+      let url = "{{ url('onboarding:get_assignedsites') }}"
+      getSites(url)
+    }
+    $('#popup_switch_site').modal('show');
+  }
+
+  $(document).ready(function() {
+    /*$('.modal-content').resizable({
+      minHeight: 300,
+      minWidth: 400
+
+    });*/
+   
+
+     $('.modal-dialog, .DTED_Lightbox_Content').draggable();
+    $("#id_assignesite").select2({
+      dropdownParent: $("#popup_switch_site")
+    });
+    $("#btnSwitchSite").click(function(){
+      $('#SwitchSiteForm').submit();
+    });
+    
+    $('#SwitchSiteForm').submit(function(e){
+      e.preventDefault();
+      var form = $(this);
+
+      const params = {url:"{{ url('onboarding:switchsite') }}"}
+      const payLoad = {buid:$("#id_assignesite").val(), csrfmiddlewaretoken:'{{ csrf_token }}'}
+      fire_ajax_form_post(params, payLoad)
+      .done((response, status, xhr) => {
+        if(response.rc==1){
+          console.log("if response", response.rc);
+          $('.site_err_msg').html("Error: "+response.errMsg);
+          $("#site_err_popup").fadeTo(2000, 1000).slideUp(800, function(){
+          $("#site_err_popup").slideUp(1000);
+          });
+        }else{
+          console.log("else response", response.rc);
+          var count = 3;
+          $('.site_success_msg').html("Site switching in "+ count +" seconds");
+          $("#site_success_popup").show();
+          var timer = setInterval(function() {
+            if (count !== 0) {
+              $('.site_success_msg').html("Site switching in "+ count-- +" seconds");
+            } else {
+            clearInterval(timer);
+            setTimeout(location.reload.bind(location), 0);
+            }
+          }, 1000);
+        }
+      })
+      .fail((xhr, status, error) => {
+        $('.site_err_msg').html("Error: "+data["msg"]);
+      });
+    });
+  });
+
+</script>
+{% endblock switchSiteScript %}
+{% block extra_scripts %}
+{% endblock extra_scripts %}

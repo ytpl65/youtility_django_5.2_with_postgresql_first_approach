@@ -1,0 +1,647 @@
+{% extends "globals/base_form.html" %}
+
+{% block extra_css %}
+{{ internaltourform.media.css }}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" type="text/css">
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('schedhuler:retrieve_internaltours') }}" class="pe-3">Tours</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Tour Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Internal Tour
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+
+{% block breadcumbactions %}
+<button class="btn btn-secondary dropdown-toggle" type="button" id="id_actions" data-bs-toggle="dropdown" aria-expanded="false">
+    Actions
+</button>
+<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+    <li><a class="dropdown-item" href="#" id="id_attachment"><i class="fas text-white fa-paperclip"></i> &nbsp;Attachment</a></li>
+</ul>
+{% endblock breadcumbactions %}
+
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+{% if internaltourform.non_field_errors() %}
+<div id="non_field_error" class="alert alert-danger" style="width: 73%;">
+    {% for error in internaltourform.non_field_errors() %}
+    <strong>Error</strong> <span>{{ error }}</span>
+    {% endfor %}
+    <button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+{% block form %}
+<form action="" method="post" id="internaltourform">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="{{ internaltourform.ctzoffset.name }}" id = "{{ internaltourform.ctzoffset.auto_id }}" value="-1">
+    <div class="row mb-3 gy-3">
+        <div class="col-md-2">
+            <label for={{ internaltourform.jobdesc.id_for_label }}
+                class="required">{{ internaltourform.jobdesc.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.jobdesc }}
+            {{ internaltourform.jobdesc.errors }}
+        </div>
+        <div class="col-md-2">
+            <label for={{ internaltourform.plandatetime.id_for_label }}
+                class="required">{{ internaltourform.plandatetime.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.plandatetime }}
+            {{ internaltourform.plandatetime.errors }}
+        </div>
+    </div>
+    <div class="row mb-3 gy-3">
+        <div class="col-md-2">
+            <label class="required">Assign to:</label>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" name={{ internaltourform.assign_to.name }}
+                    id="{{ internaltourform.assign_to.auto_id }}1" value="PEOPLE" checked
+                    onchange="showHideSelectField('PEOPLE')">
+                <label class="form-check-label" for="{{ internaltourform.assign_to.auto_id }}">People</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" name={{ internaltourform.assign_to.name }}
+                    id="{{ internaltourform.assign_to.auto_id }}2" value="GROUP" onchange="showHideSelectField('GROUP')">
+                <label class="form-check-label" for="{{ internaltourform.assign_to.auto_id }}">Group</label>
+            </div>
+        </div>
+
+        <!-- ASSIGN TO PEOPLE --->
+        <div class="col-md-2">
+            <label for={{ internaltourform.expirydatetime.id_for_label }} class="">{{ internaltourform.expirydatetime.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.expirydatetime }}
+            {{ internaltourform.expirydatetime.errors }}
+        </div>
+    </div>
+    <div class="row mb-3 gy-3">
+        <!-- ASSIGN TO PEOPLE --->
+        <div class="col-md-2 people">
+            <label for={{ internaltourform.people.id_for_label }} class="">{{ internaltourform.people.label }}:</label>
+        </div>
+        <div class="col-md-4 people">
+            {{ internaltourform.people }}
+            {{ internaltourform.people.errors }}
+        </div>
+        <!-- ASSIGN TO GROUP --->
+        <div class="col-md-2 pgroup">
+            <label for={{ internaltourform.pgroup.id_for_label }} class="">{{ internaltourform.pgroup.label }}:</label>
+        </div>
+        <div class="col-md-4 pgroup">
+            {{ internaltourform.pgroup }}
+            {{ internaltourform.pgroup.errors }}
+        </div>
+        <!-- ASSIGN TO GROUP --->
+        <div class="col-md-2">
+            <label for={{ internaltourform.gracetime.id_for_label }} class="">{{ internaltourform.gracetime.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.gracetime }}
+            {{ internaltourform.gracetime.errors }}
+        </div>
+    </div>
+    <div class="row mb-3 gy-3">
+        <div class="col-md-2">
+            <label for={{ internaltourform.jobstatus.id_for_label }} class="">{{ internaltourform.jobstatus.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.jobstatus }}
+            {{ internaltourform.jobstatus.errors }}
+        </div>
+        <div class="col-md-2">
+            <label for={{ internaltourform.starttime.id_for_label }} class="">{{ internaltourform.starttime.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.starttime }}
+            {{ internaltourform.starttime.errors }}
+        </div>
+    </div>
+    <div class="row mb-3 gy-3">
+        <div class="col-md-2">
+            <label for={{ internaltourform.scantype.id_for_label }} class="">{{ internaltourform.scantype.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.scantype }}
+            {{ internaltourform.scantype.errors }}
+        </div>
+        <div class="col-md-2">
+            <label for={{ internaltourform.endtime.id_for_label }} class="">{{ internaltourform.endtime.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.endtime }}
+            {{ internaltourform.endtime.errors }}
+        </div>
+    </div>
+    <div class="row mb-3 gy-3">
+        <div class="col-md-2">
+            <label for={{ internaltourform.priority.id_for_label }} class="">{{ internaltourform.priority.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.priority }}
+            {{ internaltourform.priority.errors }}
+        </div>
+        <div class="col-md-2">
+            <label for={{ internaltourform.performedby.id_for_label }} class="">{{ internaltourform.performedby.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.performedby }}
+            {{ internaltourform.performedby.errors }}
+        </div>
+    </div>
+    <div class="row mb-3 gy-3">
+        <div class="col-md-2">
+            <label for={{ internaltourform.ticketcategory.id_for_label }} class="">{{ internaltourform.ticketcategory.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.ticketcategory }}
+            {{ internaltourform.ticketcategory.errors }}
+        </div>
+        <div class="col-md-2">
+            <label for={{ internaltourform.gpslocation.id_for_label }} class="">{{ internaltourform.gpslocation.label }}:</label>
+        </div>
+        <div class="col-md-4">
+            {{ internaltourform.gpslocation }}
+            {{ internaltourform.gpslocation.errors }}
+        </div>
+    </div>
+</form>
+
+<br><br>
+
+<div class="child-jobs">
+    <h4 class="card-title modal-heading">
+        Tour Details &nbsp;<i class="fas text-white fs-3 text-primary fa-directions"></i>
+    </h4><br>
+    <div class="table-responsive">
+        <table id="internal_tour" class="display cell-border" style="width:100%">
+            <thead>
+                <th>#</th>
+                <th>Plan Datetime</th>
+                <th>Expiry Datetime</th>
+                <th>CheckpointId</th>
+                <th>Checkpoint</th>
+                <th>ChecklistId</th>
+                <th>Checklist</th>
+                <th>Gracetime</th>
+                <th>Status</th>
+                <th>Details</th>
+            </thead>
+            <tbody>
+                {% if checkpoints is defined %}
+                {% for checkpoint in checkpoints %}
+                <tr>
+                    <td>{{ checkpoint['seqno'] }}</td>
+                    <td>{{ checkpoint['plandatetime']| to_local }}</td>
+                    <td>{{ checkpoint['expirydatetime']| to_local }}</td>
+                    <td>{{ checkpoint['asset__id'] }}</td>
+                    <td>{{ checkpoint['asset__assetname'] }}</td>
+                    <td>{{ checkpoint['qset__id'] }}</td>
+                    <td>{{ checkpoint['qset__qsetname'] }}</td>
+                    <td>{{ checkpoint['gracetime'] }}</td>
+                    <td>{{ checkpoint['jobstatus'] }}</td>
+                    <td>{{ checkpoint['id'] }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        <div class="table-editor gap-5 d-md-flex border border-secondary p-3 h-25 justify-content-md-start">
+            <a href="#" id="create-child" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-delay = 500 title="Add New Row"><i class="fa fa-plus text-dark opacity-75 fa-lg"></i></a>
+            <a href="#" id="edit-child" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-delay = 500 title="Edit Selected Row"><i class="fa fa-edit text-dark opacity-75 fa-lg"></i></a>
+            <a href="#" id="delete-child" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-delay = 500 title="Delete Selected Row"><i class="fa fa-trash-alt text-dark opacity-75 fa-lg"></i></a>
+        </div>
+    </div>
+</div>
+{% endblock form %}
+
+{% block popup_alerts %}
+    <!-- THE MODAL WE WILL BE USING -->
+    <div class="modal animate__animated animate__zoomIn" tabindex="-1" aria-hidden="true"  aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-jnd">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" id="jobneeddetails_content">
+            </div>
+        </div>
+    </div>
+    
+    <!--popup_form-->
+    {% call general_popup(popup_id = 'child-form-modal', title = "Add Checkpoint", modal_size = "modal-lg") %}
+    <div class="modal-body">
+        <form action="" method="post" id="child_internaltour_form">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <div class="row mb-3 gy-3">
+                <div class="col-md-2">
+                    <label for="{{ child_internaltour.plandatetime.id_for_label }}"
+                    class="required">{{ child_internaltour.plandatetime.label }}</label>
+                </div>
+                <div class="col-md-10">
+                    {{ child_internaltour.plandatetime }}
+                    {{ child_internaltour.plandatetime.errors }}
+                </div>
+            </div>
+            <div class="row mb-3 gy-3">
+                <div class="col-md-2">
+                    <label for="{{ child_internaltour.expirydatetime.id_for_label }}"
+                    class="required">{{ child_internaltour.expirydatetime.label }}</label>
+                </div>
+                <div class="col-md-10">
+                    {{ child_internaltour.expirydatetime }}
+                    {{ child_internaltour.expirydatetime.errors }}
+                </div>
+            </div>
+            <div class="row mb-3 gy-3">
+                <div class="col-md-2">
+                    <label for="{{ child_internaltour.asset.id_for_label }}"
+                    class="required">{{ child_internaltour.asset.label }}</label>
+                </div>
+                <div class="col-md-10">
+                    {{ child_internaltour.asset }}
+                    {{ child_internaltour.asset.errors }}
+                </div>
+            </div>
+            <div class="row mb-3 gy-3">
+                <div class="col-md-2">
+                    <label for="{{ child_internaltour.qset.id_for_label }}"
+                    class="required">{{ child_internaltour.qset.label }}</label>
+                </div>
+                <div class="col-md-10">
+                    {{ child_internaltour.qset }}
+                    {{ child_internaltour.qset.errors }}
+                </div>
+            </div>
+            <div class="row mb-3 gy-3">
+                <div class="col-md-2">
+                    <label for="{{ child_internaltour.gracetime.id_for_label }}"
+                    class="required">{{ child_internaltour.gracetime.label }}</label>
+                </div>
+                <div class="col-md-10">
+                    {{ child_internaltour.gracetime }}
+                    {{ child_internaltour.gracetime.errors }}
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <!-- ADD/DELETE/RESET BUTTONS OF MIDDLE FORM -->
+        {% if internaltourform.instance.jobstatus == "('ASSIGNED',)" %}
+        <div class="d-flex justify-content-end">
+            <button type="submit" id="addQuestion" form="child_internaltour_form"
+                class="btn btn-sm btn-success me-2 btn-hover-scale">
+                Save&nbsp;<i class="fa fa-plus" aria-hidden="true"></i>
+            </button>
+
+            {# <button type="button" id="resetMiddleForm" style="display:none;"
+                class="btn ms-2 btn-sm btn-primary2 btn-hover-scale">
+                Reset&nbsp;<i class="fas text-white fa-times"></i>
+            </button> #}
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+        {% endif %}
+    </div>
+    {% endcall %}
+
+    {{ mainattachment() }}
+
+{% endblock popup_alerts %}
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    {% if internaltourform.instance.jobstatus == "('ASSIGNED',)" %}
+        {% if internaltourform.instance.id %}
+        <button type="button" id="submitInternalTour" form="internaltourform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        Update Tour
+        </button>
+        <button type="button" onclick="deleteMainJob(this)" data-id="{{ internaltourform.instance.id }}" id="deleteAttd"
+            class="btn btn-sm btn-danger btn-hover-scale">
+            Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+        </button>
+        {% else %}
+            <button type="submit" form="internaltourform" class="btn btn-sm btn-primary2 btn-hover-scale">
+                Save Tour&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+            </button>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock ajax_page_actions %}
+
+{% block extra_scripts %}
+{{ internaltourform.media.js }}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript"></script>
+<script>
+    //set the variables which are gonna used in attachment.js file for fetching attachments against the owner
+    var attachmentUrl = '{{ url("activity:attachments") }}'
+    var attachementDatasource = 'jobneedattachment'
+    var attachmentOwner = '{{ internaltourform.instance.uuid }}'
+    var csrf = '{{ csrf_token }}'
+    var ownerName = "Jobneed"
+    var id = ""
+    var folderType = 'tour'
+    var isDefault= "False";
+    var docnumber=1;
+</script>
+<script src="{{ static('assets/js/local/attachment.js') }}" type="text/javascript"></script>
+<script>
+    var table = null;
+    var selected = null;
+    $('label').removeClass("col-form-label col-md-2 col-sm-2 text-sm-right")
+    function showHideSelectField(val) {
+        if (val == "PEOPLE") {
+            //$("#aatopdiv").show();
+            $(".people").show();
+            $(".pgroup").hide();
+        }else {
+            //$("#aatopdiv").hide();
+            $(".pgroup").show();
+            $(".people").hide();
+        }
+    }
+
+    //return selected value of a field
+    function getSelectedValue(id) {
+        var data = $(id).select2('data')[0]
+        if (typeof data !== 'undefined') {
+            return data.text
+        }
+        return "NONE"
+    }
+
+    function getCheckpointFormdata(){
+        const formData = {}
+        formData['qset_id'] = $("#id_child-qset").val()
+        formData['asset_id'] = $("#id_child-asset").val()
+        formData['expirytime'] = $("#id_child-expirytime").val()
+        formData['plandatetime'] = $("#id_child-plandatetime").val()
+        formData['expirydatetime'] = $("#id_child-expirydatetime").val()
+        formData['gracetime'] = $("#id_child-gracetime").val()
+        formData['jobstatus'] = "{{ internaltourform.instance.jobstatus }}"
+        formData['qset'] = getSelectedValue("#id_child-qset")
+        formData['asset'] = getSelectedValue("#id_child-asset").split(" ")[0]
+        return formData
+    }
+
+    function check_for_duplicates(table, dataToInsert) {
+        console.log("check_for_duplicates [start]")
+        var tableData = table.rows().data().toArray();
+        console.log(tableData)
+        for (var row in tableData) {
+            if (tableData[row][3] === dataToInsert[3]) {
+                return true
+            }
+        }
+        return false
+    }
+
+    function adjustSlnoInTable() {
+        console.log("rows adjsuting")
+        var tableData = table.rows().data().toArray();
+        table.rows().remove().draw();
+        var seq = 0
+        for (var row in tableData) {
+            seq++
+            tableData[row][0] = seq
+        }
+        table.rows.add(tableData).draw()
+        console.log("rows adjusted")
+    }
+
+    function processValidForm() {
+        data = getCheckpointFormdata();
+        rowdata = [-1, data.plandatetime, data.expirydatetime, data.asset_id, 
+                data.asset, data.qset_id, data.qset, data.gracetime, data.jobstatus]
+        table.row('.toupdate').remove().draw(false);
+        isduplicate = check_for_duplicates(table, rowdata)
+        if (!isduplicate) {
+            
+            table.row.add(rowdata).draw()
+            resetForm()
+            //adjustForm(table)
+            $("#deleteCheckpoint").hide();
+        } else {
+            let heading = "Duplicate Record"
+            let msg = "This type ('Checkpoint and QuestionSet') record is already exist"
+            show_error_alert(msg, heading)
+        }
+    }
+
+    function resetForm() {
+        $("#id_child-expirydatetime, #id_child-plandatetime, #id_child-gracetime").val("")
+        $("#id_child-qset, #id_child-asset").val(null).trigger('change');
+    }
+    function addRemoveClass(ele){
+        if ($(ele).hasClass('selected')) {
+            $(ele).removeClass('selected');
+            selected = null
+        } else {
+            table.$('tr.selected').removeClass('selected');
+            $(ele).addClass('selected');
+            selected = ele
+        }
+    }
+
+    function update_checkpoint_form(data, fortable = false) {
+        $("#child-form-modal #id_child-asset").val(data[3]).change()
+        $("#child-form-modal #id_child-qset").val(data[5]).change()
+        $("#child-form-modal #id_child-expirydatetime").val(data[2])
+        $("#child-form-modal #id_child-plandatetime").val(data[1])
+        $("#child-form-modal #id_child-gracetime").val(data[7])
+    }
+
+    function deleteCheckpointRequest(checpointid, checklistid, parentid) {
+        var deleted = false
+        const params = {
+            'url': `{{ url('schedhuler:delete_checkpointTour') }}?checkpointid=${checpointid}&checklistid=${checklistid}&job=${parentid}&datasource = jobneed`,
+            'beforeSend': function () {}
+        }
+        fire_ajax_get(params)
+        .done((data, status, xhr) => {
+            show_successful_delete_alert()
+            deleted = true
+        })
+        .fail((xhr, status, error) => {
+            show_error_alert(xhr.responseJSON.errors)
+        })
+        return deleted
+    }
+
+    
+
+    $(document).ready(() => {
+        //set ctzoffset
+  	    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        //assignto toggle
+        if ('{{internaltourform.instance.id}}' == ('None' || "")) {
+            showHideSelectField('PEOPLE')
+        }else{
+            var assignto = '{{internaltourform.instance.people}}' == ('None' || "") ? "GROUP" : "PEOPLE"
+            showHideSelectField(assignto)
+        }
+        
+        cpEditor = new $.fn.dataTable.Editor({  
+            table:'#internal_tour',
+            ajax:{
+                data:function(d){
+                    d.seqno = $("#DTE_Field_seqno").val(),
+                    d.plandatetime = $("#DTE_Field_plandatetime").val(),
+                    d.expirydatetime = $("#DTE_Field_expirydatetime").val(),
+                    d.expirydatetime = $("#DTE_Field_expirydatetime").val(),
+                    
+                }
+            }
+        })
+
+
+        //datatable configurations
+        cpTable = $('#internal_tour').DataTable({
+            responsive: true,
+            responsive:true,
+            ordering:false,
+            searching:false,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            ordering: true,
+            columns:[
+                {data:'seqno',title:"#"},
+                {data:'plandatetime', title:'PlanDatetime'},
+                {data:'expirydatetime', title:'ExpiryDatetime'},
+                {data:'asset_id', visible:false},
+                {data:'asset__assetname', title:'Checkpoint'},
+                {data:'qset_id', visible:false},
+                {data:'qset__qsetname', title:"Checklist"},
+                {data:'gracetime', title:"Gracetime"},
+                {data:'jobstatus', title:"Status"},
+                {data:null, title:"Details"},
+            ],
+            columnDefs: [
+            ],
+            select: {
+                style: 'single'
+            }
+        })
+        $("#tabchildReport_wrapper .buttons-create").addClass('disabled')//on page load disable new button of child table
+        $("#tabchildReport_wrapper .buttons-create").attr({'data-toggle':"tooltip", 'data-placement':"top", 'title':"Select Section First"})
+
+        //datetime widget configurations
+        $("#id_child-plandatetime, #id_child-expirydatetime, #id_plandatetime, #id_expirydatetime").flatpickr({
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: 'd-M-Y H:S'
+        })
+
+        //on submitting the questionset-blng form populate the table
+        // "Checkpoint & Checklist Mapping"
+        $('#child_internaltour_form').on('submit', function (e) {
+            e.preventDefault()
+            processValidForm()
+            adjustSlnoInTable()
+        });
+
+        //middle form post request
+        $("#internaltourform").submit((e) => {
+            e.preventDefault();
+            Swal.fire({
+                title: "Submit Form",
+                icon: "question",
+                showCancelButton:true,
+                confirmButtonText: "Submit it!"
+            }).then((res) => {
+                if(res.isConfirmed){
+                    var params = {'url': "", modal:false}
+                    var payload = {formData: $(this).serialize(), parentid : "{{ internaltourform.instance.id }}"}
+                    fire_ajax_form_post(params, payload)
+                    .done((data, status, xhr) => {
+                        Swal.fire({
+                            title: "Checkpoint Added Successfully!",
+                            icon: "success",
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
+                    })
+                    .fail((xhr, status, error) => {
+                        display_form_errors(xhr.responseJSON.errors)
+                    })
+
+                }
+            })
+        })
+
+        if(!$("#internal_tour tbody tr").hasClass("selected")){
+            resetForm()
+        }
+
+        //on click view-details display jobneeddetails on modal
+        $("#jobneeddetails").click(() => {
+            const params = {url: "" }
+        })
+        
+        //select/deselect row
+        $("#internal_tour tbody").on("click", 'tr', function () {
+            if (!$(this).children().hasClass("dataTables_empty")) {
+                addRemoveClass(this)
+            }
+        })
+        
+        //edit new checkpoint
+        $("#edit-child").click(() => {
+            if(selected !== null){
+                $("#child-form-modal").modal('show')
+                update_checkpoint_form(table.row('.selected').data())
+                $(this).addClass('toupdate');
+            }else{show_warning("Please select a row first!")}
+        })
+        
+        //add new checkpoint
+        $("#create-child").click(() => {
+            $("#child-form-modal").modal('show')
+            resetForm()
+        })
+
+        //delete checkpoint
+        $("#delete-child").click(() => {
+            console.log("clicked")
+            if(selected!== null){
+                data = table.row('.selected').data()
+                show_alert_before_delete(data[4]).then((res) => {
+                    if(res.isConfirmed){
+                        var isDeleted = false
+                        if ('{{ internaltourform.instance.id }}' !== ('None' || "")) {
+                            isDeleted = deleteCheckpointRequest(data[3], data[5], "{{ internaltourform.instance.id }}")
+                        }
+                        if (isDeleted){
+                            table.row('.selected').remove().draw();
+                            adjustSlnoInTable()
+                        }
+                    }
+                })
+
+            }else{show_warning("Please select a row first!")}
+        })
+
+        //select2 configurations
+        $('.django-select2').select2({
+            dropdownParent: $('#child-form-modal')
+        })
+
+
+    })
+    
+</script>
+{% endblock extra_scripts %}

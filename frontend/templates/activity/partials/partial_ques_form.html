@@ -1,0 +1,223 @@
+{% extends "globals/partial_base.html" %}
+
+{% block head %}
+{{ ques_form.media.css }}
+{% endblock head %}
+
+{% block body %}
+<form action="" method="post" id="qsetbng_form">
+    <input type="hidden" name="{{ ques_form.ctzoffset.name }}" id = "{{ ques_form.ctzoffset.auto_id }}" value="-1">
+    <input type="hidden" name="pk" id="pk" value="{{ ques_form.instance.pk }}">
+    <div class="modal-header border-0">
+        <h3 class="modal-title modal-heading" id="exampleModalLabel">Create Question <i
+                class="fas text-white fa-poll-h fa-sm ch4"></i></h3>
+        <button type="button" class="btn-sm btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body" id="partial">
+        <div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors" role="alert"
+            style="display:none">
+            <strong>Error</strong> <span></span>
+            <button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <input type="hidden", value='{{ ques_form.instance.alerton }}' id="hidden_alerton">
+        <!--============================== FORM FIELDS START =============================-->
+        <div class="row mb-3 gy-3">
+            <label for={{ ques_form.quesname.id_for_label }} class="col-md-1 required">{{ ques_form.quesname.label }}:</label>
+            <div class="col-md-11">
+                {{ ques_form.quesname }}
+                {{ ques_form.quesname.errors }}
+            </div>
+            <label for={{ ques_form.answertype.id_for_label }} class="col-md-1 required">{{ ques_form.answertype.label }}:</label>
+            <div class="col-md-5">
+                {{ ques_form.answertype }}
+                {{ ques_form.answertype.errors }}
+            </div>
+            <label for={{ ques_form.unit.id_for_label }} class="col-md-1">{{ ques_form.unit.label }}:</label>
+            <div class="col-md-5">
+                {{ ques_form.unit }}
+                {{ ques_form.unit.errors }}
+            </div>
+           <label for={{ ques_form.category.id_for_label }} class="col-md-1">{{ ques_form.category.label }}:</label>
+            <div class="col-md-5">
+                {{ ques_form.category }}
+                {{ ques_form.category.errors }}
+            </div>
+            <div class="booleans col-md-6 d-flex justify-content-sm-between mt-5
+            form-check form-switch form-check-custom form-check-solid">
+                <label for="{{ ques_form.isworkflow.id_for_label }}"
+                    class="form-check-label bool col-form-label me-5 text-sm-right">
+                    {{ ques_form.isworkflow.label }}: &nbsp; {{ ques_form.isworkflow }}
+                </label>
+            </div>
+        </div>
+        
+        <div class="row mb-3 fv-row gy3 optionGrp">
+            <label for={{ ques_form.options.id_for_label }} class="col-md-1">{{ ques_form.options.label }}:</label>
+            <div class="col-md-5">
+                {{ ques_form.options }}
+                {{ ques_form.options.errors }}
+            </div>
+            <label for={{ ques_form.alerton.id_for_label }} id = "alertonlabel"class="col-md-1">{{ ques_form.alerton.label }}:</label>
+            <div class="col-md-5">
+                {{ ques_form.alerton }}
+                {{ ques_form.alerton.errors }}
+            </div>
+        </div>
+            
+        <div class="row mb-3 gy-3 fv-row">
+            <label for={{ ques_form.min.id_for_label }} class="col-md-1 rating numeric">{{ ques_form.min.label }}:</label>
+            <div class="col-md-4 rating numeric">
+                {{ ques_form.min }}
+                {{ ques_form.min.errors }}
+            </div>
+            <label for={{ ques_form.max.id_for_label }} class="col-md-2 rating numeric">{{ ques_form.max.label }}:</label>
+            <div class="col-md-5 rating numeric">
+                {{ ques_form.max }}
+                {{ ques_form.max.errors }}
+            </div>
+            <label for={{ ques_form.alertbelow.id_for_label }} class="col-md-1 numeric">{{ ques_form.alertbelow.label }}:</label>
+            <div class="col-md-5 numeric">
+                {{ ques_form.alertbelow }}
+                {{ ques_form.alertbelow.errors }}
+            </div>
+            <label for={{ ques_form.alertabove.id_for_label }} class="col-md-1 numeric">{{ ques_form.alertabove.label }}:</label>
+            <div class="col-md-5 numeric">
+                {{ ques_form.alertabove }}
+                {{ ques_form.alertabove.errors }}
+            </div>
+        </div>
+        <div class="booleans isavptcb col-md-6 d-flex justify-content-sm-between mt-5
+            form-check form-switch form-check-custom form-check-solid">
+                <label for="{{ ques_form.isavpt.id_for_label }}"
+                    class="form-check-label bool col-form-label me-5 text-sm-right">
+                    {{ ques_form.isavpt.label }}: &nbsp; {{ ques_form.isavpt }}
+                </label>
+            <label for={{ ques_form.avpttype.id_for_label }} class="col-md-2 avpttype d-none">{{ ques_form.avpttype.label }}:</label>
+            <div class="col-md-4 avpttype d-none">
+                {{ ques_form.avpttype }}
+                {{ ques_form.avpttype.errors }}
+            </div>
+        </div>
+        <!--============================== FORM FIELDS END ============================-->
+    </div>
+</form>
+    <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-secondary btn-hover-scale" data-bs-dismiss="modal">
+            Close <i class="fas  fa-times"></i>
+        </button>
+        {% if ques_form.instance.id %}
+            <button type="submit" id="submit" form= "qsetbng_form" class="btn btn-sm btn-primary2 btn-hover-scale">
+                Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+            </button>
+            <button type="button" onclick="deleteQuestion(this)" data-id="{{ ques_form.instance.id }}" id="deleteAttd"
+                class="btn btn-sm btn-danger btn-hover-scale">
+                Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+            </button>
+        {% else %}
+            <button type="submit"  form="qsetbng_form" class="btn btn-sm btn-primary2 btn-hover-scale">
+                Add&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+            </button>
+        {% endif %}
+    </div>
+{% endblock body %}
+
+{% block js %}
+{{ ques_form.media.js }}
+<script src="{{ static('assets/js/formValidations.js') }}?v=3"></script>
+<script>
+    //return selected value of a field
+    console.log("script loaded")
+    function getQuesTypeValue(id){
+        var data =  $(id).select2('data')[0]
+        if(typeof data !== 'undefined'){
+            return data.text
+        }
+        return "NONE"
+    }
+    function appenAlerton(options){
+        clearSelection("#id_alerton")
+        for(let i=0; i<options.length; i++){
+            
+            if ($('#id_alerton').find(`option[value="${options[i]}"]`).length) {
+                //$('#DTE_Field_alerton').val(options[i]).trigger('change');
+            } else { 
+                // Create a DOM Option and pre-select by default
+                var newOption = new Option(options[i], options[i], false, false);
+                // Append it to the select
+                $('#id_alerton').append(newOption).trigger('change');
+            } 
+        }
+    }
+
+    function clearSelection(id){
+        //$(id).val(null).trigger('change');
+        $(id).empty().trigger("change");
+    }
+
+    
+
+    $(document).ready(() => {
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+        // Initialize Tagify components
+        //var input1 = document.querySelector("#id_options");
+        //var optionTag = new Tagify(input1);
+
+        $("#modal-ques").find("select").select2({
+            dropdownParent: $('#modal-ques')
+        })
+        
+        //on change isavpt, if it is checked remove class d-none of  else add class d-none to class avpttype
+        $("#id_isavpt").change(function(){
+            if($(this).is(":checked")){
+                $(".avpttype").removeClass("d-none")
+                $('#id_avpttype').attr('required', true);
+                $("label[for='id_avpttype']").addClass("required")
+            }else{
+                $(".avpttype").addClass("d-none")
+                $('#id_avpttype').attr('required', false);
+                $("label[for='id_avpttype']").removeClass("required")
+            }
+        })
+
+        //on change answertype to signature field
+        $("#id_answertype").on('change', () => {
+            if($("#id_answertype").val() === 'SIGNATURE'){
+                $(".isavptcb").addClass("d-none")
+            }else{
+                $(".isavptcb").removeClass("d-none")
+            }
+        })
+        
+
+        $("#id_options").on('focusout', () => {
+            var options  = $('#id_options').val()
+            if(options.length > 0){
+                var cleanString = options.replace(/\s+/g, ' ').replace(/, /g, ',');
+                console.log(cleanString)
+                appenAlerton(cleanString.split(','))
+            }else{
+                clearSelection("#id_alerton")
+            }
+        })
+
+        //on change answertype field
+        $("#id_answertype.form-select").on("change", function(){
+            var selected = getQuesTypeValue("#id_answertype");
+            //shows and hides according to answertype
+            showHideFields(selected)
+        } )
+
+
+        var initial_selected = getQuesTypeValue("#id_answertype");
+        console.log(initial_selected, "initial selected")
+        //shows and hides according to answertype
+        showHideFields(initial_selected)
+        if($("#id_options").val().length){
+            let cleanedOptions = $("#id_options").val().replace(/\s+/g, ' ').replace(/, /g, ',');
+            initialize_alerton_field(cleanedOptions, $("#hidden_alerton").val().replace('["', "").replace('"]', ""), cleaned = false, id="#id_alerton")
+        }
+        $(".modal").removeAttr("tabindex");
+    })
+</script>
+{% endblock js %}

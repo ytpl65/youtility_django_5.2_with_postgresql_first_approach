@@ -1,0 +1,61 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+{% endblock header_end %}
+
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+        {# <p id="report_info">{{report_info}}</p> #}
+    </div>
+</div>
+{% endblock header_center %}
+
+
+{% block table %}
+
+<table style="width:100%;">
+        <tr>
+            <th scope="col"  style = "text-align:center; background-color:#f3f8fa">{{Asset_Questionset_name}}</th>
+        </tr>
+</table>
+
+
+<table id="LogSheet" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">DateTime</th>
+            <th scope="col">Question</th>
+            <th scope="col">Answer</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['StartDateTime'] }}</td>
+            <td>{{ row['QuestionName'] }}</td>
+            <td>{{ row['Answer'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

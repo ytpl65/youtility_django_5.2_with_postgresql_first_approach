@@ -1,0 +1,114 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+TypeAssist Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+{% block extra_css %}
+{{ superta_form.media.css }}
+{% endblock extra_css %}
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('onboarding:ta_list') }}" class="pe-3">TypeAssist List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Super TypeAssist Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+<!-------------  BEGIN POP-UPS CODE ------------->
+{% block popup_alerts %}
+{{ super()  }}
+{% if edit is defined %}
+<!-- to delete an instance with popup_alert pass the delete_url_name, instance_id, popup_title, popup_id -->
+{% call general_popup(title="Delete", popup_id="delete_alert") %}
+<div class="modal-body">
+	<h4>Are you sure, you want to delete this?</h4>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No Go back</button>
+	<a href="{{ url('onboarding:ta_delete', args=[superta_form.instance.id]) }}"
+		class="btn btn-sm  btn-danger rounded-1">Yes I'm Sure</a>
+</div>
+{% endcall %}
+{% endif %}
+{% endblock popup_alerts %}
+<!-------------  END POP-UPS CODE --------------->
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Super Type Assist
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+{% block form %}
+<form action="" method="post" id="id_superta_form">
+	<!---------------------- CSRF-MIDDLEWARE TOKEN ---------------------->
+	<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+	<div class="mb-3 row g-3 gx-6">
+		{{ superta_form.tacode.label_tag() }}
+		<div class="col-md-4 col-sm-4">
+			{{ superta_form.tacode }}
+			<!----- BEGIN ERROR FIELD  ------->
+			{{ superta_form.tacode.errors }}
+			<!----- END ERROR FIELD  ------->
+		</div>
+		{{ superta_form.taname.label_tag() }}
+		<div class="col-md-4 col-sm-4">
+			{{ superta_form.taname }}
+			<!----- BEGIN ERROR FIELD  ------->
+			{{ superta_form.taname.errors }}
+			<!----- END ERROR FIELD  ------->
+		</div>
+		{{ superta_form.tatype.label_tag() }}
+		<div class="col-md-4 col-sm-4">
+			{{ superta_form.tatype }}
+			<!----- BEGIN ERROR FIELD  ------->
+			{{ superta_form.tatype.errors }}
+			<!----- END ERROR FIELD  ------->
+		</div>
+	</div>
+
+</form>
+{% endblock form %}
+<!------------- END FORM ---------------------->
+
+<!------------------- BEGIN FORM PAGE ACTIONS --------------->
+{% block formpage_actions %}
+{% if edit is defined %}
+{{ form_update('id_superta_form', popup_id="delete_alert") }}
+{% else %}
+{{ form_create('id_superta_form') }}
+{% endif %}
+{% endblock formpage_actions %}
+<!------------------- END FORM PAGE ACTIONS --------------->
+
+<!--------------- BEGIN PAGE-LEVEL EXTRA SCRIPTS --------------->
+{% block extra_scripts %}
+{{ superta_form.media.js }}
+
+<script>
+	$(document).ready(function () {
+		//hide the delete button when instance is not saved yet.
+		if ('{{superta_form.instance.tacode}}' == ('None' || "")) {
+			$("#btn_del").hide()
+		}
+
+		$("#btn_clear").click(() => {
+			location.href = "{{ url('onboarding:typeassist') }}?action=form"
+		})
+	})
+</script>
+{% endblock extra_scripts %}
+<!--------------- END PAGE-LEVEL EXTRA SCRIPTS --------------->

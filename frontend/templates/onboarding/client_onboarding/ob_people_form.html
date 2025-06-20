@@ -1,0 +1,280 @@
+{% extends "onboarding/client_onboarding/base_wizard_form.html" %}
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Create People
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+	{% if wizard.form.non_field_errors() %}
+	<div id="non_field_error" class="alert alert-danger" style="width: 73%;">
+		{% for error in wizard.form.non_field_errors() %}
+		{{ error }}
+		{% endfor %}
+		<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% endif %}
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+<!----------- BEGIN FORM MESSGES --------------->
+{% block form_msgs %}
+	{% for msg in get_msgs(request) %}
+	<div class="alert {% if msg.tags %} {{ msg.tags }} {% endif %} " id="alert_msg" style="width:73%;">
+		{{ msg }}
+		<button type="button" class="btn-close flt-right" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% endfor %}
+{% endblock form_msgs %}
+<!----------- END FORM MESSGES ----------------->
+
+<!-------------- BEGIN FORM ------------------->
+{% block custom_form %}
+            <div class="mb-3 row g-3 gx-6">
+                <div class="col-md-10">
+                    <!--BEGIN INNER ROW-->
+                    <div class="row g-3 gx-6 ">
+                        <!--peoplecode-->
+                        <label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_people_form-peoplecode">Code:
+                        <span class="material-icons-outlined h-19px" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-dark" data-bs-placement="top" 
+                        title="People code is referred for all operation associated with, people please enter value without any spaces" style="vertical-align: middle; font-size: 19px;">
+                        info
+                        </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.peoplecode }}
+                            {{ wizard.form.peoplecode.errors }}
+                        </div>
+
+                        <!--peoplename-->
+                        <label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_people_form-peoplename">Name:
+                        <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                        info
+                        </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.peoplename }}
+                            {{ wizard.form.peoplename.errors }}
+                        </div>
+                        
+                        <!--loginid-->
+                        <label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_people_form-loginid">Loginid:
+                            <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                        info
+                        </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.loginid }}
+                            {{ wizard.form.loginid.errors }}
+                        </div>
+
+                        <!--email-->
+                        <label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_people_form-email">Email:
+                        <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                        info
+                        </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.email }}
+                            {{ wizard.form.email.errors }}
+                        </div>
+                        
+                        <!--mobno-->
+                        <label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_people_form-mobno">Mobno:
+                            <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                            info
+                            </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.mobno }}
+                            {{ wizard.form.mobno.errors }}
+                        </div>
+
+                        <!--gender-->
+                        {{ wizard.form.gender.label_tag() }}
+                        <div class="col-md-4">
+                            {{ wizard.form.gender }}
+                            {{ wizard.form.gender.errors }}
+                        </div>
+                        
+                        <!--dateofbirth-->
+                        {{ wizard.form.dateofbirth.label_tag() }}
+                        <div class="col-md-4">
+                            {{ wizard.form.dateofbirth }}
+                            {{ wizard.form.dateofbirth.errors }}
+                        </div>
+
+                        <!--deviceid-->
+                        <label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_people_form-deviceid">Device Id:
+                            <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                            info
+                            </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.deviceid }}
+                            {{ wizard.form.deviceid.errors }}
+                        </div>
+                        
+                        <!--shift-->
+                        <label class="required col-form-label col-md-2 col-sm-2 text-sm-right" for="id_people_form-deviceid">Shift:
+                            <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                            info
+                            </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.shift }}
+                            {{ wizard.form.shift.errors }}
+                        </div>
+
+                       <!------------ BEGIN CHECKBOXES  --------------------->
+                        <div class="booleans col-md-6 d-flex justify-content-sm-start mt-5">
+                            <label for={{ wizard.form.isenable.id_for_label }}
+                                class="form-check-label bool col-form-label me-5 text-sm-right">{{ wizard.form.isenable.label }}
+                                
+                                <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                                info
+                                </span>&nbsp{{ wizard.form.isenable }}
+                                </label>
+                            
+                        </div>
+                        <!-------------- END CHECKBOXES  ------------------>
+                    </div>
+                    <!--END INNER ROW-->
+                </div>
+                <!--END FIRST COLUMN-->
+                <!--BEGIN IMAGE INPUT-->
+                <div class="col-md-2">
+
+                    <!--begin::Image input-->
+                    <div class="image-input image-input-empty" data-kt-image-input="true" style="background-image: url({{ static('assets/media/images/blank.png') }})">
+                        <!--begin::Image preview wrapper-->
+                        <div class="image-input-wrapper w-125px h-125px"></div>
+                        <!--end::Image preview wrapper-->
+
+                        <!--begin::Edit button-->
+                        <label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-white shadow"
+                            data-kt-image-input-action="change"
+                            data-bs-toggle="tooltip"
+                            data-bs-dismiss="click"
+                            title="Change avatar">
+                            <span class="svg-icon svg-icon-1">
+                                <span class="material-icons align-middle dark fs-5">
+                                    edit
+                                </span>
+                            </span>
+
+                            <!--begin::Inputs-->
+                            <input type="file" name="{{ wizard.form.peopleimg.html_name }}" accept=".png, .jpg, .jpeg" />
+                            <input type="hidden" name="avatar_remove" />
+                            <!--end::Inputs-->
+                        </label>
+                        <!--end::Edit button-->
+
+                        <!--begin::Cancel button-->
+                        <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-white shadow"
+                            data-kt-image-input-action="cancel"
+                            data-bs-toggle="tooltip"
+                            data-bs-dismiss="click"
+                            title="Cancel avatar">
+                            <span class="svg-icon svg-icon-1">
+                                <span class="material-icons align-middle dark fs-5">
+                                    clear
+                                </span>
+                            </span>
+                        </span>
+                        <!--end::Cancel button-->
+
+                        <!--begin::Remove button-->
+                        <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-white shadow"
+                            data-kt-image-input-action="remove"
+                            data-bs-toggle="tooltip"
+                            data-bs-dismiss="click"
+                            title="Remove avatar">
+                            <i class="bi bi-x fs-2"></i>
+                        </span>
+                        <!--end::Remove button-->
+                    </div>
+                    <!--end::Image input-->
+                </div>
+                <!--END IMAGE INPUT-->
+            </div>
+            <!--END FIRST ROW-->
+            <div class="mb-4 row">
+                <section class="my-6">
+                    <h6>Work Information</h6>
+                    <hr>
+                    <div class="mb-3 row g-3 gx-6">
+                        <!--peopletype-->
+                       <label for="id_people_form-peopletype" class="col-form-label col-md-2 col-sm-2 text-sm-right">People Type:
+                        <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                        info
+                        </span>
+                       </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.peopletype }}
+                            {{ wizard.form.peopletype.errors }}
+                        </div>
+                       
+                        <!--dateofjoin-->
+                        {{ wizard.form.dateofjoin.label_tag() }}
+                        <div class="col-md-4">
+                            {{ wizard.form.dateofjoin }}
+                            {{ wizard.form.dateofjoin.errors }}
+                        </div>
+                       
+                        <!--department-->
+                        <label for="id_people_form-department" class="col-form-label col-md-2 col-sm-2 text-sm-right">Department:
+                            <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                            info
+                            </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.department }}
+                            {{ wizard.form.department.errors }}
+                        </div>
+                       
+                        <!--designation-->
+                        {{ wizard.form.designation.label_tag() }}
+                        <div class="col-md-4">
+                            {{ wizard.form.designation }}
+                            {{ wizard.form.designation.errors }}
+                        </div>
+                       
+                        <!--dateofreport-->
+                        {{ wizard.form.dateofreport.label_tag() }}
+                        <div class="col-md-4">
+                            {{ wizard.form.dateofreport }}
+                            {{ wizard.form.dateofreport.errors }}
+                        </div>
+                       
+                        <!--reportto-->
+                        <label for="id_people_form-reportto" class="col-form-label col-md-2 col-sm-2 text-sm-right">Report to:
+                            <span class="material-icons-outlined h-19px" style="vertical-align: middle; font-size: 19px;">
+                            info
+                            </span>
+                        </label>
+                        <div class="col-md-4">
+                            {{ wizard.form.reportto }}
+                            {{ wizard.form.reportto.errors }}
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <input type="submit" value="Next" class="btn btn-sm btn-success">
+{% endblock custom_form %}
+<!------------- END FORM ---------------------->
+
+{% block extra_scripts %}
+<script>
+    //ADD CALENDER TO DATE FIELDS WITH FLAT-PICKR PLUGIN
+    $("#id_people_form-dateofbirth").flatpickr({dateFormat: 'd M Y'})
+    $("#id_people_form-dateofjoin").flatpickr({dateFormat: 'd M Y'})
+    $("#id_people_form-dateofreport").flatpickr({dateFormat: 'd M Y'})
+    
+
+</script>
+{% endblock extra_scripts %} 
+

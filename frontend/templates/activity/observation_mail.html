@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th {
+            background-color: #eaf1fb;
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #ddd;
+            color: black;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        tr.alerts > td{
+            color: red;
+        }
+    </style>
+</head> 
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="card">
+                <div class="card-header">
+                    Readings alerts for the <strong>{{ jobdesc }}</strong> was observed at <strong>{{ site }}</strong> performed by
+                    <strong>{{ performedby }}</strong> on <strong>{{ when }}</strong>.
+                </div><br>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Name</th>
+                                <th>Min</th>
+                                <th>Max</th>
+                                <th>Options</th>
+                                <th>Alert on</th>
+                                <th>Answer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reading in details %}
+                            <tr class="{% if reading['alerts'] %} alerts {% endif %}">
+                                <td>{{ reading['seqno'] }}</td>
+                                <td>{{ reading['question__quesname'] }}</td>
+                                <td>{{ reading['min'] }}</td>
+                                <td>{{ reading['max'] }}</td>
+                                <td>{{ reading['options'] }}</td>
+                                <td>{{ reading['alerton'] }}</td>
+                                <td><strong>{{ reading['answer'] }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

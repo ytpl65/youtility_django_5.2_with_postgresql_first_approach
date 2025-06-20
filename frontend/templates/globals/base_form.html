@@ -1,0 +1,340 @@
+{% extends "globals/layout.html" %}
+
+{%- block pagebody_container -%}
+
+{%- block wizard_head -%}
+{% set session = request.session %}
+{%- if session['wizard_data'] is defined -%}
+<link rel="stylesheet" href="{{ static('assets/js/onboarding/wizard.css') }}" type="text/css">
+{% endif %}
+{% endblock wizard_head %}
+
+{% block base_head %}
+<title>{% block page_title %}{% endblock page_title %}</title>
+{% endblock base_head %}
+
+{%- block upside_card -%}
+<!-------------------BEGIN LABELS OF WIZARD STEPS -------------------->
+{% set labels_of_wizard = ({1: 'Buisiness Unit', 2: 'Shift', 3: 'People',
+                                    4: 'People Group', 5: 'Prevew Submissions'}) %}
+<!-------------------END LABELS OF WIZARD STEPS --------------------->
+{% set session = request.session %}
+
+{%- if session['wizard_data'] is defined -%}
+<!------------------ BEGIN WIZARD STEP BAR --------------------------------->
+<div class="stepper-wrapper card mb-4">
+    <div class="card-body d-flex flex-row">
+        {% for index in range(1, session['wizard_data']['count'] + 1) %}
+        {% if (index < session['wizard_data']['current_step']) %}
+        <div class="stepper-item completed">
+            <div class="step-counter">{{ index }}</div>
+            <div class="step-name"><strong>{{ labels_of_wizard[index] }}</strong>
+                <span class="material-icons" style="vertical-align: middle; font-size: 16px; color:#189D54;">
+                    check_circle
+                </span>
+            </div>
+        </div>
+        {% elif (index == session['wizard_data']['current_step']) %}
+        <!---------------- BEGIN STEP ITEM --------------------->
+        <div class="stepper-item active-step">
+            <div class="step-counter">{{ index }}</div>
+            <div class="step-name">{{ labels_of_wizard[index] }}</div>
+        </div>
+        <!----------------- END STEP ITEM ----------------------->
+        {% else %}
+        <!---------------- BEGIN STEP ITEM --------------------->
+        <div class="stepper-item">
+            <div class="step-counter">{{ index }}</div>
+            <div class="step-name">{{ labels_of_wizard[index] }}</div>
+        </div>
+        <!----------------- END STEP ITEM ----------------------->
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+<!------------------ END WIZARD STEP BAR --------------------------------->
+{% endif %}
+
+{% endblock upside_card %}
+
+<!--BEGIN To Render something
+    on top of form -->
+
+<!--END To Render something
+    on top of form -->
+{% block fullpage %}
+
+{% endblock fullpage %}
+
+
+<!--BEGIN CARD-->
+<div class="card">
+    <!-- BEGIN CARD-BODY-->
+    <div class="card-body">
+        {% block card_tabs %}
+
+        {% endblock card_tabs %}
+        <!--BEGIN CARD-HEADER-->
+        <div class="card-header ps-0 my-0 d-flex justify-content-md-between" style="border: 0;">
+
+
+
+
+
+            <h4 class="card-title" style="color:#3a3b40de">
+
+                {%- block form_title -%}
+
+                {% endblock form_title %}&nbsp;
+                <!--END To Reder form-title -->
+
+                <span class="svg-icon svg-icon-2">
+                    <span class="material-icons h-19px" style="vertical-align: middle; font-size: 19px;">
+                        <!--BEGIN To Change the icon 
+                            adjacent to the form-title-->
+                        {% block card_icon %}
+                        list_alt
+                        {% endblock card_icon %}
+                        <!--END To Change the icon 
+                            adjacent to the form-title-->
+                    </span>
+                </span>
+
+                <!--BEGIN To custom the icon 
+                    adjacent to the form-title-->
+                {% block custom_title %}
+
+                {% endblock custom_title %}
+                <!--END To custom the icon 
+                    adjacent to the form-title-->
+
+
+            </h4>
+            <!-- BEGIN To render non-field-errors
+                of form use this block-->
+            {%- block nonfield_errors -%}
+
+            {% endblock nonfield_errors %}
+            <!-- END To render non-field-errors
+                of form use this block-->
+
+            <!--keep empty-->
+            <div class="d-flex">
+                {% block extra_buttons %}
+
+                {% endblock extra_buttons %}
+                {% block ajax_page_actions %}
+
+                {% endblock ajax_page_actions %}
+                {% block page_actions %}
+
+                {% endblock page_actions %}
+            </div>
+        </div>
+        <!--END CARD-HEADER-->
+
+        <!--------------------
+            BEGIN To Render
+            form use  this block 
+            ---------------------->
+        {%- block form -%}
+
+        {% endblock form %}
+        <!---------------------
+            END To Render 
+            form use  this block 
+            ---------------------->
+
+        <!----------------------------------------------
+            BEGIN To render form actions like
+            (Submit, clearform, delete, etc) use  this block
+            ---------------------------------------------->
+        {%- block formpage_actions -%}
+        {% if  request.session['wizard_data'] is defined %}
+        <br>
+        <div class="d-flex">
+            {% set wd = request.session['wizard_data'] %}
+            <div class="order-1 ms-auto py-2">
+                {% if wd['prev_url'] != "" %}
+                {% set PREV_URL = url(wd['prev_url'], args=[wd['prev_inst']]) if wd['prev_inst'] else url(wd['prev_url']) %}
+                <!---PREVIOUS FORM BTN ---->
+                <a href="{{ PREV_URL }}" class="btn btn-sm btn-primary2 rounded-1" data-bs-toggle="tooltip"
+                    data-bs-placement="top" data-bs-dimiss="click" title="proceed to previous step"><i
+                        class="fas text-white fa-backward"></i>Previous</a>
+                {% endif %}
+
+                {% set NEXT_URL = url(wd['next_url'], args=[wd['next_inst']]) if wd['next_inst'] else url(wd['next_url']) %}
+                <!---NEXT FORM BTN ---->
+                <a href="{{ NEXT_URL }}" class="btn btn-sm btn-primary2 rounded-1" id="next_btn"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="proceed to next step">Next <i
+                        class="fas text-white fa-forward"></i></a>
+
+                {% set wd = request.session['wizard_data'] %}
+                {% if not wd['wizard_completed'] %}
+                <button type="button" id="id_quitwizard" class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
+                    data-bs-dimiss="click" data-bs-placement="top" title="delete the wizard and its data">Quit
+                    Wizard <i class="fas text-white fa-trash-alt"></i></button>
+                {% endif %}
+            </div>
+
+            <div class="py-2">
+                {% set wd = request.session['wizard_data'] %}
+                <!---SAVE FORM BTN ---->
+                <button type="submit" class="btn btn-sm  btn-success rounded-1" data-bs-toggle="tooltip"
+                    data-bs-placement="top" data-bs-dimiss="click" title="submit form before proceeding to next step"
+                    id="save_wizard_form" form="{{ wd['formid'] }}">Submit <i
+                        class="fas text-white fa-cloud-upload-alt"></i></button>
+                <!---SKIP FORM BTN ---->
+                {% set NEXT_URL = url(wd['next_url'], args=[wd['next_inst']]) if wd['next_inst'] else url(wd['next_url']) %}
+                <a href="{{ NEXT_URL }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-dimiss="click"
+                    title="skip this step" class="btn btn-sm btn-secondary rounded-1">Skip <i
+                        class="fas  fa-ban"></i></a>
+
+                {% if  wd['current_inst'] != None and edit is defined %}
+                <!---ADD-MORE FORM BTN ---->
+                <a href="{{ url(wd['current_url']) }}" data-bs-toggle="tooltip" data-bs-placement="top"
+                    data-bs-dimiss="click" title="create more entries" class="btn btn-sm btn-primary2 rounded-1">Add
+                    More <i class="fas text-white fa-plus"></i></a>
+                <!---DELETE FORM BTN ---->
+                <a href="{{ url(wd['del_url'], args=[wd['current_inst']]) }}" id="delete_form" data-bs-toggle="tooltip"
+                    data-bs-placement="top" data-bs-dimiss="click" title="delete this entry"
+                    class="btn btn-sm btn-danger rounded-1">Delete <i class="fas text-white fa-trash-alt"></i></a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endblock formpage_actions %}
+        <!----------------------------------------------
+            END To render form actions like 
+            (Submit, clearform, delete, etc) use  this block
+            ------------------------------------------------>
+
+
+
+
+        <!------------------------------
+            BEGIN To Render something 
+            below form, use this block 
+            -------------------------------->
+        {%- block extras -%}
+
+        {% endblock extras %}
+        <!------------------------------
+            END To Render something 
+            below form, use this block 
+            --------------------------------->
+        <!----------------------------------------
+            ONBOARDING WIZARD TIMELINE START
+            ----------------------------------------->
+        {%- if  request.session['wizard_data'] is defined -%}
+        <hr>
+        <div class="row">
+            <div class="col-md-3 card card-bordered border-2 border-secondary">
+                <div class="card-body">
+                    <h5 class="card-titile" style="color:#3a3b40de">Buisiness Views</h5>
+                    <h6>
+                        <ol>
+                            {% for bu in request.session['wizard_data']['timeline_data']['buids'] %}
+                            <a href="{{ url('onboarding:wiz_bu_update', args=[bu['id']]) }}">
+                                <li>Code: {{ bu['bucode'] }}, Name: {{ bu['buname'] }}</li>
+                            </a>
+                            {% endfor %}
+                        </ol>
+                    </h6>
+                </div>
+            </div>
+            <div class="col-md-3 card card-bordered border-2 border-secondary">
+                <div class="card-body">
+                    <h5 class="card-titile" style="color:#3a3b40de">Shifts</h5>
+                    <h6>
+                        <ol>
+                            {% for shift in request.session['wizard_data']['timeline_data']['shiftids'] %}
+                            <a href="{{ url('onboarding:wiz_shift_update', args=[shift['id']]) }}">
+                                <li>
+                                    Name: {{ shift['shiftname'] }}
+                                </li>
+                            </a>
+                            {% endfor %}
+                        </ol>
+                    </h6>
+                </div>
+            </div>
+            <div class="col-md-3 card card-bordered border-2 border-secondary">
+                <div class="card-body">
+                    <h5 class="card-titile" style="color:#3a3b40de">People</h5>
+                    <h6>
+                        <ol>
+                            {% for people in request.session['wizard_data']['timeline_data']['peopleids'] %}
+                            <a href="{{ url('peoples:wiz_people_update', args=[people['id']]) }}">
+                                <li>Code: {{ people['peoplecode'] }}, Login Id: {{ people['loginid'] }}</li>
+                            </a>
+                            {% endfor %}
+                        </ol>
+                    </h6>
+                </div>
+            </div>
+            <div class="col-md-3 card card-bordered border-2 border-secondary">
+                <div class="card-body">
+                    <h5 class="card-titile" style="color:#3a3b40de">Groups</h5>
+                    <h6>
+                        <ol>
+                            {% for pg in request.session['wizard_data']['timeline_data']['pgroupids'] %}
+                            <a href="{{ url('peoples:wiz_pgroup_update', args=[pg['id']]) }}">
+                                <li>Name: {{ pg['groupname'] }}</li>
+                            </a>
+                            {% endfor %}
+                        </ol>
+                    </h6>
+                </div>
+            </div>
+        </div>
+        <hr>
+
+        {% endif %}
+        <!----------------------------------------
+            ONBOARDING WIZARD TIMELINE END
+            ----------------------------------------->
+
+
+        <!------------------------------------------
+            BEGIN FOR DEVELOPMENT, LATER WILL BE DELETED
+            --------------------------------------------->
+        {%- if  request.session['wizard_data'] is defined -%}
+        <hr>
+        <h3>Wizard Data For Dev. Purpose</h3>
+        <hr>
+        {% set wd = request.session['wizard_data'] %}
+        {% for k, v in wd.items() %}
+        <h4>{{ k }}&nbsp{{ v }}</h4>
+        {% endfor %}
+        {% endif %}
+        <!------------------------------------------
+            END FOR DEVELOPMENT, LATER WILL BE DELETED
+            --------------------------------------------->
+    </div>
+    <!--END CARD-BODY-->
+</div>
+<!--END CARD-->
+{% endblock pagebody_container %}
+
+{%- block popup_alerts -%}
+{{ super()  }}
+{% call general_popup( popup_id = "id_quit_wizard", title="Delete Wizard Confirmation") %}
+<div class="modal-body">
+    <h5>Are you sure?</h5>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <a href="#" class="btn btn-sm  btn-danger rounded-1">Yes</a>
+</div>
+{% endcall %}
+{% endblock popup_alerts %}
+
+{% block base_script %}
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3PUZCB7u2PiV8whHeAshweOPIK_d690o&libraries=places&loading=async"></script>
+{% endblock base_script %}
+<!-------- Begin For Page Level ------->
+{%- block extra_scripts -%}
+
+{% endblock extra_scripts %}
+<!-------- End For Page Level ------->

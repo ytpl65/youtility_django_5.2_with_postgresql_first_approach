@@ -1,0 +1,209 @@
+{% extends "globals/base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ static('assets/plugins/custom/leaflet/leaflet.css') }}">
+<style>
+    #map{
+        height: 100vh;
+    }
+    .custom-icon span {
+        color: white;
+        z-index: 2;
+    }
+
+    .custom-icon i.fas {
+        color:#01579b;  /*Adjust color to your liking */
+        z-index: 1;
+    }
+
+    table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 1px solid black;
+  }
+
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+  .COMPLETED{
+    color: rgb(0, 160, 0);
+  }
+  .ASSIGNED{
+    color: red;
+  }
+
+
+
+</style>
+{% endblock extra_css %}
+
+
+{% block body %}
+<div id="map"></div>
+{% endblock body %}
+
+{% block extra_scripts %}
+<script src="{{ static('assets/plugins/custom/leaflet/leaflet.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"
+ integrity="sha512-V8RRDnS4BZXrat3GIpnWx+XNYBHQGdK6nKOzMpX4R0hz9SPWt7fltGmmyGzUkVFZUQODO1rE+SWYJJkw3SYMhg=="
+ crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    //latest loc
+    function plotLocation(latestloc){
+        var popUpContent = `
+        <table>
+            <tr>
+                <td>Name: ${latestloc['peoplename']}</td>
+            </tr>
+            <tr>
+                <td>Email: ${latestloc['email']}</td>
+            </tr>
+            <tr>
+                <td>Mobile No: ${latestloc['mobno']}</td>
+            </tr>
+            <tr>
+                <td>Coordinates: ${latestloc['gps']}</td>
+            </tr>
+            <tr>
+                <td>Last Fetched On: ${latestloc['time']}</td>
+            </tr>
+        </table>
+        `
+        var loc = new L.LatLng(...latestloc['gps']);
+        var personIcon =  L.icon(
+            {
+            iconUrl: "{{ static('assets/plugins/custom/leaflet/images/motor-biker-3d.png') }}",
+            iconSize: [58, 58],
+            shadowUrl:"{{ static('assets/plugins/custom/leaflet/images/marker-shadow.png') }}",
+            iconAnchor: [19, 47]
+            }
+        )
+            
+        var marker = new L.Marker(loc, {icon:personIcon});
+        marker.bindPopup(popUpContent);
+        // Add the mouseover event listener to open the popup on hover
+        marker.on('mouseover', function (e) {
+        this.openPopup();
+        });
+        marker.on('mouseout', function (e) {
+        this.closePopup();
+        });
+        map.addLayer(marker)
+    }
+    //function add markers
+    function addCheckpointsToMap(_checkpoints, info, path, latestloc){
+        var serialNumber = 0
+        _checkpoints.forEach((latlng, idx) => {
+            var popUpContent = `
+                <table>
+                    <tr>
+                        <td>Name: ${info[idx]['jobdesc']}</td>
+                    </tr>
+                    <tr>
+                        <td>Checklist: ${info[idx]['qsetname']}</td>
+                    </tr>
+                    <tr>
+                        <td>Start Time: ${info[idx]['starttime']}</td>
+                    </tr>
+                    <tr>
+                        <td>End Time: ${info[idx]['endtime']}</td>
+                    </tr>
+                </table>
+            `
+            serialNumber++
+            var loc = new L.LatLng(...latlng[0]);
+            bounds.extend(loc)
+            let iconUrlMap = {
+                'COMPLETED':"{{ static('assets/plugins/custom/leaflet/images/marker-icon-lightgreen.png') }}",
+                'ASSIGNED':"{{ static('assets/plugins/custom/leaflet/images/marker-icon.png') }}",
+                'AUTOCLOSED':"{{ static('assets/plugins/custom/leaflet/images/marker-icon-red.png') }}",
+            }
+            let iconOptions = {
+                iconUrl:iconUrlMap[info[idx]['jobstatus']],
+                shadowUrl:"{{ static('assets/plugins/custom/leaflet/images/marker-shadow.png') }}",
+            }
+            let customIcon = L.icon(iconOptions)
+            
+            //checkpoint marker
+            var marker = new L.Marker(loc, {icon:customIcon});
+            marker.bindPopup(popUpContent);
+ 
+            // Add the mouseover event listener to open the popup on hover
+            marker.on('mouseover', function (e) {
+            this.openPopup();
+            });
+            marker.on('mouseout', function (e) {
+            this.closePopup();
+            });
+            map.addLayer(marker)
+            oms.addMarker(marker)
+            
+        })
+        //polyline
+        if(path){
+            path.forEach(function(latlng){
+                // Create a marker with a circular icon for each coordinate
+                var marker = L.circleMarker([latlng[0], latlng[1]], {
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.5,
+                    radius: 10
+                }).addTo(map);
+            })
+        }
+        map.fitBounds(bounds)
+        
+        //plot user latest fetched location
+        plotLocation(latestloc)
+        
+    }
+
+    //create icon with text
+    function createDivIconWithText(serialNumber, status) {
+        console.log(status)
+        return L.divIcon({
+            className: 'custom-icon',
+            html: `
+                <div style="width: 38px; height: 95px; display: flex; align-items: center; justify-content: center; position: relative;">
+                    <i class="fas  fa-map-marker fa-3x"></i> 
+                    <span style="position: absolute; font-size: 11px; font-weight: bold;">${serialNumber}</span>
+                </div>
+            `,
+            iconSize: [38, 95],
+            shadowUrl:"{{ static('assets/plugins/custom/leaflet/images/marker-shadow.png') }}",
+            iconAnchor: [19, 47]
+        });
+    }
+
+
+    
+    var map = L.map('map').setView([20.59, 78.96], 7);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    var oms = new OverlappingMarkerSpiderfier(map);
+    var bounds = new L.LatLngBounds();
+    var lightIcon = L.Icon.Default;
+    var darkIcon  = L.Icon.Default.extend({options: {iconUrl: L.Icon.Default.imagePath + '/marker-desat.png'}});
+
+    //load checkpoints
+    fire_ajax_get(
+        {
+            data:{'jobneed_id':"{{ jobneed_id }}", "action":'get_checkpoints'},
+            url:"{{ url('schedhuler:site_tour_tracking') }}"
+        }
+    )
+    .done((data, status, xhr) => {
+        console.log(data)
+        var checkpoints = data.checkpoints
+        addCheckpointsToMap(checkpoints, data.info, data.path, data.latestloc)
+
+    })
+    .fail((xhr, status, error) => {
+        console.log("something went wrong", error)
+    })    
+</script>
+{% endblock extra_scripts %}

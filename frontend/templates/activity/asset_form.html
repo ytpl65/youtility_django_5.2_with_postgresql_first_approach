@@ -1,0 +1,607 @@
+{% extends "globals/base_form.html" %}
+{% from "onboarding/partials/partial_ta_form.html" import typeassist_form with context %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Asset Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block extras_css %}
+{{ assetform.media.css }}
+{% endblock extras_css %}
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Asset Form
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('activity:asset') }}?template=true" class="pe-3">Assets</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Asset Form</a></li>
+{% endblock pagebreadcumb %}
+
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors" role="alert" style="display:none">
+    <strong>Error: </strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+
+{% block form %}
+<form action="" method="'post" id="assetform">
+
+    <input type="hidden" name="pk" id="pk" value="{{ assetform.instance.pk }}">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {{ assetform.identifier }}
+    <input type="hidden" name="{{   assetform.ctzoffset.name }}" id="{{ assetform.ctzoffset.auto_id }}" value="-1">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.assetcode.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.assetcode }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.assetname.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.assetname }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.runningstatus.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.runningstatus }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.location.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.location }}
+                </div>
+            </div>
+            <div class="input-group mb-3 assetstatus">
+                <div class="col-md-4">
+                    {{ assetform.status_field.label_tag() }}
+                </div>
+                <div class="col-md-3">
+                    {{ assetform.status_field }}
+                </div>
+                <div class="col-md-5">
+                    <p id="status_fetched" class="ms-2 mb-0 pt-4 text-primary2 fs-7 text-decoration-underline"></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.type.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.type }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    <label for="id_gpslocation" class="col-form-label text-sm-right">GPS:
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    <div class="d-flex d-inline">
+                        <input type="text" name="gpslocation" readonly placeholder="Latitude, Longitude"
+                            geom_type="POINT" class="form-control" id="id_gpslocation">
+                        <button type='button' class="btn btn-sm btn-secondary rounded-right rounded-1"
+                            style="height:3.2rem;" id="id_setgps">GPS</button>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.parent.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.parent }}
+                </div>
+            </div>
+            <div class="d-flex justify-content-start">
+                <div class="input-group form-check form-switch form-check-solid mb-6">
+                    <label for="{{ assetform.iscritical.id_for_label }}"
+                        class="form-check-label bool text-sm-right">{{ assetform.iscritical }}&nbsp;&nbsp;{{ assetform.iscritical.label }}</label>
+                </div>
+                <div class="input-group form-check form-switch form-check-solid mb-6">
+                    <label for="{{ assetform.enable.id_for_label }}"
+                        class="form-check-label bool text-sm-right">{{ assetform.enable }}&nbsp;&nbsp;{{ assetform.enable.label }}</label>
+                </div>
+                <div class="input-group form-check form-switch form-check-solid mb-6">
+                    <label for="{{ assetextrasform.ismeter.id_for_label }}"
+                        class="form-check-label bool text-sm-right">{{ assetextrasform.ismeter }}&nbsp;&nbsp;{{ assetextrasform.ismeter.label }}</label>
+                </div>
+                <div class="input-group form-check form-switch form-check-solid mb-6">
+                    <label for="{{ assetextrasform.is_nonengg_asset.id_for_label }}"
+                        class="form-check-label bool text-sm-right">{{ assetextrasform.is_nonengg_asset }}&nbsp;&nbsp;{{ assetextrasform.is_nonengg_asset.label }}</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <h4 class="ch4 mb-4">Asset Details</h4>
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div for="id_category" class="col-md-4">
+                    {{ assetform.category.label_tag() }}
+                </div>
+                <div class="col-md-8 d-flex align-items-center">
+                    {{ assetform.category }}
+                    <a href="" type="button" data-bs-toggle="modal" data-bs-target="#category_popup"><span
+                        style="font-size: 24px;" data-bs-toggle="tooltip" data-bs-placement="left"
+                        title="If you haven't found an option in selection menu, then create one from here"
+                        class="material-icons-outlined mt-3 ps-2 primary-col opacity-50">add_circle
+                    </span></a>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div for="id_subcategory" class="col-md-4">
+                    {{ assetform.subcategory.label_tag() }}
+                </div>
+                <div class="col-md-8 d-flex align-items-center">
+                    {{ assetform.subcategory }}
+                    <a href="" type="button" data-bs-toggle="modal" data-bs-target="#subcategory_popup"><span
+                        style="font-size: 24px;" data-bs-toggle="tooltip" data-bs-placement="left"
+                        title="If you haven't found an option in selection menu, then create one from here"
+                        class="material-icons-outlined mt-3 ps-2 primary-col opacity-50">add_circle
+                    </span></a>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div for="id_brand" class="col-md-4">
+                    {{ assetform.brand.label_tag() }}
+                </div>
+                <div class="col-md-8 d-flex align-items-center">
+                    {{ assetform.brand }}
+                    <a href="" type="button" data-bs-toggle="modal" data-bs-target="#brand_popup"><span
+                        style="font-size: 24px;" data-bs-toggle="tooltip" data-bs-placement="left"
+                        title="If you haven't found an option in selection menu, then create one from here"
+                        class="material-icons-outlined mt-3 ps-2 primary-col opacity-50">add_circle
+                    </span></a>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.unit.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.unit }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.capacity.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.capacity }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.supplier.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.supplier }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.meter.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.meter }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetform.servprov.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetform.servprov }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.invoice_no.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.invoice_no }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.invoice_date.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.invoice_date }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.service.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.service }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.sfdate.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.sfdate }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.stdate.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.stdate }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.msn.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.msn }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.yom.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.yom }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.bill_val.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.bill_val }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.bill_date.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.bill_date }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.purchase_date.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.purchase_date }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.inst_date.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.inst_date }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.po_number.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.po_number }}
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="col-md-4">
+                    {{ assetextrasform.far_asset_id.label_tag() }}
+                </div>
+                <div class="col-md-8">
+                    {{ assetextrasform.far_asset_id }}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock form %}
+
+{% block popup_alerts %}
+<!-- Moda for setting GPS coordianates-->
+{% call general_popup(title="Set GPS Location", popup_id="open_map", modal_size="modal-lg") %}
+<div class="modal-body card">
+    <div class="card-body p-0">
+        <div id="map" style="width:750px; height:350px"></div>
+    </div>
+</div>
+<div class="modal-footer d-flex justify-content-between">
+    <div>
+        <p>Tip: Zoom in for accurate coordinates of address, place the marker and then set the coords.</p>
+    </div>
+    <div></div>
+    <div><a href="#" class="btn" id="close_setgps" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary2" id="set_the_coords">Set the coordinates</a>
+    </div>
+</div>
+{% endcall %}
+
+<!------------- typeassist popup for Category onclick + icon ---------------------->
+{% call general_popup(title='Create TypeAssist', popup_id = "category_popup") %}
+<form action="" method="post" id="pop_category_form">
+    <div class="modal-body">
+        <input type="hidden" name="form_name" , value="ta_form">
+        {% if ta_form is defined %}
+        {{ typeassist_form() }}
+        {% endif %}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-sm  btn-secondary rounded-1" data-bs-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-sm  btn-primary2 rounded-1" value="Submit" form="pop_category_form" />
+    </div>
+</form>
+{% endcall %}
+
+<!------------- typeassist popup for Sub Category onclick + icon ---------------------->
+{% call general_popup(title='Create TypeAssist', popup_id = "subcategory_popup") %}
+<form action="" method="post" id="pop_subcategory_form">
+    <div class="modal-body">
+        <input type="hidden" name="form_name" , value="ta_form">
+        {% if ta_form is defined %}
+        {{ typeassist_form() }}
+        {% endif %}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-sm  btn-secondary rounded-1" data-bs-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-sm  btn-primary2 rounded-1" value="Submit" form="pop_subcategory_form" />
+    </div>
+</form>
+{% endcall %}
+
+<!------------- typeassist popup for Brand onclick + icon ---------------------->
+{% call general_popup(title='Create TypeAssist', popup_id = "brand_popup") %}
+<form action="" method="post" id="pop_brand_form">
+    <div class="modal-body">
+        <input type="hidden" name="form_name" , value="ta_form">
+        {% if ta_form is defined %}
+        {{ typeassist_form() }}
+        {% endif %}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-sm  btn-secondary rounded-1" data-bs-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-sm  btn-primary2 rounded-1" value="Submit" form="pop_brand_form" />
+    </div>
+</form>
+{% endcall %}
+{% endblock popup_alerts %}
+
+{% block ajax_page_actions %}
+<div class="form-actions">
+    <button type="submit" form="assetform" class="btn btn-sm btn-primary2 btn-hover-scale">
+        {% if assetform.instance.id %}
+        Update
+        {% else %}
+        Save
+        {% endif %}
+        &nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+    </button>
+
+    <button type="button" id="btn_clear" class="btn btn-sm btn-secondary btn-hover-scale">
+        Clear&nbsp;<i class="fas  fa-times"></i>
+    </button>
+    {% if assetform.instance.id %}
+    <button type="button" onclick="deleteAsset(this)" data-id="{{ assetform.instance.id }}" id="id_deleteAsset"
+        class="btn btn-sm btn-danger btn-hover-scale">
+        Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+    </button>
+    {% endif %}
+
+</div>
+{% endblock ajax_page_actions %}
+
+{% block extra_scripts %}
+{{ assetform.media.js }}
+<script>
+    var map, userMarker, currinfowindow, currAddr;
+    const urlname = "{{ url('activity:asset') }}"
+
+    function getLatLng() {
+        var gps =
+            '{% if assetform.instance.gpslocation != None %}{{ assetform.instance.gpslocation.y }},{{ assetform.instance.gpslocation.x }}{% else %}None{% endif %}';
+        if (gps != "None") {
+            console.log('{{ assetform.instance.gpslocation }}')
+            return {
+                lat: parseFloat(gps.split(',')[0]),
+                lng: parseFloat(gps.split(',')[1])
+            }
+        }
+        return {
+            lat: 0.0,
+            lng: 0.0
+        }
+    }
+</script>
+<script src="{{ static('assets/js/local/maps.js') }}"></script>
+<script>
+    //delete asset 
+    function deleteAsset(elemt) {
+        var id = "{{ assetform.instance.pk }}"
+        var viewname = 'Asset Form'
+        show_alert_before_delete(viewname)
+            .then((result) => {
+                if (result.isConfirmed) { //delete requested by user
+                    let urlname = "{{ url('activity:asset') }}"
+                    const params = {
+                        url: `${urlname}?action=delete&id=${id}`
+                    }
+                    fire_ajax_get(params)
+                        .done((data, status, xhr) => {
+                            show_successful_delete_alert() //defined in customjs
+                            window.setTimeout(function () {
+                                window.location.href = "{{ url('activity:asset') }}?template=true";
+                            }, 2000);
+                        })
+                        .fail((xhr, status, error) => {
+                            let err = typeof xhr.responseJSON.errors == 'string' ? xhr.responseJSON.errors :
+                                'Something went wrong!'
+                            show_error_alert(err) //defined in custom.js
+                        })
+                }
+            })
+    }
+
+    $(document).ready(function () {
+        //adding date widgets
+        $("#id_sfdate, #id_stdate, #id_bill_date, #id_purchase_date ,#id_inst_date, #id_invoice_date")
+            .flatpickr();
+
+        //onclick id_setgps open popup open-map
+        $("#id_setgps").click(function () {
+            $("#open_map").modal('show');
+            initMap("map");
+        });
+        //on clear load new form
+        $("#btn_clear").click(() => {
+            location.href = "{{ url('activity:asset') }}?action=form"
+        })
+
+        //onclick set the coords get lat and lng from useMarker and set to gpslocation field
+        $("#set_the_coords").click(function () {
+            var lat = userMarker.getPosition().lat();
+            var lng = userMarker.getPosition().lng();
+            $("#id_gpslocation").val(lat + ', ' + lng);
+            const geocoder = new google.maps.Geocoder()
+            getAddressOfPoint(geocoder, {
+                lat: lat,
+                lng: lng
+            }, (address) => {
+                $("#id_address").val(address)
+            })
+            $("#open_map").modal('hide');
+        });
+
+
+
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+        //hide the delete button when instance is not saved yet.
+        if ('{{assetform.instance.id}}' == 'None') {
+            $("#btn_del").hide()
+            $(".assetstatus").hide()
+
+        } else {
+            $("#id_gpslocation").val(
+                "{{ assetform.instance.gpslocation.coords[::-1] if assetform.instance.gpslocation is not none else 'NONE' }}"
+                )
+        }
+
+        //on form submit
+        $("#assetform").on('submit', function (e) {
+            var form = $(this)
+            e.preventDefault()
+            const params = {
+                url: "{{ url('activity:asset') }}",
+                modal: false
+            }
+            const id = "{{ assetform.instance.pk }}"
+            var payLoad = {
+                formData: form.serialize(),
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            } //payload for post request
+            if (id != 'None') {
+                var newPayLoad = {
+                    ...payLoad,
+                    'pk': id
+                }
+                payLoad = newPayLoad
+            }
+            fire_ajax_form_post(params, payLoad)
+                .done((data, status, xhr) => { //function to submit post request
+                    show_successful_save_alert(update = id != 'None' ? true : false)
+                    window.setTimeout(function () {
+                        window.location.href = `{{ url('activity:asset') }}?id=${data.pk}`;
+                    }, 2000);
+                })
+        })
+        
+        //fetch asset status period
+        $("#id_status_field").on('change', () => {
+            //get request
+            let status = $("#id_status_field").val()
+            if(status === "{{ assetform.instance.runningstatus }}"){
+                $("#status_fetched").html(`The Asset is currently undergoing ${status.toLowerCase()}`)
+            }else{
+                let id = "{{ assetform.instance.pk }}"
+                fire_ajax_get({url:`${urlname}?fetchStatus=${status}&id=${id}`})
+                .done((data, status, xhr) => {
+                    console.log(data)
+                    $("#status_fetched").html(data.period)
+                })
+            }
+            
+        })
+
+        // submit the popup-category-taform for validation and saving in db.
+        $('#pop_category_form').on('submit', sumit_popup_form({
+            'url': "{{ url('onboarding:ta_popup') }}",
+            'form': "#pop_category_form",
+            'field': "#id_category",
+            'modal': "#category_popup"
+        }))
+
+        // submit the popup-sb=globals/updated_sidebarmenus.htmlcategory-taform for validation and saving in db.
+        $('#pop_subcategory_form').on('submit', sumit_popup_form({
+            'url': "{{ url('onboarding:ta_popup') }}",
+            'form': "#pop_subcategory_form",
+            'field': "#id_subcategory",
+            'modal': "#subcategory_popup"
+        }))
+
+        // submit the popup-brand-taform for validation and saving in db.
+        $('#pop_brand_form').on('submit', sumit_popup_form({
+            'url': "{{ url('onboarding:ta_popup') }}",
+            'form': "#pop_brand_form",
+            'field': "#id_brand",
+            'modal': "#brand_popup"
+        }))
+
+        $("#category_popup").find("select[name = tatype]").select2({
+            dropdownParent: $('#category_popup')
+        })
+        
+        $("#subcategory_popup").find("select[name = tatype]").select2({
+            dropdownParent: $('#subcategory_popup')
+        })
+
+        $("#brand_popup").find("select[name = tatype]").select2({
+            dropdownParent: $('#brand_popup')
+        })
+
+        $("#category_popup select[name='tatype']").val($("#category_popup select option:contains('Asset Category')").val()).change().prop({"disabled": "true"})
+        $("#subcategory_popup select[name='tatype']").val($("#subcategory_popup select option:contains('Asset SubCategory')").val()).change().prop({"disabled": "true"})
+        $("#brand_popup select[name='tatype']").val($("#brand_popup select option:contains('Brand')").val()).change().prop({"disabled": "true"})
+
+    })
+</script>
+{% endblock extra_scripts %}

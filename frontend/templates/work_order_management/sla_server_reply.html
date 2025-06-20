@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+        <link href="{{ static('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ static('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ static('assets/plugins/custom/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet" type="text/css" />
+
+</head>
+<body>
+
+<div class="container h-100">
+        <div class="row h-100 justify-content-center align-items-center">
+            <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6">
+                    {% if alreadyapproved is defined %}
+                    <div class="alert alert-success shadow" role="alert">
+                        <h4 class="alert-heading">Thank you!</h4>
+                        <p>This Report is already approved by you!</p>
+                    </div>
+                    {% else %}
+                    
+                    <div class="alert alert-success shadow" role="alert">
+                        <h4 class="alert-heading">Thank you for your response!</h4>
+                        <p>Report # {{ seqno }} has been {{ status }}</p>
+                    </div>
+                    {% endif %}
+            </div>
+        </div>
+    </div>
+        <!-- BEGIN  GLOBAL JS BUNDLE (used by all pages) -->
+    <script src="{{ static('assets/plugins/global/plugins.bundle.js') }}"></script>
+    <script src="{{ static('assets/js/scripts.bundle.js') }}"></script>
+    <script src="{{ static('assets/plugins/custom/jquery-ui/jquery-ui.min.js') }}"></script>
+
+</body>
+</html>

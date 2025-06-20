@@ -1,0 +1,77 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Adhoc Tours List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+{% block extra_css %}
+{# <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"> #}
+{% endblock extra_css %}
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Tour List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN ADHOC Tour TABLE ------------------------------------------->
+{% block table %}
+<table id="adhoc_tours" class="display compact cell-border" style="width:100%" >
+{% endblock table %}
+<!-------------------------------------------- END ADHOC Tour TABLE ------------------------------------------->
+
+{% block extra_scripts %}
+<script>
+var table = null;
+//if you want to modifiy here, then modify in custom.js initDateRange also
+var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+var to_pd = moment().format('YYYY-MM-DD')
+$(document).ready(function(){
+    table = $("#adhoc_tours").DataTable({
+        ajax:{
+            url:'{{ url("activity:adhoctours") }}?action=list',
+            data:function(d){
+                d.fields=['id', 'plandatetime', 'jobdesc', 'performedby__peoplename', 'jobstatus',
+                   'qset__qsetname', 'asset__assetname']
+                d.pd1 = from_pd,
+                d.pd2 = to_pd
+            }
+        },
+        pageLength:50,
+        serverSide:true,
+        fixedHeader:true,
+        columnDefs:[
+            {targets:2, data:'jobdesc', render:function(data, type, row, meta){
+                let url = `{{ url('activity:adhoctours') }}?template=true&id=${row['id']}`
+                return `<a href=${url}>${data}</a>`
+            }}
+        ],
+        search    : {return: true},
+        dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+        <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+        responsive : true,
+        columns:[
+            { "data": "id", visible:false },
+            { "data": "plandatetime" , title: "PlanDatetime"},
+            { "data": "jobdesc" , title: 'Description'},
+            { "data": "performedby__peoplename", 'title': 'Performedby'},
+            { "data": "jobstatus", title: 'Status'},
+            { "data": "asset__assetname", title: 'Asset/Smartplace'},
+            { "data": "qset__qsetname", title: 'Question Set'},
+        ],
+        buttons:[]
+    })
+    //add input field to the datatables dom
+    initDateRangeHtml()
+    //onchange update global vars and reload table
+    initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+        from_pd = picker.startDate.format('YYYY-MM-DD');
+        to_pd = picker.endDate.format('YYYY-MM-DD');
+        table.ajax.reload()
+    })
+})
+</script>
+{% endblock extra_scripts %}

@@ -1,0 +1,142 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+People
+{% endblock card_title %}
+<!---- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+People
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!----------- BEGIN PAGE BREADCUMBS ----------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">People List View</a></li>
+{% endblock pagebreadcumb %}
+<!----------- END PAGE BREADCUMBS ------------->
+
+
+<!------------------ BEGIN PEOPLE TABLE ------------------------->
+{% block table %}
+<div class="table-responsive">
+    <table id="people_table" class="display compact cell-border" style="width:100%">
+	</table>
+</div>
+{% endblock table %} 
+<!------------------ END PEOPLE TABLE --------------------------->
+
+<!--------- BEGIN EXTRA SCRIPTS ------>
+{% block extra_scripts %}
+<script>
+	$(document).ready(function () {
+		//BEGIN DATATABLE INITIALIZATION
+		var table = $('#people_table').DataTable({
+			ajax:{
+				url: "{{ url('peoples:people') }}?action=list"
+			},
+			columns:[
+				{data: 'id', title:"ID", visible:false, defaultContent: "", className:'noVis'},
+				{data:"peoplecode", title:"Code"},
+				{data: 'peoplename', title: 'Name'},
+				{data: 'designation__taname', title: 'Designation', visible:false},
+				{data: 'department__taname', title: 'Department', visible:false},
+				{data: 'peopletype__taname', title: 'Employee Type', visible:false},
+				{data: 'bu__buname', title: 'Site', },
+				{data: 'isadmin', title: 'Admin', visible:false},
+				{data: 'enable', title: 'Enable'},
+				{data: 'email', title: 'Email'},
+				{data: 'mobno', title: 'Phone #'},
+				{data:null,title:'Qr Code',defaultContent:'print',render:function(data,type,row,meta){
+					let downloadUrl = `{{ url('peoples:people') }}?action=qrdownload&code=${encodeURIComponent(row['peoplecode'])}&name=${row['peoplename']}`
+                    return `<a href="${downloadUrl}" class="qr-download-link">QR Download</a>`
+				}
+				}	
+			],													
+			order:[[1, 'asc'], [3, 'asc']],
+			serverSide:true,
+			deferRender:true,
+			responsive:true,
+			lengthMenu: [250,500,750,1000],
+            pageLength: 250,
+			language: {
+				searchPlaceholder: "Search keyword"
+			},
+			initComplete:function(){
+                const input = $(`#people_table_filter input`);
+                input.off();
+                input.on('keypress',function(e){
+                    if (e.which === 13) {
+                        table.search(this.value).draw();
+                    }
+                }) 
+            },
+			dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			columnDefs:[
+				{targets:2, data: 'peoplename', render:function(data, type, row, meta){
+					let updateUrl = "{{ url('peoples:people') }}"
+					return `<a href=${updateUrl}?id=${row['id']}>${data}</a>`
+				}
+				},
+				{targets:7, render:function(data, type, row, meta){
+					return data === true ? '<i class="bi bi-check-circle-fill text-success"></i>': '<i class="bi bi-x-circle-fill text-danger"></i>'				
+				}
+				},
+				{targets:8,render:function(data,type,row,meta){
+						if(data === true ){
+							return '<i class="bi bi-check-circle-fill text-success"></i> Active';
+						} else if(data === false) {
+							return '<i class="bi bi-x-circle-fill text-danger"></i> Inactive';
+						} else {
+							return data.toString();
+						}
+					}
+				}
+			],
+			createdRow:function(row, data, dataIndex){
+				if(data['enable'] === false){
+					$(row).addClass('disabled-record text-white')
+				}
+			},
+			buttons:[
+				{
+					extend: 'searchBuilder',
+					config: {
+					columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+					}
+				},
+				dataTablesColumnVisibilityConfig(),
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n People List`,
+                    columns = ':visible',
+					filename = 'people_list',
+					pageSize = "A3",
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n People List`,
+                    columns = ':visible',
+					filename = 'people_list'
+                ),
+				{
+					text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_people",
+					//action for add_new_button 
+					action: function(e, dt, node, config){
+						return location.href = "{{ url('peoples:people') }}?action=form"
+					}
+				}
+			]
+		})
+		//hide add new button for non-admin peoples
+		if(!session.is_admin){
+			$('.add_new_people').hide()
+		}
+	});
+	
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS --------->

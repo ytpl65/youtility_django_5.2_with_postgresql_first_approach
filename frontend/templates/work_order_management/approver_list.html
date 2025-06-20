@@ -1,0 +1,146 @@
+{% extends "globals/base_list.html" %}
+
+{% block card_title %}
+Approver List
+{% endblock card_title %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Approver List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Approver List</a></li>
+{% endblock pagebreadcumb %}
+
+{% block table %}
+<table id="approver_table" class="display compact cell-border"></table>
+{% endblock table %}
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING animate__animated animate__zoomIn -->
+<div class="modal"  tabindex="-1" aria-hidden="true" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-approver">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="approver_content">
+		</div>
+	</div>
+</div>
+{% endblock popup_alerts %}
+
+{% block extra_scripts %}
+<script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3PUZCB7u2PiV8whHeAshweOPIK_d690o&libraries=places&v=weekly&loading=async"
+      defer
+    ></script>
+<script src="{{ static('assets/js/just-validate.production.min.js') }}"></script>
+<script>
+
+var table=null;
+const urlname = '{{ url("work_order_management:approvers") }}'
+const modal_id        = "#modal-approver"
+const modalcontent_id = "#approver_content"
+const formid          = "#approverform"
+
+
+    $(document).ready(() => {
+        //beforeSend of question ajax request 
+        function approverBeforeSend() {
+            $(modal_id).modal("show");
+        }
+
+
+        table = $("#approver_table").DataTable({
+            ajax:{
+                url:`${urlname}?action=list`
+            },
+            lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            columns:[
+                {visible:false, data:"id", title:"ID", className:'noVis'},
+                {title:"Approver For", data:"approverfor"},
+                {title:"Sites", data:"sites"},
+                {title:"Approver", data:"people__peoplename"},
+                {title:"All Sites",data:"forallsites", render:function(data, type, row, meta){
+                    return data === true ? '<i class="bi bi-check-circle-fill text-success"></i> True': '<i class="bi bi-x-circle-fill text-danger"></i> False' 
+                }},
+                {title:"Created By", data:"cuser__peoplename"},
+                {title:"Role",data:"identifier"},
+                {title:"Site", data:"bu__buname", visible:false},
+                {title:"Site Code", data:"bu__bucode", visible:false},
+            ],
+            deferRender:true,
+            scrollY: 300,
+            scrollCollapse: true,
+            scrollX:true,
+            columnDefs:[
+            ],
+            dom :`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                        <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            select:{
+                style:'single',
+            },
+            buttons:[
+                {
+                    extend: 'searchBuilder',
+                    config: {
+                    columns: [1, 2, 3, 4, 5, 6, 7]
+                    }
+                },
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Approver List`,
+                    columns = [1,2,3,4,5],
+                    filename = 'approver_list'
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Approver List`,
+                    columns = [1,2,3,4,5],
+                    filename = 'approver_list'
+                ),
+                dataTablesColumnVisibilityConfig(),
+                {   
+                    text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+					className: "btn btn-sm border border-primary btn-light-primary add_new_approver",
+                    //action for add_new_button 
+                    action: function (e, dt, node, config) {
+                        const params = {
+                            'modal_id': modal_id,
+                            'url': `${urlname}?action=form`,
+                        }
+                        fire_ajax_get(params)
+                            .done((data, status, xhr) => {
+                                $(`${modal_id} .modal-content`).html(data.html_form)
+                                $(modal_id).modal("show");
+                            })
+                            .fail((xhr, status, error) => {
+                                show_error_alert("Something went wrong!")
+                            })
+                    }
+			    }
+            ]
+        })
+
+        //on row click
+        table.on('select', function(e, dt, type, indexes){
+        if(type === 'row'){
+            var id = table.rows(indexes).data().pluck('id')[0]
+            if(!(id)){ return}
+            const params = {
+                'modal_id':modal_id,
+                url:`${urlname}?id=${id}`,
+				beforeSend:approverBeforeSend
+            }
+            fire_ajax_get(params)
+            .done((data, status, xhr) => {
+					$(modalcontent_id).attr('data-form', 'update')
+					$(`${modal_id} .modal-content`).html(data.html_form)
+				})
+				.fail((xhr, status, error) => {
+					show_error_alert('Something went wrong!') //defined in custom.js
+				})
+        }
+    })
+    })
+</script>
+{% endblock extra_scripts %}

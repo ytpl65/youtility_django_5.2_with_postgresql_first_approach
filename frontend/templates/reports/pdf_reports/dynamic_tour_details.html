@@ -1,0 +1,159 @@
+{% extends "reports/pdf_reports/tabular_base.html" %}
+
+{% block header_start %}
+<img src="{{ client_logo }}" alt="" class="logos">
+{% endblock header_start %}
+
+{% block header_end %}
+<div>
+<img src="{{ static('assets/media/images/reportlogo.png') }}" class="companylogo">
+</div>
+
+{% endblock header_end %}
+
+{% block inline_css %}
+<style>
+thead tr th, tbody tr td {
+    font-size: 0.7rem;
+}
+/* CSS to style parent rows with a left and right border */
+.parent-row {
+    background-color: #eff7fc;
+}
+
+#body {
+    border-bottom: 2px solid #01579b;
+}
+
+/* CSS to style child rows with a bottom border and consistent left and right borders with parent */
+.child-row {
+   background-color: rgb(255, 255, 255)!important;
+}
+
+.child-row td {
+        border-bottom: 0.25px solid #75ade2;
+    }
+
+    .trcount1 td {
+        border-top: 1px dashed #030101;
+    }
+
+    .trcount1 td:first-child {
+        border-left: 1px dashed #030101;
+    }
+
+    .trcount1 td:last-child {
+        border-right: 1px dashed #030101;
+    }
+
+    .trcount2 td {
+        border-bottom: 1px dashed #030101;
+    }
+
+    .trcount2 td:first-child {
+        border-left: 1px dashed #030101;
+    }
+
+    .trcount2 td:last-child {
+        border-right: 1px dashed #030101;
+    }
+
+
+/* Optionally, to remove bottom border from the last child row if it should blend with the next parent row */
+
+</style>
+{% endblock inline_css %}
+
+{% block header_center %}
+<div id="title">
+    <div>
+        <p id="main_title">{{ report_title }}</p>
+        <p id="subtitle">{{ report_subtitle }}</p>
+    </div>
+</div>
+{% endblock header_center %}
+
+
+
+{% block table %}
+<table id="tourdetails" style="width:100%">
+    {% for row in data %}
+    <thead>
+        <tr>
+            <th scope="col">Tour Name</th>
+            <th scope="col">Checkpoint Name</th>
+            <th scope="col">Start Datetime</th>
+            <th scope="col">End Datetime</th>
+            <th scope="col">Status</th>
+             <th scope="col">Assigned To</th>
+            <th scope="col">Performed By</th>
+        </tr>
+    </thead>
+    <tbody id="body">
+        <tr class="parent-row">
+            <td colspan="2">{{ row['Tour/Route'] }}</td>
+            <td>{{ row['Start Datetime'] }}</td>
+            <td>{{ row['End Datetime'] }}</td>
+            <td>{{ row['Status'] }}</td>
+            <td>{{ row['Assigned To'] }}</td>
+            <td>{{ row['Performed By'] }}</td>
+        </tr>
+            {% for cp in row['checkpoints'] %}
+                <tr class="child-row">
+                    <td></td>
+                    <td>{{ cp['assetname'] }}</td>
+                    <td>{{ cp['starttime'] }}</td>
+                    <td>{{ cp['endtime'] }}</td>
+                    <td>{{ cp['jobstatus'] }}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+                <tr style=" height: 20px; background-color: rgb(255, 255, 255) ">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class = 'trcount1' style="font-weight:bold; height: 20px;background-color: rgb(255, 255, 255)">
+                    <td></td>
+                    <td>Checkpoints count</td>
+                    <td>{{row['Count of Checkpoint']}}</td>
+                    <td>Completed Count</td>
+                    <td>{{row['Passed Count']}}</td>
+                    <td>Missed Count</td>
+                    <td>{{row['Missed Count']}}</td>
+                </tr>
+                <tr class = 'trcount2' style="font-weight:bold; height: 20px;background-color: rgb(255, 255, 255)">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Completed Percentage</td>
+                    <td>{{row['Passed Ratio']}}</td>
+                    <td>Missed Percentage</td>
+                    <td>{{row['Missed Ratio']}}</td>
+                </tr>
+                <tr style=" height: 20px;background-color: rgb(255, 255, 255)" >
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock table %}
+
+
+
+{% block summary %}
+{% endblock summary %}
+
+{% block script %}
+{% endblock script %}

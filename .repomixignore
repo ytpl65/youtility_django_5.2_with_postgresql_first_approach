@@ -1,0 +1,132 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Django specific
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+/static/
+
+# Environment variables
+.env
+.env.*
+*.env
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.backup
+*.orig
+*.bak
+
+# Dependencies and packages
+node_modules/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Version control
+.git/
+.gitignore
+
+# Documentation that's not core to understanding the codebase
+README.md
+CHANGELOG.md
+LICENSE
+*.txt
+docs/
+
+# Test coverage and reports
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+coverage.xml
+*.cover
+
+# Migration files (Django) - keep structure but ignore actual migrations
+*/migrations/0*.py
+
+# Large static assets and media
+frontend/static/assets/plugins/
+frontend/static/assets/media/
+frontend/static/assets/css/daterangepicker.css
+frontend/static/assets/css/jqCron.css
+frontend/static/assets/css/leaflet.css
+frontend/static/assets/css/structured-filter.css
+frontend/static/assets/css/style.bundle.*
+frontend/static/assets/css/ui.jqgrid.min.css
+frontend/static/assets/js/daterangepicker.js
+frontend/static/assets/js/jqCron.*
+frontend/static/assets/js/jquery.jqgrid.min.js
+frontend/static/assets/js/just-validate.production.min.js
+frontend/static/assets/js/leaflet.js
+frontend/static/assets/js/overlapping_marker_spiderfier.js
+frontend/static/assets/js/scripts.bundle.*
+frontend/static/assets/js/structured-filter.min.js
+
+# Third-party libraries and frameworks
+frappe-client/
+public/
+
+# Large binary or generated files
+*.zip
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.ico
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.map
+
+# Temporary and cache files
+*.tmp
+*.temp
+.cache/
+tmp/
+
+# Package manager files
+package-lock.json
+yarn.lock
+
+# Celery and background task logs
+celerybeat-schedule
+celerybeat.pid
+
+# Analysis and summary files
+PHASE2_COMPLETION_SUMMARY.md
+PRODUCTION_READINESS_ANALYSIS.txt
+PRODUCTION_READINESS_ANALYSIS.md
+"Phase 1"
+
+# Test files for validation
+test_phase2_validation.py
+simple_security_test.py
+
+# Service and utility scripts
+restart_services.sh
+get_last_run_of_scheduled_task.py
+mqtt_utils.py
+paho_client.py
+
+# Generated schema files
+schema.json
+spectaql.yml

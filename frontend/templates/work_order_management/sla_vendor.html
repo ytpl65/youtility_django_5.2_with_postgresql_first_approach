@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<p>
+    <p>Dear Vendor, </p>
+    <p>PFB Vendor Performance Score. </p>
+    <table>
+        <tr>
+            <th>Report Name</th>
+            <td>{{ report_name }}</td>
+        </tr>
+        <tr>
+            <th>Site Name</th>
+            <td>{{ sitename }}</td>
+        </tr>
+        <tr>
+            <th>Service Month</th>
+            <td>{{ service_month }}</td>
+        </tr>
+        <tr>
+            <th>Approved By</th>
+            <td>{{ approvedby }}</td>
+        </tr>
+    </table>
+    <br>
+    <p>For any discrepancy in score, kindly contact approver directly.</p>
+</body>
+
+</html>

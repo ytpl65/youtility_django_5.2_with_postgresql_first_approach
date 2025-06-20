@@ -1,0 +1,151 @@
+{% extends "globals/base_form.html" %}
+
+{% block extra_css %}
+{{ wizard.form.media }}
+<style>
+  .stepper-wrapper {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .stepper-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+
+    @media (max-width: 768px) {
+      font-size: 12px;
+    }
+  }
+
+  .stepper-item::before {
+    position: absolute;
+    content: "";
+    border-bottom: 2px solid #ccc;
+    width: 100%;
+    top: 20px;
+    left: -50%;
+    z-index: 2;
+  }
+
+  .stepper-item::after {
+    position: absolute;
+    content: "";
+    border-bottom: 2px solid #ccc;
+    width: 100%;
+    top: 20px;
+    left: 50%;
+    z-index: 2;
+  }
+
+  .stepper-item .step-counter {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #ccc;
+    margin-bottom: 6px;
+  }
+
+  .stepper-item.active {
+    font-weight: bold;
+  }
+
+  .stepper-item.completed .step-counter {
+    background-color: #01aef1;
+  }
+
+  .stepper-item.completed::after {
+    position: absolute;
+    content: "";
+    border-bottom: 2px solid #01aef1;
+    width: 100%;
+    top: 20px;
+    left: 50%;
+    z-index: 3;
+
+  }
+
+  .stepper-item:first-child::before {
+    content: none;
+  }
+
+  .stepper-item:last-child::after {
+    content: none;
+  }
+</style>
+
+{% endblock extra_css %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+Client Onboarding
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+{% block non_field_errors %}
+{{ wizard.form.errors }}
+{{ wizard.form.non_field_errors}}
+{% endblock non_field_errors %}
+
+{% block form %}
+
+<form action="" method="post">
+  <!-------------------------- CSRF MIDDLEWARE TOKEN --------------------->
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <!-- Wizard management form necessary -->
+  {{ wizard.management_form }}
+  {% block custom_form %}
+
+  {% endblock custom_form %}
+  {% if wizard.steps.prev %}
+
+  {% block forms_navigators %}
+  <button name="wizard_goto_step" formnovalidate="formnovalidate" class="btn btn-sm btn-primary2 rounded-1" type="submit"
+    value="{{ wizard.steps.first }}">First Step</button>
+  <button name="wizard_goto_step" formnovalidate="formnovalidate" class="btn btn-sm btn-primary2 rounded-1" type="submit"
+    value="{{ wizard.steps.prev }}">Previous Step</button>
+  {% endblock forms_navigators %}
+
+  {% endif %}
+</form>
+
+{% endblock form %}
+
+<!------------------BEGIN WIZARD STEP COUNT ------------------->
+{% block upside_card %}
+{% set labels_of_wizard = ({1: 'Buisiness Unit', 2: 'Shift', 3: 'People', 4: 'Assign Permissions', 5: 'People Group'}) %}
+
+<div class="stepper-wrapper card ">
+  <div class="card-body d-flex flex-row">
+
+    {% for index in range(1, wizard.steps.count + 1) %}
+    {% if (index < wizard.steps.step1) %}
+    <div class="stepper-item completed">
+      <div class="step-counter">{{ index }}</div>
+      <div class="step-name"><strong>{{ labels_of_wizard[index] }}</strong>
+        <span class="material-icons" style="vertical-align: middle; font-size: 16px; color:#189D54;">
+          check_circle
+        </span>
+      </div>
+    </div>
+    {% else %}
+    <div class="stepper-item">
+      <div class="step-counter">{{ index }}</div>
+      <div class="step-name">{{ labels_of_wizard[index] }}</div>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+  </div>
+</div>
+{% endblock upside_card %}
+<!------------------END WIZARD STEP COUNT --------------------->

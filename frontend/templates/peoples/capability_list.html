@@ -1,0 +1,113 @@
+{% extends "globals/base_list.html" %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Capabilities
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Capabilities
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!----------- BEGIN PAGE BREADCUMBS ----------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Capability List</a></li>
+{% endblock pagebreadcumb %}
+<!----------- END PAGE BREADCUMBS ------------->
+
+<!-------- BEGIN PAGE ACTIONS ---------->
+{% block page_actions %}
+{{ form_addnew('peoples:capability') }}
+{% endblock page_actions %}
+<!-------- END PAGE ACTIONS ------------>
+
+<!------------------ BEGIN BU TABLE ------------------------->
+{% block table %}
+    <!------------------ BEGIN TABLE --------------------->
+    <table id="cap_table" class="display compact cell-border" style="width:100%">
+        <thead class="fw-bold fs-6">
+            <th>Code</th>
+            <th>Name</th>
+            <th>Capability for</th>
+            <th>Belongs To</th>
+        </thead>
+		<!---------- BEGIN TABLE FILTER FIELDS --------->
+		<thead id="filter_row">
+		<form action="" id='cap_filter' method='get'>
+			<input type="hidden" name="search_term" value="true">
+			{% for field in cap_filter %}
+			<th>
+				<input type="text" 
+				id="{{ field.auto_id }}" 
+				name="{{ field.name }}" 
+				placeholder ="Search {{ field.label }}">
+			</th>
+			{% endfor %}
+		</form>
+		</thead>
+		<!---------- END TABLE FILTER FIELDS --------->
+        {% for cap in cap_list %}
+        <tr>
+			<!--"{{ url('peoples:cap_update', args=[cap['id']]) }}"-->
+            <td><a href="{{ url('peoples:capability') }}?id={{ cap['id'] }}">{{ cap['capscode'] }}</a></td>
+            <td>{{ cap['capsname'] }}</td>
+            <td>{{ cap['cfor'] }}</td>
+            <td>{{ cap['parent__capscode'] }}</td>
+        </tr>
+        {% endfor %}
+		
+    </table>
+    <!------------------ END TABLE --------------------->
+
+{% if cap_list and cap_list.has_other_pages %}
+<!-- BEGIN PAGINATOIN -->
+{{ paginator(cap_list) }}
+<!-- END PAGINATOIN ---->
+{% endif %}
+
+{% endblock table %}
+<!------------------ END BU TABLE --------------------------->
+
+<!--------- BEGIN EXTRA SCRIPTS ----------------------------->
+{% block extra_scripts %}
+<script>
+   $(document).ready(function () {
+		$("input").keypress(function(event) {
+			if (event.which == 13) {
+			event.preventDefault();
+				$("#cap_filter").submit();
+			}
+		});
+		var table = $('#cap_table').DataTable({
+			orderCellsTop: true,
+			responsive: true,
+			fixedHeader: true,
+			paging: false,
+			scrollCollapse: true,
+			ordering:false,
+            scrollY: '55vh',
+            scrollCollapse: true,
+            scrollX: true,
+			language: {
+				searchPlaceholder: "Search on page"
+			},
+			pageLength:50,
+			"ordering": false
+		})
+		//BEGIN STYLING DATATABLE
+		$("th > input").addClass('form-control')
+		$("th > input").css('height', '35px')
+		var styles = {
+			"border-bottom": "none",
+			"background-color": "#f1f4f7"
+		}
+		$('#cap_table thead tr:eq(1)').css(styles)
+		//END STYLING DATATABLE
+	});
+</script>
+{% endblock extra_scripts %}
+<!-------- END EXTRA SCRIPTS ------------------------------->

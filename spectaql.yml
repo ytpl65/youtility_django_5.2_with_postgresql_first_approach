@@ -1,0 +1,9 @@
+introspection:
+  url: https://django5.youtility.in/graphql
+
+info:
+  title: Youtility GraphQL API Docs
+  description: API fetched live from production server.
+  x-url: https://django5.youtility.in/graphql
+
+outputDir: ./public-docs

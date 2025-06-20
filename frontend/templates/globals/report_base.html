@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ static('assets/plugins/custom/bootstrap-5.3.0/css/bootstrap.min.css') }}">
+    <script src="{{ static('assets/plugins/custom/bootstrap-5.3.0/js/bootstrap.min.js') }}"></script>
+    <style>
+        thead tr {
+            background-color: #01569a;
+        }
+        body {
+            font-family: Georgia, serif;
+        }
+        thead tr th{
+            color: white;
+        }
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+        table, tr {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        @media print {
+            @page {
+                size: landscape;
+                margin: 1cm;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            .footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+            }
+        }
+        .title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .title-bar h1 {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title-bar">
+            <!--Client Logo -->
+            {% block clientlogo %}
+
+            {% endblock clientlogo %}
+
+            <!--Report Details -->
+            {% block report_details %}
+
+            {% endblock report_details %}
+
+            <!--App Logo -->
+            {% block applogo %}
+
+            {% endblock applogo %}
+        </div>
+        {% block table %}
+        
+        {% endblock table %}
+
+        {% block summary %}
+        
+        {% endblock summary %}
+    </div>
+    {% block scirpt %}
+    
+    {% endblock scirpt %}
+</body>
+</html>
+

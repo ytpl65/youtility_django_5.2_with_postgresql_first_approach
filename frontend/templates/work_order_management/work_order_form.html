@@ -1,0 +1,483 @@
+{% extends "globals/base_form.html" %}
+
+<!---- BEGIN PAGE TITLE ---->
+{% block title %}
+Work order Form
+{% endblock title %}
+<!---- END PAGE TITLE ----->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Work Order Form
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!--- START CSS -->
+{% block extra_css %}
+<link href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet"
+  type="text/css" />
+{{ woform.media.css }}
+{% endblock extra_css %}
+<!--- END CSS -->
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('work_order_management:workorder') }}?template=true" class="pe-3">Work
+    order List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Work Order Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Work Order
+{% endblock form_title %}
+<!------ END FORM TITLE -------->
+
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors" role="alert" style="display:none">
+  <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+
+<!-------------- BEGIN FORM ------------------->
+{% block form %}
+<form action="" method="post" id="id_woform">
+  <!-------------------------- CSRF MIDDLEWARE TOKEN --------------------->
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <input type="hidden" name="{{ woform.ctzoffset.name }}" id="{{ woform.ctzoffset.auto_id }}" value="-1">
+  <input type="hidden" name="pk" id="pk" value="{{ woform.instance.id }}">
+  <div class="mb-3 row g-3 gx-6">
+    <div class="col-md-6">
+      <div class="input-group  mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.description.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12 ">
+          {{ woform.description }}
+        </div>
+      </div>
+
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.plandatetime.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.plandatetime }}
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.expirydatetime.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.expirydatetime }}
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.qset.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.qset }}
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.categories.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.categories }}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-sm-12">
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.vendor.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.vendor }}
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.priority.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.priority }}
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.location.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.location }}
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.asset.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.asset }}
+        </div>
+      </div>
+      
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.ticketcategory.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12">
+          {{ woform.ticketcategory }}
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          <label for="">Email Sent</label>
+        </div>
+        <div class="col-md-8 col-sm-12 mt-2">
+          {{ woform.ismailsent }}
+          {% if woform.instance.ismailsent %}
+            <i class="bi bi-check-circle-fill  fs-3 text-success"></i>
+          {% else %}
+          <i class="bi bi-x-circle-fill fs-3 text-danger"></i>
+          {% endif %} 
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        <div class="col-md-4 col-sm-12 pt-2">
+          {{ woform.workstatus.label_tag() }}
+        </div>
+        <div class="col-md-8 col-sm-12 mt-2">
+          {{ woform.workstatus }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</form>
+{% endblock form %}
+<!-------------- END FORM ------------------->
+
+<!------------------- BEGIN FORM PAGE ACTIONS --------------->
+{% block page_actions %}
+<div class="d-flex align-items-center py-1">
+  <div id="form_actions">
+    <!--Save Button-->
+    <button type="submit" form="id_woform" id="form_update" class="btn btn-sm  btn-primary2 rounded-1">Save&nbsp;<i
+        class="fas text-white fa-cloud-upload-alt"></i></button>
+    <!--Clear Button-->
+    <a href="#" class="btn btn-sm  btn-secondary rounded-1" id='btn_clear'>Clear&nbsp;<i
+        class="fas  fa-times-circle"></i></a>
+    <a href="#" class="btn btn-sm  btn-success rounded-1" id='btn_close'>Close&nbsp;<i
+        class="fas  fa-times-circle"></i></a>
+    <!-- Action Button -->
+    
+  </div>
+</div>
+{% endblock page_actions %}
+<!------------------- END FORM PAGE ACTIONS --------------->
+
+
+{% block extras %}
+{{ fileupoad() }}<hr> <br>
+<div class="row">
+  <div class="card">
+    <div class="card-header ps-0 mb-0">
+      <h4 class="ch4">Work Order Details&nbsp;<i class="fas text-white fa-layer-group ch4"></i></h4>
+    </div>
+    <div class="card-body pt-0">
+      <table id="wo_details" class="display cell-border compact hover nowrap"></table>
+    </div>
+  </div>
+</div>
+{% endblock extras %}
+
+{% block popup_alerts %}
+{% call general_popup(title='Attachment Details <i class="fas text-white fa-paperclip ch4"></i>', popup_id="id_attachmentdetails", modal_size='modal-xl') %}
+<div class="modal-body">
+  <table class="display cell-border" style="width:100%" id="tabAttachmentDetails"></table>
+</div>
+
+{% endcall  %}
+{% endblock popup_alerts %}
+
+{% block extra_scripts %}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}"
+  type="text/javascript"></script>
+
+<script>
+  //set the variables which are gonna used in attachment.js file for fetching attachments against the owner
+  var attachmentParams = {
+    attachmentUrl: '{{ url("activity:attachments") }}',
+    attachmentOwner: '{{ woform.instance.uuid }}',
+    csrf: '{{ csrf_token }}',
+    ownername: "Jobneed",
+    folderType: 'task',
+    media_url: '{{ MEDIA_URL }}',
+    peopleid: "{{ request.user.id }}"
+  }
+</script>
+<script src="{{ static('assets/js/local/attachment.js') }}" type="text/javascript"></script>
+{{ woform.media.js }}
+
+
+<script>
+  const urlname = "{{ url('work_order_management:workorder') }}"
+  var table;
+  var ajaxData = {};
+  var womid = '{{woform.instance.id}}'
+  var attachmentDetails;
+
+  function disableAllFields(){
+    // Disable checkboxes
+      $("input[type='checkbox']").prop("disabled", true);
+
+      // Disable text fields
+      $("input, textarea").prop("disabled", true);
+
+      // Disable select2 fields (assuming select2 has been initialized)
+      $(".django-select2, .form-select").select2({"disabled": 'readonly'})
+  }
+
+  function showAttachmentDetails(id, from) {
+    $('#id_attachmentdetails').modal('show')
+    ajaxData.id = id
+    ajaxData.action = from === 'jobneed' ? 'getAttachmentJobneed' : 'getAttachmentJND'
+    attachmentDetails.ajax.reload()
+  }
+
+  $(document).ready(function () {
+    //set ctzoffset
+    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+    $('#btn_clear').click((e) => {
+      e.preventDefault()
+      location.href = `${urlname}?action=form`
+    })
+    //ADD CALENDER TO DATE FIELDS WITH FLAT-PICKR PLUGIN
+    $("#id_plandatetime, #id_expirydatetime").flatpickr({
+      enableTime: true,
+      time_24hr: true,
+      dateFormat: 'Y-m-d H:i'
+    })
+    //file upload
+    setUpDropzone({
+      foldertype: "workorder",
+      ownername: 'Wom',
+      attachmenttype: "ATTACHMENT",
+      uploadUrl: "{{ url('activity:attachments') }}",
+      csrftoken: "{{ csrf_token }}",
+      ctzoffset: $("#id_ctzoffset").val(),
+      formId: "#dropzone_file",
+      peopleid: "{{ request.user.id }}",
+      ownerid: "{{ ownerid }}",
+      create_or_update: '{{ woform.instance.id }}' == 'None' ? "create" : "update",
+      media_url: "{{ MEDIA_URL }}"
+    })
+
+    if("{{ woform.instance.workstatus }}" === "COMPLETED"){
+      disableAllFields()
+    }
+
+    //on change location change asset options
+    $("#id_location").change(() => {
+            let locationid = $('#id_location').val();
+            getAssetsOfLocation(locationid, '{{ url("activity:location") }}')
+        });
+
+
+    //when user tries to change the vendor the select field
+    $('#id_vendor').on('select2:selecting', function(e) {
+      var data = e.params.args.data;
+        if ("{{ woform.instance.id }}" !== "None" && data.id !== "{{ woform.instance.vendor_id }}") {
+          Swal.fire({
+            title: 'Do you want change the vendor?',
+            text:"Please note: Changing the vendor selection will result in the status being set to REASSIGNED and require re-creating the work order",
+            showDenyButton: true,
+            showCancelButton: false,
+            confirmButtonText: 'Yes, change',
+            denyButtonText: `Don't change`,
+          }).then(( result ) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+              Swal.fire('Vendor Changed!', '', 'success')
+              $("#id_workstatus").val('RE_ASSIGNED')
+              $("#id_ismailsent").val("False")
+            } else if (result.isDenied) {
+              e.preventDefault();
+            }
+          })
+        }else{
+          $("#id_workstatus").val("{{ woform.instance.workstatus }}")
+        }
+    });
+
+    $("#btn_close").click((e) => {
+            if("{{ woform.instance.workstatus }}" === "CLOSED"){
+              Swal.fire({
+                icon: 'warning',
+                title: 'Work order is already closed!',
+                showConfirmButton: false,
+                timer: 1500
+              })
+            }else{
+                          //appprove workpermit
+            submit_form_alert(text=null, title = 'Close Work Order!').then((res) => {
+                if(res.isConfirmed){
+                    let womid = "{{ woform.instance.id }}"
+                    fire_ajax_get({
+                        url:`${urlname}?action=close_wo&womid=${womid}`,
+                    }).done((data, status, xhr) => {
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Work Order has been closed',
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
+                        window.setTimeout(function(){
+                            window.location.href = `${urlname}?id={{ woform.instance.id }}`;
+                        }, 1500)
+                    
+                    })
+                }
+            })
+            }
+
+        })
+
+    
+
+
+    //on submit form post request
+    $("#id_woform").submit((e) => {
+      e.preventDefault()
+      var form = $(this);
+      const params = {
+        url: $(form).attr("action"),
+        modal: false
+      }
+      const formtype = '{{woform.instance.id}}' == 'None' ? "create" : "update" //form-type (create/update)      
+      const id = '{{ woform.instance.id }}'
+      var payLoad = {
+        formData: $("#id_woform").serialize(),
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+        'uuid': "{{ ownerid }}"
+      }
+
+      if (formtype === 'update') {
+        var newPayLoad = {
+          ...payLoad,
+          'pk': id
+        }
+        payLoad = newPayLoad
+      }
+      submit_form_alert("<b class='text-primary fs-2'>Note: This will send an email to the vendor!<b>").then((
+        res) => {
+          if (res.isConfirmed) {
+            fire_ajax_form_post(params, payLoad)
+              .done((data, status, xhr) => {
+                show_successful_save_alert(update= id != 'None' ? true : false)
+                window.setTimeout(function() {
+                    window.location.href = `${urlname}?id=${data.pk}`;
+                }, 2000);
+              })
+              .fail((xhr, status, error) => {
+                console.log(xhr)
+                if (!typeof (xhr.responseJSON.errors) === 'object') {
+                  show_error_alert(xhr.responseJSON.errors, "Failed to save!")
+                } else {}
+
+              })
+          }
+        })
+    })
+
+            table = $("#wo_details").DataTable({
+            ajax:{
+                url:`{{ url('work_order_management:workorder') }}?action=get_wo_details&womid=${womid}`
+            },
+            columns:[
+                {data:'id', visible:false},
+                    {data:'question__quesname', title:'Question'},
+                    {data:'answertype', title:'Type'},
+                    {data:'min', title:'Min'},
+                    {data:'max', title:'Max'},
+                    {data:'options', title:'Options'},
+                    {data:'alerton', title:'Alert On'},
+                    {data:'answer', title:'Answer'},
+                    {data:'ismandatory', title:'Mandatory'},
+                    {data: null, title:'Attachments', render:function(data, type, row, meta){
+                        return `<a href="javascript:void(0)"  onClick='showAttachmentDetails(${row['id']}, "jnd")'>View</a>`
+                    }
+                    },
+                    {data:'alerts', title:'Alerts', visible:false},
+            ],
+            searching:false,
+            ordering:false,
+            deferRender: true,
+            createdRow:function(row, data, dataIndex){
+                        if(data['alerts'] === true){
+                            $(row).addClass('text-danger')
+                        }
+                    },
+            scrollX: true,
+            dom: `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            buttons:[],
+        })
+
+
+        $('#id_attachmentdetails').on('shown.bs.modal', function (event) {
+          $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust();
+            $('#id_attachmentdetails').modal({
+                keyboard: false
+            })
+            attachmentDetails = $("#tabAttachmentDetails").DataTable(
+            {
+                ajax:{
+                    url:`{{ url("work_order_management:workorder") }}`,
+                    data:function(d){
+                    return  $.extend(d, ajaxData);
+                    }
+                },
+                retrieve: true,
+                columns:[
+                    { data: "id", visible: false },
+                    {title:'SL No.', width:"5%", data:null, defaultContent:null, render:function (data, type, row, meta) { return meta.row  + 1; }},
+                    { data: "filepath",  width:"5%", title:'File', render:function (data, type, row, meta) { return `<img src="{{ MEDIA_URL }}${row.filepath.replace('youtility4_media/', "")}/${row.filename}" class="card-img-top" target="_blank" alt="" style="width: 30px;height: 30px;">`; }},
+                    { data: "filename",  title:'File Name' },
+                    { data: null, width:"5%", defaultContent:null, title:"Action", render:function(data, type, row, meta ){
+                    let file = `{{ MEDIA_URL }}${row.filepath.replace('youtility4_media/', "")}/${row.filename}`
+                    return `<a href="${file}" target="_blank" class=""><i class="ch4 fas fa-eye"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="${file}" download="${row.filename}"><i class="ch4 fas fa-save"></i></a>`;
+                    } },
+                ],
+                
+                ordering:false,
+                deferRender: true,
+                scrollX: true,
+                dom: `<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                buttons:[],
+
+            }
+          )
+            
+        })
+
+
+
+  })
+</script>
+{% endblock extra_scripts %}

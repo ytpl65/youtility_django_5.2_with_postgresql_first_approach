@@ -1,0 +1,160 @@
+{% extends "globals/base_list.html" %}
+
+{% block extra_css %}
+<style>
+td.selected { background-color: yellow; }
+td:not(:last-child) { cursor: pointer; }
+td { padding: 6px; border: 1px solid #CCC; }
+tr{
+    font-size: 11px;
+}
+</style> 
+
+{% endblock extra_css %}
+
+{% block popup_alerts %}
+
+{% endblock popup_alerts %}
+
+<!---- BEGIN CARD TITLE ------>
+{% block card_title %}
+Site Diversion List
+{% endblock card_title %}
+<!----- END CARD TITLE -------->
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Site Diversion List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+<!------------------------------------ BEGIN PAGE BREADCUMBS ------------------------------------>
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Site Diversion List</a></li>
+{% endblock pagebreadcumb %}
+<!------------------------------------- END PAGE BREADCUMBS ------------------------------------->
+
+<!-------------------------------------------- BEGIN TABLE ------------------------------------------->
+{% block table %}
+<table id="site_diversion_table" class="display compact cell-border" style="width:100%">
+</table>
+{% endblock table %}
+<!-------------------------------------------- END TABLE ------------------------------------------->
+
+
+{% block extra_scripts %}
+<script>
+    var table;
+    var peopleList;
+    var ajaxData = {}
+    const formFilter = '#site_diversion_filters'
+    const table_id = '#site_diversion_table'
+    const urlname = "{{ url('attendance:attendance_view') }}"
+
+    //if you want to modifiy here, then modify in custom.js initDateRange also
+    var params = null
+    var from_pd = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    var to_pd = moment().format('YYYY-MM-DD')
+    params = {from:from_pd, to:to_pd}
+
+    var table_filters = localStorage.getItem('site_diversion_stats_filters') ? localStorage.getItem('site_diversion_stats_filters') : localStorage.getItem('alertsFilters')
+
+    if(table_filters){
+        params = JSON.parse(table_filters)
+        localStorage.clear()
+    }
+
+    function reloadTable(table, filters){
+        params = filters
+        table.ajax.reload()
+    }
+
+    function handleGPSLocation(data){
+        let latlng = parseGeoJson(data)
+        let latlngArr =  latlng.split(', ')
+        if(latlngArr.length > 1){
+            redirectMapUrl =  `https:www.google.com/maps?q=${latlngArr[0]},${latlngArr[1]}`
+            return `<a href=${redirectMapUrl} target="_blank">${latlng}<a>`
+        }return `<a href="javascript:void(0)">${data}</a>`
+    }
+
+    $(document).ready(function(){
+        //datatables initialization
+        table = $(table_id).DataTable({
+            ajax:{
+                url:`${urlname}?action=get_site_diversion_list`,
+                data:function(d){
+                    d.params = JSON.stringify(params)
+                }
+            },
+			deferRender: true,
+			responsive:true,
+            lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+            dom:`<'row' <'col-sm-6 d-flex justify-content-start'<'customfields'>f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+            <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+            columns:[
+                {data: 'id', className:"noVis"},
+                {data: 'datefor', title: "Plan Datetime"},
+                {data: 'people__peoplename', title: 'Performed By'},
+                {data: 'start_gps', title: "Diversion Start At", render:function(data, type, row, meta){
+                    return handleGPSLocation(data)
+                }
+                },
+                {data: 'end_gps', title: "Diversion End At",  render:function(data, type, row, meta){
+                    return handleGPSLocation(data)
+                }
+                },
+                {data:'punchintime', title:"Start Time"},
+                {data:'punchouttime', title:"End Time"},
+                {data:'ctzoffset', visible:false, className:"noVis"},
+            ],
+            columnDefs:[
+                {targets:0, data: 'id', visible:false, searchable:false},
+                {targets:2, data: 'jobdesc', render:function(data, type, row, meta){
+                    let redirectUrl = "{{ url('schedhuler:jobneedexternaltours') }}" 
+                    return `<a href="${redirectUrl}?id=${row['jobneed_id']}">${data}</a>`
+                }
+                },
+                {targets:[6], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+                {targets:[7], render:function(data, type, row, meta){
+                    return convert_to_local(type, data, row)
+                }
+                },
+            ],
+
+            order:[[6, 'desc']],
+            buttons:[
+                "searchBuilder",
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Site Diversion List`,
+                    columns =':visible',
+                    filename="sitediversion_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Site Diversion List`,
+                    columns =':visible',
+                    filename="sitediversion_list" 
+                ),
+                dataTablesColumnVisibilityConfig()
+			],
+        })
+
+        //add input field to the datatables dom
+         initDateRangeHtml()
+         initDateRange("#id_daterange").on('apply.daterangepicker', function(e, picker){
+            from_pd = picker.startDate.format('YYYY-MM-DD');
+            to_pd = picker.endDate.format('YYYY-MM-DD');
+            let filters = {from:from_pd, to:to_pd}
+            reloadTable(table, filters)
+         })
+    })
+
+
+
+</script>
+{% endblock extra_scripts %}

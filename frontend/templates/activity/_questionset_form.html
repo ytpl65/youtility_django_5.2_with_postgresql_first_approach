@@ -1,0 +1,323 @@
+{% extends "globals/base_form.html" %}
+
+{% block extra_css %}
+{{ questionsetform.media.css }}
+<link  href="{{ static('assets/plugins/custom/DataTables/datatables.min.css') }}" rel="stylesheet" type="text/css"/>
+<link  href="{{ static('assets/plugins/custom/Editor-2.0.8/css/editor.dataTables.min.css') }}" rel="stylesheet" type="text/css"/>
+{% endblock extra_css %}
+
+{% block form_title %}
+Questionset Form
+{% endblock form_title %}
+
+
+<!-------------------------- BEGIN PAGE BREADCUMB ----------------------->
+{% block pagebreadcumb %}
+<!--will call parent contents -->
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('activity:questionset') }}?template=true" class="pe-3">Questionset List</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Questionset Form</a></li>
+{% endblock pagebreadcumb %}
+<!-------------------------- END PAGE BREADCUMB ------------------------->
+
+
+<!--------- BEGIN NON FIELD ERRORS -------->
+{% block nonfield_errors %}
+<div class="alert alert-danger" id="nonfield_errors"role="alert" style="display:none">
+    <strong>Error</strong> <span></span>
+</div>
+{% endblock nonfield_errors %}
+<!---------- END NON FIELD ERRORS --------->
+
+
+{% block form %}
+
+    <form action="" method="post" id="id_qsetform">
+    <input type="hidden" name="pk" id="pk" value="{{ questionsetform.instance.pk }}">
+        <div class="d-none">
+    {{ questionsetform.type }}
+    </div>
+    <input type="hidden" name="{{ questionsetform.ctzoffset.name }}" id = "{{ questionsetform.ctzoffset.auto_id }}" value="-1">
+        <div class="alert alert-danger alert-dismissible fade show" id="nonfield_errors" role="alert"
+            style="display:none">
+            <strong>Error</strong> <span></span>
+            <button type="button" class="btn-sm btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <!--============================== QuestionSet FORM FIELDS START =============================-->
+        <div class="row mb-3 gy-3">
+            <!--Qusetion Set Name Start-->
+            <label for="{{ questionsetform.qsetname.id_for_label }}" class="required col-md-1 col-sm-1">Name:</label>
+            <div class="col-md-11 col-sm-11">
+                {{ questionsetform.qsetname }}
+                {{ questionsetform.qsetname.errors }}
+            </div>
+            <!--Qusetion Set Name End-->
+
+            <!--Checkpoint Start-->
+            <label for="{{ questionsetform.assetincludes.id_for_label }}"
+                class="required col-md-2 col-sm-2"> Asset/Smartplace:</label>
+            <div class="col-md-4 col-sm-4">
+                {{ questionsetform.assetincludes }}
+                {{ questionsetform.assetincludes.errors }}
+            </div>
+
+            <!-- Parent Start -->
+            <label for="{{ questionsetform.parent.id_for_label }}" class="col-md-1 col-sm-1">Parent:</label>
+            <div class="col-md-4 col-sm-4">
+                {{ questionsetform.parent }}
+                {{ questionsetform.parent.errors }}
+            </div>
+            <!-- Parent End -->
+
+            <!-- Enable Start -->
+            <div class="booleans col-md-4 col-sm-4 d-flex justify-content-sm-between mt-5
+            form-check form-switch form-check-custom form-check-solid">
+                <label for="{{ questionsetform.enable.id_for_label }}"
+                    class="form-check-label bool col-form-label me-5 text-sm-right">
+                    {{ questionsetform.enable.label }}: &nbsp; {{ questionsetform.enable }}
+                </label>
+            </div>
+            <!-- Enable End -->
+
+
+            <div class="d-flex justify-content-end">
+                {% if questionsetform.instance.id %}
+                <button type="submit" id="submit" form="id_qsetform" class="btn btn-sm btn-primary2 me-2 btn-hover-scale">
+                    Update&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+                </button>
+
+                <button type="button" onclick="deleteQuestionSet(this)" data-id="{{ questionsetform.instance.id }}" id="deleteAttd"
+                    class="btn btn-sm me-2 btn-danger btn-hover-scale">
+                    Delete&nbsp;<i class="fas text-white fa-trash-alt"></i>
+                </button>
+                {% else %}
+                <button type="submit" form="id_qsetform" class="btn btn-sm me-2 btn-primary2 btn-hover-scale">
+                    Save&nbsp;<i class="fas text-white fa-cloud-upload-alt"></i>
+                </button>
+                {% endif %}
+                <button type="button" id="newform" class="btn btn-sm me-2 btn-secondary btn-hover-scale">
+                    Clear&nbsp;<i class="fas  fa-cloud-upload-alt"></i>
+                </button>
+            </div>
+        </div>
+    </form><br><hr><br>
+
+{% endblock form %}
+
+
+{% block extras %}
+<div class="row section_asdquestions">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                Assigned Questions&nbsp;<i class="fas text-white fa-layer-group ch4"></i>
+            </h3>
+        </div>
+        <div class="card-body">
+            <table id="assigned_ques_table" class="display cell-border compact hover nowrap">
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock extras %}
+
+
+{% block extra_scripts %}
+{{ questionsetform.media.js }}
+<script src="{{ static('assets/plugins/custom/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/DataTables/Select-1.3.4/js/dataTables.select.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/dataTables.editor.min.js') }}" type="text/javascript"></script>
+<script src="{{ static('assets/plugins/custom/Editor-2.0.8/js/editor.select2.js') }}" type="text/javascript"></script>
+
+<script>
+    //$('.optionGrp').hide()
+    $('form').find("label").addClass("col-md-1 col-sm-1")
+    var optionTag = null
+    var table = null
+    var seqno = 0
+    var editor;
+
+    function appenAlerton(options){
+        clearSelection("#id_alerton")
+        for(let i=0; i<options.length; i++){
+            
+            if ($('#id_alerton').find("option[value='" + options[i] + "']").length) {
+                //$('#DTE_Field_alerton').val(options[i]).trigger('change');
+            } else { 
+                // Create a DOM Option and pre-select by default
+                var newOption = new Option(options[i], options[i], false, false);
+                // Append it to the select
+                $('#id_alerton').append(newOption).trigger('change');
+            } 
+        }
+    }
+     //delete typeassist 
+    function deleteQuestionSet(elemt){
+        var id = "{{ questionsetform.instance.pk }}"
+        var viewname = 'Site Report Template'
+        show_alert_before_delete(viewname)
+        .then((result) => {
+            if(result.isConfirmed){ //delete requested by user
+                let urlname = "{{ url('activity:questionset') }}"
+                const params = {url:`${urlname}?action=delete&id=${id}`}
+                fire_ajax_get(params)
+                .done((data, status, xhr) => {
+                    show_successful_delete_alert() //defined in customjs
+                    window.setTimeout(function() {
+                        window.location.href = "{{ url('activity:questionset') }}?action=form";
+                    }, 2000);
+                })
+                .fail((xhr, status, error) => {
+                    let err = typeof xhr.responseJSON.errors == 'string' ? xhr.responseJSON.errors : 'Something went wrong!'
+                    show_error_alert(err) //defined in custom.js
+                })
+            }
+        })
+    }
+
+
+    function clearSelection(id){
+        //$(id).val(null).trigger('change');
+        $(id).empty().trigger("change");
+    }
+
+    $(document).ready(() => {
+        $("#newform").click(() => {
+            location.href = "{{ url('activity:questionset') }}?action=form"
+        })
+
+        if ($("#pk").val() === "None"){
+            $(".section_asdquestions").hide()   
+        }else{
+            $(".section_asdquestions").show()
+            template_id = $("#pk").val() //update global variable
+        }
+        //set ctzoffset
+        $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+        //remove class to label which was added from above
+        $('.booleans label').removeClass('col-md-1 col-sm-1')
+
+        //Qset Belonging ("List of Assigned Questions")
+        // Datatable configuration 
+        editor = new $.fn.dataTable.Editor({
+            table: '#assigned_ques_table',
+            ajax: {
+                url:"{{ url('activity:qset_qsetblng') }}",
+                data:function(d){
+                    editorAjaxData(d, editor, table, '{{ questionsetform.instance.id }}', '{{ csrf_token }}')
+            }
+            },
+            idSrc:  'pk',
+            fields:[
+                ...editorFieldsConfig()
+            ],
+            formOptions:{
+                main:{
+                    onReturn:false
+                }
+            }
+        })
+
+        table = $("#assigned_ques_table").DataTable({
+                ajax:{
+                    url:"{{ url('activity:qset_qsetblng') }}?action=get_questions_of_qset",
+                    type:'get',
+                    data:function(d){
+                        d.qset_id = "{{ questionsetform.instance.id }}"
+                    }
+                },
+                responsive:true,
+                ordering:false,
+                searching:false,
+                dom:`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+                <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+                columns:[
+                    ...QSBTableColumnsConfig()
+                ],
+                buttons:[
+                {text:'<i class="fas text-white fa-sync-alt text-dark"></i>', titleAttr:'Refresh Data', className:'refreshBtn disabled'},
+                    { extend: "create", editor: editor },
+                    { extend: "edit",   editor: editor },
+                    { extend: "remove", editor: editor }
+                ],
+                select: {
+                    style: 'single'
+                }
+            })
+
+        
+        editor.on('open', function(e, mode, action){
+            // on change options set alerton
+            editorOnOpenActions('{{ url("activity:qset_qsetblng") }}', editor, table, action)
+        })
+
+        editor.on('opened', function(e, mode, action){
+            editorOnOpenedActions()
+        })
+
+        editor.on('preSubmit', function(e, o, action){
+            if(action !== 'remove' && this.field('answertype').val() == 'NUMERIC'){
+                let min = this.field('min')
+                let max = this.field('max')
+                let alertbelow = this.field('alertbelow')
+                let alertabove = this.field('alertabove')
+                console.log(!min.isMultiValue(), isNaN(parseInt(min.val(), 10)) == NaN)
+
+                if(!(min.isMultiValue()) && isNaN(parseInt(min.val(), 10))) {min.error('value of min must be number')}
+                if(!(max.isMultiValue()) && isNaN(parseInt(max.val(), 10))) {max.error('value of max must be number')}
+                if(!(alertbelow.isMultiValue()) && isNaN(parseInt(alertbelow.val()))) {alertbelow.error('value of alert below must be number')}
+                if(!(alertabove.isMultiValue()) && isNaN(parseInt(alertabove.val()))) {alertabove.error('value of alert above must be number')}
+
+                if(!(min.isMultiValue() && max.isMultiValue()) && (parseInt(min.val(), 10) > parseInt(max.val(), 10)) ){
+                    min.error('Min value must be smaller than Max value')
+                }
+                if(!(min.isMultiValue() && alertbelow.isMultiValue()) && (parseInt(alertbelow.val(), 10) < parseInt(min.val(), 10)) ){
+                    alertbelow.error('Alert Below value must be greater than Min value')
+                }
+                if(!(max.isMultiValue() && alertabove.isMultiValue()) && (parseInt(alertabove.val())  > parseInt(max.val(), 10)) ){
+                    max.error('Alert Above value must be smaller than Max value')
+                }
+                if(!(alertbelow.isMultiValue() && alertabove.isMultiValue()) && (parseInt(alertbelow.val(), 10) > parseInt(alertabove.val(), 10)) ){
+                    alertabove.error('Alert Below value must be smaller than Alert Above value')
+                }
+                // If any error was reported, cancel the submission so it can be corrected
+                if ( this.inError() ) {
+                    return false;
+                }
+            }else if(this.field('answertype').val() == 'DROPDOWN' || this.field('answertype').val() == 'CHECKBOX'){
+                let alerton = this.field('alerton')
+                let options = this.field('options')
+                if(!options.isMultiValue() && !options.val()){options.error('options must be given')}
+                if ( this.inError() ) {
+                    return false;
+                }
+            }
+        })
+
+        //on submit form post request
+        $("#id_qsetform").submit((e) => {
+            e.preventDefault()
+            var form = $(this);
+            const params   = { url: $(form).attr("action"), modal: false }
+            const id = $("#pk").val() //form instance id
+            var   payLoad  = {formData:$("#id_qsetform").serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'} 
+            if(id != 'None'){
+                var newPayLoad = {...payLoad, 'pk':id}
+                payLoad = newPayLoad
+            }
+            fire_ajax_form_post(params, payLoad)
+            .done((data, status, xhr) => {
+                let url = "{{ url('activity:questionset') }}"
+                show_successful_save_alert(update= id != 'None' ? true : false)
+                window.setTimeout(function() {
+                    window.location.href = `${url}?id=${data.parent_id}`;
+                }, 2000);
+            })
+        })
+
+        //adjustSlno(seqno, table, reset = false)
+
+    }) //DOCUMENT.READY END
+</script>
+{% endblock extra_scripts %}

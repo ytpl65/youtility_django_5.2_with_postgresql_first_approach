@@ -1,0 +1,247 @@
+{% extends "globals/base_list.html" %}
+
+{% block card_title %}
+Question List
+{% endblock card_title %}
+
+<!---- BEGIN PAGE TITLE ------>
+{% block page_title %}
+Question List
+{% endblock page_title %}
+<!----- END PAGE TITLE -------->
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">Question List</a></li>
+{% endblock pagebreadcumb %}
+
+{% block table %}
+<table id="ques_table" class="display compact cell-border" style="width:100%">
+</table>
+<!------------------ END TABLE --------------------->
+
+{% endblock table %}
+<!-------------------------------------------END BU TABLE ------------------------------------------------->
+
+{% block popup_alerts %}
+<!-- THE MODAL WE WILL BE USING animate__animated animate__zoomIn -->
+<div class="modal"  tabindex="-1" aria-hidden="true" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" id="modal-ques">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="ques_content">
+		</div>
+	</div>
+</div>
+{% endblock popup_alerts %}
+
+{% block extra_scripts %}
+<script>
+	var   table           = null;
+	const modal_id        = "#modal-ques"
+	const modalcontent_id = "#ques_content"
+	const formFilter      = "#ques_filter"
+	const table_id        = "#ques_table"
+	const formid          = "#qsetbng_form"
+	const urlname         = "{{ url('activity:question') }}"
+	const viewname        = "Question"
+	const rowlink         = "a.ques-link"
+	function handleReqAttribute(id, add){
+        if(add){
+            $(`#${id}`).attr("required", true)
+            $(`label[for='${id}']`).addClass("required")
+            
+        }else{
+            $(`#${id}`).removeAttr("required")
+            $(`label[for='${id}']`).removeClass("required")
+        }
+    }
+	
+	$(document).ready(function () {
+		//on enter search query
+		$("input").keypress(function (event) {
+			if (event.which == 13) {
+				event.preventDefault();
+				$("#ques_filter").submit();
+			}
+		});
+		//beforeSend of question ajax request 
+		function quesBeforeSend() {
+			$(modal_id).modal("show");
+		}
+		//datatable initialization
+		table = $(table_id).DataTable({
+			ajax:{
+				url:"{{ url('activity:question') }}?action=list"
+			},
+			lengthMenu: [250,500,750,1000],
+            pageLength: 500,
+			columns     : [
+                { "data": "id", title:"ID", className:"noVis" },
+                { "data": "quesname", title: "Name" },
+                { "data": "answertype", title: 'Type' },
+                { "data": "unit__tacode", title: 'Unit', visible:false},
+                { "data": "isworkflow", title: 'Workflow', visible:false },	
+            ],
+			deferRender: true,
+			{# scrollY: 300,
+            scrollCollapse: true,
+            scrollX:true, #}
+			columnDefs:[
+				{targets:0, data: "id", visible:false, searchable:false, orderable:false},
+				{
+					targets: 1,
+					data   : 'quesname',
+					render : function ( data, type, row, meta ) {
+						return `<a href="#" class="ques-link" data-id=${row['id']} data-rowid=${meta.row}>${data}</a>`
+					}
+				},
+				{targets:4, data:"israndomized", render:function(data, type, row, meta){
+					return data ? 'Yes': 'No'				
+				}},
+			],
+			dom       :`<'row' <'col-sm-6 d-flex justify-content-start'f> <'col-sm-6 d-flex justify-content-end'B> >rt<'row'
+			 <'col-sm-6'l> <'col-sm-6'p><'col-sm-12 d-flex justify-content-center'i>>`,
+			buttons: [
+				{
+					extend: 'searchBuilder',
+					config: {
+					columns: [1, 2, 3, 4]
+					}
+				},
+                dataTablesPDFConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Questions List`,
+                    columns = ':visible',
+                    filename="questions_list"
+                ),
+                dataTablesExcelConfig(
+                    title = `Site: {{request.user.bu.buname}}\n Questions List`,
+                    columns = ':visible',
+                    filename="questions_list"
+                ),
+                dataTablesColumnVisibilityConfig(),
+				{
+				text     : `Add New &nbsp;<i class='fas fa-plus ch4'></i></a>`,
+				className: "btn btn-sm border border-primary btn-light-primary add_new_question",
+				//action for add_new_button 
+				action: function (e, dt, node, config) {
+					const params = {
+						'modal_id': modal_id,
+						'url': `${urlname}?action=form`,
+						'beforeSend': quesBeforeSend
+					}
+					fire_ajax_get(params)
+						.done((data, status, xhr) => {
+							$(`${modal_id} .modal-content`).html(data.html_form)
+							$(modal_id).modal("show");
+						})
+						.fail((xhr, status, error) => {
+							show_error_alert("Something went wrong!")
+						})
+				}
+			}],
+			select: {
+                    style: 'single'
+                }
+		}) //END DATATABLE CONFIGURATION
+
+		
+
+		table.on("select", function(e, dt, type, indexes){
+			if (type === 'row'){
+				var id = table.rows( indexes ).data().pluck( 'id' )[0];
+				if (!(id)){ return }
+				e.preventDefault();
+				const params = {
+					'modal_id': modal_id,
+					'url': `${urlname}?id=${id}`,
+					beforeSend: quesBeforeSend
+				}
+				fire_ajax_get(params)
+				.done((data, status, xhr) => {
+					$(modalcontent_id).attr('data-form', 'update')
+					$(`${modal_id} .modal-content`).html(data.html_form)
+					if($("#id_isavpt").is(':checked')){
+						$(".avpttype").removeClass("d-none")
+					}
+					
+				})
+				.fail((xhr, status, error) => {
+					show_error_alert('Something went wrong!') //defined in custom.js
+				})
+			}
+		})
+		if($("#id_isavpt").is(':checked')){
+            handleReqAttribute("id_avpttype", true)
+        }else{handleReqAttribute("id_avpttype", false)}
+
+
+		//submit form
+		$(modal_id).on('submit', formid, function(e) {
+			var form = $(this);
+			e.preventDefault()
+			if(quesValidator){
+				quesValidator.validate().then(function (status) {
+					if(status === 'Valid'){
+						const params = { url:urlname, modal:true } //capability view
+						const id = $("#pk").val() //form instance id
+						var payLoad = {formData:form.serialize(), csrfmiddlewaretoken: '{{ csrf_token }}'}//payload for post request
+						if(id != 'None'){
+							var newPayLoad = {...payLoad, 'pk':id}
+							payLoad = newPayLoad
+						}
+						fire_ajax_form_post(params, payLoad)
+						.done((data, status, xhr) => { //function to submit post request
+							$("#modal-ques").modal("hide");
+							if(id!=='None'){
+								table.row('.selected').data(data.row).draw()
+							}else{
+								table.row.add(data.row).draw()
+							}
+							show_successful_save_alert(update= id != 'None' ? true : false)
+						})
+					}
+				})
+			}
+			
+		})
+	}) //END DOCUMENT.READY
+
+	
+
+	//delete ajax request 
+	function isQuesDeleted(id) {
+		const params = {
+			url: `${urlname}?action=delete&id=${id}`
+		}
+		fire_ajax_get(params)
+			.done((data, status, xhr) => {
+				if (!xhr.status === 200) {
+					return false
+				}
+				return true
+			})
+			.fail((xhr, status, error) => {
+				show_error_alert('Something went wrong!') //defined in custom.js
+				return false
+			})
+	}
+
+	//delete question 
+	function deleteQuestion(elemt) {
+		var id = $(elemt).attr("data-id");
+		show_alert_before_delete('Question')
+			.then((result) => {
+				if (result.isConfirmed) { //delete requested by user
+					status = isQuesDeleted(id) //fire's request
+					if (status) {
+						show_successful_delete_alert() //defined in customjs
+						$(modal_id).modal("hide")
+						//delete row from table
+						table.row('.selected').remove().draw()
+					} else {
+						show_error_alert('Something went wrong!');
+					}
+				}
+			})
+	}
+</script>
+{% endblock extra_scripts %}

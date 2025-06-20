@@ -1,0 +1,138 @@
+{% extends "base_imp_exp.html" %}
+
+{% block pagebreadcumb %}
+{{ super() }}
+<li class="breadcrumb-item pe-3"><a href="{{ url('home') }}?template=true" class="pe-3">Home</a></li>
+<li class="breadcrumb-item pe-3"><a href="javascript:void(0)" class="pe-3">People Data Import</a></li>
+{% endblock pagebreadcumb %}
+
+
+<!------ BEGIN FORM TITLE ------->
+{% block form_title %}
+Import People
+{% endblock form_title %}
+<!------ END FORM TITLE -------->   
+
+
+{% block accordion_body %}
+    <strong>There Should be:</strong><br>
+    <ul>
+        <li>File format of .xlsx for seamsless operation</li>
+        <li>No Empty rows in the sheet</li>
+        <li>No column type formatting i.e everything should be text type</li>
+        <li>The first column should always be 'ID'</li>
+        <li>Leave 'ID' column empty</li>
+        <li>Mob No. should start with country codes first Eg:(91, 44, 213 etc)</li>
+        <li>Value of 'Enable', 'Admin' should be either True, False</li>
+        <li>Values of (Date of Birth, Date of Join, Date of Report) of date type in this format only 22-02-1999</li>
+        <li>Values of (People Code, Department, Designation, BV, Client, People Type, Report To) should be UPPERCASE, without any spaces and characters.</li>
+        <li>Mandatory Fields: <u>Login Id, Peple Code, Email, BV, Client, Gender</u></li>
+    </ul>
+    <strong>Order of column names in the sheet should be in following order.. you can copy it from below.</strong><br>
+    <u>ID, People Code, People Name, Login Id, Gender, People Type, Admin, BV, Client, Mob No, Email, Enable, Designation, Department,
+    Date of Birth, Date of Join, Date of Report, Report To</u>
+{% endblock accordion_body %}
+
+
+{% block accordion_header %}
+<button class="accordion-button bg-dark bg-gradient text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+    Notes before import people data through excel file. &nbsp;&nbsp;&nbsp; click here.. &nbsp;<i class="fas text-white fa-check-double text-white"></i>
+</button>
+{% endblock accordion_header %}
+
+{% block errors_table %}
+<table id='people_model' class="display cell-border nowrap compact hover" width="100%"></table>
+{% endblock errors_table %}
+
+{% block inline_js %}
+<script>
+var tableData;
+var table;
+$(document).ready(function(){
+    $("#id_ctzoffset").val(-new Date().getTimezoneOffset())
+
+    $(".error-table").hide()
+    table = $('#people_model').DataTable({
+        columns:[
+            {data:'error', defaultContent:null, render:function(data, type, row){
+                    return `<span class="text-danger">${data}</span>`
+                }, title:"Error", width:"5%"},
+            {data: 'rowno', title: 'Row No'},
+            {data: 'Code', title: 'Code'},
+            {data: 'Name', title: 'Name'},
+            {data: 'LoginId', title: 'Login'},
+            {data: 'MobNo', title: 'Mob No.'},
+            {data: 'Email', title: 'Email'},
+            {data: 'Gender', title: 'Gender'},
+            {data: 'Enable', title: 'Enable'},
+            {data: 'IsAdmin', title: 'Admin'},
+            {data: 'Department', title: 'Department'},
+            {data: 'Designation', title: 'Designation'},
+            {data: 'PeopleType', title: 'People Type'},
+            {data: 'DateOfJoin', title: 'Date Of Join'},
+            {data: 'DateOfReport', title: 'Date Of Report'},
+            {data: 'DateOfBirth', title: 'Date Of Birth'},
+            {data: 'Reportto', title: 'Report To'},
+            {data: 'IsAdmin', title: 'Admin'},
+            {data: 'BV', title: 'Site'},
+            {data: 'Client', title: 'Client'},
+            {data: 'Enable', title: 'Enable'},
+        ],
+        deferRender:true,
+        responsive:true,
+        dom:`<'row' >rt<'row'>`,
+        ordering:false,
+        buttons:[
+            {
+                
+            }
+        ]
+    })
+
+    //on submit-button click post request to save content from file to db
+    $("#submit_import").click(function(){
+        if (document.getElementById("import_file").files.length > 0){
+            formdata = new FormData();
+            var fileInput = $('#import_file')[0].files[0]
+            if(formdata){
+                formdata.append('table', 'people')
+                formdata.append('file', fileInput)
+                formdata.append('ctzoffset', $("#id_ctzoffset").val())
+                formdata.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+                $.ajax({
+                    url: "{{ url('onboarding:import') }}",
+                    type: "POST",
+                    data: formdata,
+                    processData: false,
+                    contentType: false,
+                }).done((data, status, xhr) => {
+                    // show success alert
+                    Swal.fire({
+                        title:'Imported Successfully!',
+                        text:`Total ${data.totalrows} records of People data imported succesfully`,
+                        icon:'success',
+                        showConfirmButton: true,    
+                        allowOutsideClick:false,
+                    }).then((res) => {
+                        //on click ok page reload
+                        if(res.isConfirmed){
+                            location.reload()
+                        }
+                    })
+                }).fail((xhr, status, error) => {
+                    console.log(xhr)
+                    //display error rows in datatable
+                    $(".error-table").show()
+                    table.clear().data()
+                    table.rows.add(JSON.parse(xhr.responseJSON.data)).draw()
+
+                })
+                
+            }
+
+        }
+    })
+
+})
+</script>
+{% endblock inline_js %}

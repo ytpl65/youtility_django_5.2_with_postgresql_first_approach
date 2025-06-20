@@ -1,0 +1,29 @@
+{% extends "globals/base_form.html" %}
+
+{% block pagebody_container %}
+<div class="card">
+    <div class="card-body">
+        <p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+        <form action="" method="post">
+            <!---------------------------CSRF MIDDLEWARE TOKEN---------------------->
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <table>
+        {{ wizard.management_form }}
+        {% if wizard.form.forms is defined%}
+            {{ wizard.form.management_form }}
+            {% for form in wizard.form.forms %}
+                {{ form }}
+            {% endfor %}
+        {% else %}
+            {{ wizard.form }}
+        {% endif %}
+        </table>
+        {% if wizard.steps.prev %}
+        <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">First Step</button>
+        <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Prev Step</button>
+        {% endif %}
+        <input type="submit" value='Submit'/>
+        </form>
+    </div>
+</div>
+{% endblock pagebody_container %}
