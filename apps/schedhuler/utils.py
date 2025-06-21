@@ -14,7 +14,7 @@ from django.db.models.query import QuerySet
 from apps.reminder.models import Reminder
 import random
 import traceback as tb
-from intelliwiz_config.celery import app
+#from intelliwiz_config.celery import app
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.core.mail import mail_admins

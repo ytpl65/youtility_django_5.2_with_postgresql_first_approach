@@ -1,0 +1,30 @@
+[Unit]
+Description=YOUTILITY MQTT Client (Development)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=satyam
+Group=satyam
+WorkingDirectory=/home/satyam/Documents/YOUTILITY-MIGRATION-DJANGO5-POSTGRESQL/YOUTILITY3
+Environment=VIRTUAL_ENV=/home/satyam/Documents/YOUTILITY-MIGRATION-DJANGO5-POSTGRESQL/django5_postgresql_env
+Environment=PATH=/home/satyam/Documents/YOUTILITY-MIGRATION-DJANGO5-POSTGRESQL/django5_postgresql_env/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/home/satyam/Documents/YOUTILITY-MIGRATION-DJANGO5-POSTGRESQL/django5_postgresql_env/bin/python paho_client.py
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=15
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=youtility-mqtt
+
+# Resource limits
+LimitNOFILE=1024
+MemoryHigh=128M
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target

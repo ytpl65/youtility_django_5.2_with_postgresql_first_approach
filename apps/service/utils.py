@@ -15,7 +15,6 @@ from apps.core import exceptions as excp
 from apps.service import serializers as sz
 from apps.y_helpdesk.models import Ticket
 from background_tasks.tasks import alert_sendmail,send_email_notification_for_wp_from_mobile_for_verifier, send_email_notification_for_vendor_and_security_for_rwp,insert_json_records_async
-from intelliwiz_config.celery import app
 from apps.work_order_management.utils import save_approvers_injson,save_verifiers_injson
 from apps.schedhuler.utils import create_dynamic_job
 from intelliwiz_config.settings import GOOGLE_MAP_SECRET_KEY as google_map_key
@@ -468,8 +467,8 @@ def get_user_instance(id):
 
 
 
-@app.task(bind = True, default_retry_delay = 300, max_retries = 5, name = "perform_tasktourupdate()")
-def perform_tasktourupdate(self, records, request=None, db='default', bg=False):
+#@app.task(bind = True, default_retry_delay = 300, max_retries = 5, name = "perform_tasktourupdate()")
+def perform_tasktourupdate(records, request=None, db='default', bg=False):
     rc, recordcount, traceback= 1, 0, 'NA'
     instance, msg = None, Messages.UPDATE_FAILED
 
@@ -538,8 +537,8 @@ def save_journeypath_field(jobneed):
         log.info(f"saving line string ended because conditions not met")
         
 
-@app.task(bind = True, default_retry_delay = 300, max_retries = 5, name = 'perform_insertrecord()')
-def perform_insertrecord(self, records,  db='default', filebased = True, bg=False, userid=None):
+#@app.task(bind = True, default_retry_delay = 300, max_retries = 5, name = 'perform_insertrecord()')
+def perform_insertrecord(records,  db='default', filebased = True, bg=False, userid=None):
     """
     Insert records in specified tablename.
 
@@ -675,8 +674,8 @@ def create_escalation_matrix_for_sitecrisis(ESM, user):
     
 
 
-@app.task(bind = True, default_retry_delay = 300, max_retries = 5,  name = 'perform_reportmutation')
-def perform_reportmutation(self, records, db= 'default', bg=False):
+#@app.task(bind = True, default_retry_delay = 300, max_retries = 5,  name = 'perform_reportmutation')
+def perform_reportmutation(records, db= 'default', bg=False):
     rc, recordcount, traceback, msg= 1, 0, 'NA', Messages.INSERT_FAILED
     instance = None
     try:
@@ -730,8 +729,8 @@ def perform_reportmutation(self, records, db= 'default', bg=False):
     return results.__dict__ if bg else results
 
 
-@app.task(bind = True, default_retry_delay = 300, max_retries = 5, name = 'perform_adhocmutation')
-def perform_adhocmutation(self, records, db='default', bg=False):  # sourcery skip: remove-empty-nested-block, remove-redundant-if, remove-redundant-pass
+#@app.task(bind = True, default_retry_delay = 300, max_retries = 5, name = 'perform_adhocmutation')
+def perform_adhocmutation(records, db='default', bg=False):  # sourcery skip: remove-empty-nested-block, remove-redundant-if, remove-redundant-pass
     rc, recordcount, traceback, msg= 1, 0, 'NA', Messages.INSERT_FAILED
     try:
         log.info(

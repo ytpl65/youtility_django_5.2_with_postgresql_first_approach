@@ -5,6 +5,7 @@ from django.dispatch import receiver
 import json
 
 from background_tasks.tasks import publish_mqtt
+from apps.core.signal_utils import queue_mqtt_task
 TOPIC = "redmine_to_noc"
 
 
@@ -26,23 +27,23 @@ def build_payload(instance, model_name, created):
 @receiver(post_save, sender=Bt)
 def bt_post_save(sender, instance, created, **kwargs):
     payload = build_payload(instance, "Bt", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 
 @receiver(post_save, sender=TypeAssist)
 def typeassist_post_save(sender, instance, created, **kwargs):
     payload = build_payload(instance, "TypeAssist", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 
 @receiver(post_save, sender=Shift)
 def shift_post_save(sender, instance, created, **kwargs):
     payload = build_payload(instance, "Shift", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 
 @receiver(post_save, sender=GeofenceMaster)
 def geofencemaster_post_save(sender, instance, created, **kwargs):
     payload = build_payload(instance, "GeofenceMaster", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 

@@ -1,5 +1,6 @@
-from intelliwiz_config.celery import app
-from celery import shared_task
+# Celery removed - tasks now run via PostgreSQL Task Queue
+# from intelliwiz_config.celery import app
+# from celery import shared_task
 from background_tasks import utils as butils
 from apps.core import utils
 from django.apps import apps
@@ -31,26 +32,25 @@ from .report_tasks import (
     remove_reportfile, save_report_to_tmp_folder)
 from io import BytesIO
 
-from celery import shared_task
+# from celery import shared_task  # Removed - using PostgreSQL Task Queue
 from mqtt_utils import publish_message
 
 
 
 
 
-@shared_task(bind=True, max_retries=5, default_retry_delay=30,name="publish_mqtt")
-def publish_mqtt(self, topic, payload):
+def publish_mqtt(topic, payload):
     try:
         publish_message(topic, payload)
-        logger.info(f"[Celery] Task completed: topic={topic}")
+        logger.info(f"[PostgreSQL Task Queue] Task completed: topic={topic}")
     except Exception as e:
-        logger.error(f"[Celery] Task failed! Will retry. Error: {e}", exc_info=True)
-        raise self.retry(exc=e)
+        logger.error(f"[PostgreSQL Task Queue] Task failed! Error: {e}", exc_info=True)
+        raise
 
 
 
-@app.task(bind=True, default_retry_delay=300, max_retries=5, name="send_ticket_email")
-def send_ticket_email(self, ticket=None, id=None):
+# @app.task(bind=True, default_retry_delay=300, max_retries=5, name="send_ticket_email")  # Removed - using PostgreSQL Task Queue
+def send_ticket_email(ticket=None, id=None):
     from apps.y_helpdesk.models import Ticket
     from django.conf import settings
     from django.template.loader import render_to_string
@@ -95,7 +95,6 @@ def send_ticket_email(self, ticket=None, id=None):
     return resp
 
 
-@shared_task(name="auto_close_jobs")
 def autoclose_job(jobneedid=None):
     from django.template.loader import render_to_string
     from django.conf import settings
@@ -184,8 +183,9 @@ def autoclose_job(jobneedid=None):
         resp['traceback'] += f"{tb.format_exc()}"
     return resp
 
+# Alias for compatibility with test script
+auto_close_jobs = autoclose_job
 
-@shared_task(name="ticket_escalation")
 def ticket_escalation():
     result = {'story': "", 'traceback': "", 'id': []}
     try:
@@ -200,7 +200,6 @@ def ticket_escalation():
     return result
 
 
-@shared_task(name="send_reminder_email")
 def send_reminder_email():
     from django.template.loader import render_to_string
     from django.conf import settings
@@ -248,7 +247,6 @@ def send_reminder_email():
     return resp
 
 
-@shared_task(name="create_ppm_job")
 def create_ppm_job(jobid=None):
     F, d = {}, []
     #resp = {'story':"", 'traceback':""}
@@ -326,8 +324,8 @@ def create_ppm_job(jobid=None):
     return resp, F, d, result
 
 
-@app.task(bind=True, default_retry_delay=300, max_retries=5, name='perform_facerecognition_bgt')
-def perform_facerecognition_bgt(self, pel_uuid, peopleid, db='default'):
+#@app.task(bind=True, default_retry_delay=300, max_retries=5, name='perform_facerecognition_bgt')
+def perform_facerecognition_bgt(pel_uuid, peopleid, db='default'):
     result = {'story': "perform_facerecognition_bgt()\n", "traceback": ""}
     result['story'] += f"inputs are {pel_uuid = } {peopleid = }, {db = }\n"
     starttime = time.time()
@@ -390,7 +388,6 @@ def perform_facerecognition_bgt(self, pel_uuid, peopleid, db='default'):
     except Exception as e:
         logger.critical("something went wrong! while performing face-recognition in background", exc_info=True)
         result['traceback'] += f'{tb.format_exc()}'
-        self.retry(e)
         raise
     endtime = time.time()
     total_time = endtime - starttime
@@ -399,8 +396,8 @@ def perform_facerecognition_bgt(self, pel_uuid, peopleid, db='default'):
 
 
 
-@app.task(bind=True,  name="alert_sendmail")
-def alert_sendmail(self, id, event, atts=False):
+# alert_sendmail
+def alert_sendmail(id, event, atts=False):
     '''
     takes uuid, ownername (which is the model name) and event (observation or deviation)
     gets the record from model if record has alerts set to true then send mail based on event
@@ -414,15 +411,13 @@ def alert_sendmail(self, id, event, atts=False):
         return alert_deviation(obj, atts)
 
 
-@shared_task(bind=True, name="task_every_min")
-def task_every_min(self):
+def task_every_min():
     from django.utils import timezone
     return f"task completed at {timezone.now()}"
 
 
 
-@shared_task(bind=True, name="send_report_on_email")
-def send_report_on_email(self, formdata, json_report):
+def send_report_on_email(formdata, json_report):
     
     import mimetypes
     import json
@@ -457,8 +452,7 @@ def send_report_on_email(self, formdata, json_report):
 
 
 
-@shared_task(bind=True, name="create_report_history")
-def create_report_history(self, formdata, userid, buid, EI):
+def create_report_history(formdata, userid, buid, EI):
     jsonresp = {'story': "", "traceback": ""}
     try:
         ReportHistory = apps.get_model('reports', "ReportHistory")
@@ -482,8 +476,7 @@ def create_report_history(self, formdata, userid, buid, EI):
     return jsonresp
 
 
-@shared_task(bind=True, name="send_email_notification_for_workpermit_approval")
-def send_email_notification_for_workpermit_approval(self,womid,approvers,approvers_code,sitename,workpermit_status,permit_name,workpermit_attachment,vendor_name,client_id):
+def send_email_notification_for_workpermit_approval(womid,approvers,approvers_code,sitename,workpermit_status,permit_name,workpermit_attachment,vendor_name,client_id):
     jsonresp = {'story': "", "traceback": ""}
     try:
         from django.apps import apps 
@@ -536,8 +529,7 @@ def send_email_notification_for_workpermit_approval(self,womid,approvers,approve
         jsonresp['traceback'] += tb.format_exc()
     return jsonresp
 
-@shared_task(bind=True, name = "send_email_notification_for_wp_verifier")
-def send_email_notification_for_wp_verifier(self,womid,verifiers,sitename,workpermit_status,permit_name,vendor_name,client_id,workpermit_attachment=None):
+def send_email_notification_for_wp_verifier(womid,verifiers,sitename,workpermit_status,permit_name,vendor_name,client_id,workpermit_attachment=None):
     jsonresp = {'story': "", "traceback": ""}
     try:
         from django.apps import apps 
@@ -586,8 +578,7 @@ def send_email_notification_for_wp_verifier(self,womid,verifiers,sitename,workpe
         
 
 
-@shared_task(bind=True, name="send_email_notification_for_wp_from_mobile_for_verifier")
-def send_email_notification_for_wp_from_mobile_for_verifier(self,womid,verifiers,sitename,workpermit_status,permit_name,vendor_name,client_id,workpermit_attachment=None):
+def send_email_notification_for_wp_from_mobile_for_verifier(womid,verifiers,sitename,workpermit_status,permit_name,vendor_name,client_id,workpermit_attachment=None):
     jsonresp = {'story': "", "traceback": ""}
     try:
         from django.apps import apps 
@@ -635,8 +626,7 @@ def send_email_notification_for_wp_from_mobile_for_verifier(self,womid,verifiers
     return jsonresp
 
 
-@shared_task(bind=True, name="send_email_notification_for_wp")
-def send_email_notification_for_wp(self, womid, qsetid, approvers, client_id, bu_id,sitename,workpermit_status,vendor_name):
+def send_email_notification_for_wp(womid, qsetid, approvers, client_id, bu_id,sitename,workpermit_status,vendor_name):
     jsonresp = {'story': "", "traceback": ""}
     try:
         from django.apps import apps
@@ -681,8 +671,7 @@ def send_email_notification_for_wp(self, womid, qsetid, approvers, client_id, bu
         jsonresp['traceback'] += tb.format_exc()
     return jsonresp
 
-@shared_task(bind=True, name="send_email_notification_for_vendor_and_security_of_wp_cancellation")
-def send_email_notification_for_vendor_and_security_of_wp_cancellation(self,wom_id,sitename,workpermit_status,vendor_name,permit_name,permit_no,submit_work_permit=False,submit_work_permit_from_mobile=False):
+def send_email_notification_for_vendor_and_security_of_wp_cancellation(wom_id,sitename,workpermit_status,vendor_name,permit_name,permit_no,submit_work_permit=False,submit_work_permit_from_mobile=False):
     jsonresp = {'story':"", 'traceback':""}
     try:
         from apps.work_order_management.models import Wom,WomDetails
@@ -745,8 +734,7 @@ def send_email_notification_for_vendor_and_security_of_wp_cancellation(self,wom_
 
 
 
-@shared_task(bind=True, name="send_email_notification_for_vendor_and_security_for_rwp")
-def send_email_notification_for_vendor_and_security_for_rwp(self,wom_id,sitename,workpermit_status,vendor_name,pdf_path,permit_name,permit_no):
+def send_email_notification_for_vendor_and_security_for_rwp(wom_id,sitename,workpermit_status,vendor_name,pdf_path,permit_name,permit_no):
     jsonresp = {'story':"", 'traceback':""}
     try:
         from apps.work_order_management.models import Wom,WomDetails
@@ -801,8 +789,7 @@ def send_email_notification_for_vendor_and_security_for_rwp(self,wom_id,sitename
     return jsonresp
 
 
-@shared_task(bind=True, name="send_email_notification_for_vendor_and_security_after_approval")
-def send_email_notification_for_vendor_and_security_after_approval(self,wom_id,sitename,workpermit_status,vendor_name,pdf_path,permit_name,permit_no):
+def send_email_notification_for_vendor_and_security_after_approval(wom_id,sitename,workpermit_status,vendor_name,pdf_path,permit_name,permit_no):
     jsonresp = {'story':"", 'traceback':""}
     try:
         from apps.work_order_management.models import Wom,WomDetails
@@ -850,8 +837,7 @@ def send_email_notification_for_vendor_and_security_after_approval(self,wom_id,s
         jsonresp['traceback'] += tb.format_exc()
     return jsonresp
 
-@shared_task(bind=True, name="send_email_notification_for_sla_vendor")
-def send_email_notification_for_sla_vendor(self,wom_id,report_attachment,sitename):
+def send_email_notification_for_sla_vendor(wom_id,report_attachment,sitename):
     jsonresp = {'story':"", 'traceback':""}
     try:
         from apps.work_order_management.models import Wom,WomDetails
@@ -912,7 +898,6 @@ def send_email_notification_for_sla_vendor(self,wom_id,report_attachment,sitenam
         jsonresp['traceback'] += tb.format_exc()
     return jsonresp
 
-@shared_task(name="move_media_to_cloud_storage")
 def move_media_to_cloud_storage():
     resp = {}
     try:
@@ -930,7 +915,6 @@ def move_media_to_cloud_storage():
         resp['msg'] = "Completed without any errors"
     return resp
 
-@shared_task(name='create_scheduled_reports')
 def create_scheduled_reports():
     state_map = {'not_generated':0, 'skipped':0, 'generated':0, 'processed':0}
 
@@ -953,7 +937,6 @@ def create_scheduled_reports():
 
 
 
-@shared_task(name="send_generated_report_on_mail")
 def send_generated_report_on_mail():
     story = {
         'start_time': timezone.now(),
@@ -990,8 +973,7 @@ def send_generated_report_on_mail():
     story['end_time'] = timezone.now()
     return story
 
-@shared_task(bind=True, name="send_generated_report_onfly_email")
-def send_generated_report_onfly_email(self, filepath, fromemail, to, cc, ctzoffset):
+def send_generated_report_onfly_email(filepath, fromemail, to, cc, ctzoffset):
     story = {'msg':['send_generated_report_onfly_email [started]']}
     try:
         story['msg'].append(f'{filepath = } {fromemail = } {to = } {cc =}')
@@ -1010,9 +992,8 @@ def send_generated_report_onfly_email(self, filepath, fromemail, to, cc, ctzoffs
     except Exception  as e:
         logger.critical("something went wrong in bg task send_generated_report_onfly_email", exc_info=True)
     return story
-        
-@app.task(bind=True, default_retry_delay=300, max_retries=5, name="process_graphql_mutation_async")
-def process_graphql_mutation_async(self, payload):
+
+def process_graphql_mutation_async(payload):
     """
     Process the incoming payload containing a GraphQL mutation and file data.
 
@@ -1041,8 +1022,8 @@ def process_graphql_mutation_async(self, payload):
     
 
 
-@app.task(bind=True, name="insert_json_records_async")
-def insert_json_records_async(self, records, tablename):
+#@app.task(bind=True, name="insert_json_records_async")
+def insert_json_records_async(records, tablename):
     from apps.service.utils import get_model_or_form
     from apps.service.validators import clean_record
     if model := get_model_or_form(tablename):
@@ -1062,8 +1043,8 @@ def insert_json_records_async(self, records, tablename):
     
     
     
-@app.task(bind=True, name="create_save_report_async")
-def create_save_report_async(self, formdata, client_id, user_email, user_id):
+#@app.task(bind=True, name="create_save_report_async")
+def create_save_report_async(formdata, client_id, user_email, user_id):
     try:
         returnfile = formdata.get('export_type') == 'SEND'
         report_essentials = rutils.ReportEssentials(report_name=formdata['report_name'])
@@ -1088,8 +1069,8 @@ def create_save_report_async(self, formdata, client_id, user_email, user_id):
         return {"status": 500, "message": "Internal Server Error", "alert":"alert-danger"}
         
             
-@app.task(bind=True, name="cleanup_reports_which_are_12hrs_old")
-def cleanup_reports_which_are_12hrs_old(self, dir_path,hours_old=12):
+#@app.task(bind=True, name="cleanup_reports_which_are_12hrs_old")
+def cleanup_reports_which_are_12hrs_old(dir_path,hours_old=12):
     for root, dirs, files in os.walk(dir_path):
         for filename in files:
             file_path = os.path.join(root, filename)
@@ -1105,8 +1086,8 @@ def cleanup_reports_which_are_12hrs_old(self, dir_path,hours_old=12):
                 logger.error(f"Error deleting file {file_path}: {e}")
         
 
-@app.task(bind=True, default_retry_delay=300, max_retries=5, name="process_graphql_download_async")
-def process_graphql_download_async(self, payload):
+#@app.task(bind=True, default_retry_delay=300, max_retries=5, name="process_graphql_download_async")
+def process_graphql_download_async(payload):
     """
     Process the incoming payload containing a GraphQL download and file data.
 
@@ -1133,8 +1114,7 @@ def process_graphql_download_async(self, payload):
     return resp
 
 
-@shared_task(bind=True, name="send_email_notification_for_sla_report")
-def send_email_notification_for_sla_report(self,slaid,sitename):
+def send_email_notification_for_sla_report(slaid,sitename):
     jsonresp = {'story': "", "traceback": ""}
     try:
         from django.apps import apps
@@ -1206,7 +1186,6 @@ def send_email_notification_for_sla_report(self,slaid,sitename):
 
 
 
-@shared_task(name="send_mismatch_notification")
 def send_mismatch_notification(mismatch_data):
     # This task sends mismatch data to the NOC dashboard
     logger.info(f"Mismatched detected: {mismatch_data}")

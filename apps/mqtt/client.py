@@ -14,13 +14,12 @@ import logging
 from pprint import pformat
 log = logging.getLogger('mobile_service_log')
 from django.conf import settings
-from background_tasks.tasks import process_graphql_mutation_async
-from celery.result import AsyncResult
+from apps.core.mqtt_adapter import PostgreSQLTaskAdapter, get_task_status as get_pg_task_status
 MQTT_CONFIG = settings.MQTT_CONFIG 
 
 # MQTT broker settings
 BROKER_ADDRESS = MQTT_CONFIG['BROKER_ADDRESS']
-BROKER_PORT = MQTT_CONFIG['BROKER_PORT']
+BROKER_PORT = MQTT_CONFIG['broker_port']
 
 MUTATION_TOPIC        = "graphql/mutation"
 MUTATION_STATUS_TOPIC = "graphql/mutation/status"
@@ -31,8 +30,9 @@ def get_task_status(item):
     """
     Get status of a task
     """
-    status = AsyncResult(item.get('taskId')).status
-    item.update({'status':status})
+    status_info = get_pg_task_status(item.get('taskId'))
+    status = status_info.get('status', 'PENDING')
+    item.update({'status': status})
     return item
 
 
@@ -69,12 +69,13 @@ class MqttClient:
         
         if msg.topic == MUTATION_TOPIC:
             # process graphql mutations received on this topic
-            result = process_graphql_mutation_async.delay(payload)
+            adapter = PostgreSQLTaskAdapter()
+            result = adapter.delay_task('process_graphql_mutation_async', payload)
             post_data = json.loads(payload)
             log.info(f"{post_data.keys()}")
             uuids, service_name = post_data.get('uuids', []), post_data.get('serviceName', "")
             response = json.dumps(
-                {'task_id':result.task_id, 'status':result.state,
+                {'task_id':result.task_id, 'status':result.status,
                  'uuids':uuids, 'serviceName':service_name, 'payload':payload})
             log.info(f"Response published to {RESPONSE_TOPIC} after accepting {service_name}")
             client.publish(RESPONSE_TOPIC, response)

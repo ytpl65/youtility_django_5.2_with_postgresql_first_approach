@@ -4,6 +4,8 @@ from apps.attendance.models import PeopleEventlog
 from apps.attendance.serializers import PeopleEventlogSerializer
 import json
 from background_tasks.tasks import publish_mqtt
+from apps.core.signal_utils import queue_mqtt_task
+
 TOPIC="redmine_to_noc"
 
 
@@ -22,5 +24,6 @@ def build_payload(instance, model_name, created):
 @receiver(post_save, sender=PeopleEventlog)
 def peopleeventlog_post_save(sender, instance, created, **kwargs):
     payload = build_payload(instance, "PeopleEventlog", created)
-    publish_mqtt.delay(TOPIC, payload)
+    # Queue MQTT task using PostgreSQL task queue
+    queue_mqtt_task(TOPIC, payload, priority=3)
 

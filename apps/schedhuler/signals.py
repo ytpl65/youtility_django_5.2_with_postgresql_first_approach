@@ -6,6 +6,7 @@ from apps.schedhuler.serializers import JobSerializers,JobneedSerializers,Jobnee
 import json
 
 from background_tasks.tasks import publish_mqtt
+from apps.core.signal_utils import queue_mqtt_task
 
 TOPIC = "redmine_to_noc"
 
@@ -28,16 +29,16 @@ def build_payload(instance, model_name, created):
 @receiver(post_save, sender=Job)
 def job_post_save(sender, instance, created, **kwargs):
     payload = build_payload(instance, "Job", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 
 @receiver(post_save, sender=Jobneed)
 def jobneed_post_save(sender, instance, created, **kwargs):
     payload = build_payload(instance, "JobNeed", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 
 @receiver(post_save, sender=JobneedDetails)
 def jobneeddetails_post_save(sender, instance, created, **kwargs):
     payload = build_payload(instance, "JobneedDetails", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)

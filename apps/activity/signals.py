@@ -10,6 +10,7 @@ from django.utils import timezone
 import json
 import datetime
 from background_tasks.tasks import publish_mqtt
+from apps.core.signal_utils import queue_mqtt_task
 TOPIC = "redmine_to_noc"
 
 
@@ -72,33 +73,33 @@ def build_payload(instance, model_name, created):
 @receiver(post_save,sender=Attachment)
 def attachment_post_save(sender,instance,created,**kwargs):
     payload = build_payload(instance, "Attachment", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 
 @receiver(post_save,sender=Asset)
 def asset_post_save(sender,instance,created,**kwargs):
     payload = build_payload(instance, "Asset", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 @receiver(post_save,sender=Location)
 def location_post_save(sender,instance,created,**kwargs):
     payload = build_payload(instance, "Location", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 @receiver(post_save,sender=Question)
 def question_post_save(sender,instance,created,**kwargs):
     payload = build_payload(instance, "Question", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 @receiver(post_save,sender=QuestionSet)
 def questionset_post_save(sender,instance,created,**kwargs):
     payload = build_payload(instance, "QuestionSet", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
 @receiver(post_save,sender=QuestionSetBelonging)
 def questionsetbelonging_post_save(sender,instance,created,**kwargs):
     payload = build_payload(instance, "QuestionSetBelonging", created)
-    publish_mqtt.delay(TOPIC, payload)
+    queue_mqtt_task(TOPIC, payload, priority=3)
 
     
 

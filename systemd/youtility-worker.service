@@ -1,0 +1,31 @@
+[Unit]
+Description=YOUTILITY PostgreSQL Task Worker (Development)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=satyam
+Group=satyam
+WorkingDirectory=/home/satyam/Documents/YOUTILITY-MIGRATION-DJANGO5-POSTGRESQL/YOUTILITY3
+Environment=DJANGO_SETTINGS_MODULE=intelliwiz_config.settings
+Environment=VIRTUAL_ENV=/home/satyam/Documents/YOUTILITY-MIGRATION-DJANGO5-POSTGRESQL/django5_postgresql_env
+Environment=PATH=/home/satyam/Documents/YOUTILITY-MIGRATION-DJANGO5-POSTGRESQL/django5_postgresql_env/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/home/satyam/Documents/YOUTILITY-MIGRATION-DJANGO5-POSTGRESQL/django5_postgresql_env/bin/python manage.py run_postgresql_worker --queues default email reports --max-concurrent 4 --heartbeat-interval 30 --log-level INFO
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=youtility-worker
+
+# Resource limits
+LimitNOFILE=65536
+MemoryHigh=512M
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target

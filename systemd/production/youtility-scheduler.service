@@ -1,0 +1,39 @@
+[Unit]
+Description=YOUTILITY PostgreSQL Task Scheduler (Production - Replaces Celery Beat)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=redmine
+Group=redmine
+WorkingDirectory=/home/redmine/django5_project/YOUTILITY3
+Environment=DJANGO_SETTINGS_MODULE=intelliwiz_config.settings
+Environment=VIRTUAL_ENV=/home/redmine/django5_project/env
+Environment=PATH=/home/redmine/django5_project/env/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/home/redmine/django5_project/env/bin/python manage.py run_postgresql_worker --queues maintenance --max-concurrent 2 --heartbeat-interval 60 --enable-scheduler --log-level INFO
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=youtility-scheduler
+
+# Resource limits
+LimitNOFILE=65536
+MemoryHigh=512M
+MemoryMax=1G
+
+# Security settings (Production)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/django5
+ReadWritePaths=/home/redmine/django5_project/YOUTILITY3/logs
+
+[Install]
+WantedBy=multi-user.target
