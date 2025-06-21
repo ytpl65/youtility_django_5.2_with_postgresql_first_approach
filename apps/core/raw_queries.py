@@ -1,6 +1,6 @@
 def get_query(q):
     query = {
-        'get_web_caps_for_client':          '''
+        "get_web_caps_for_client": """
                                                 WITH RECURSIVE cap(id, capsname, capscode, parent_id, cfor, depth, path, xpath) AS (
                                                 SELECT id, capsname, capscode, parent_id, cfor, 1::INT AS depth, capability.capscode::TEXT AS path, capability.id::text as xpath
                                                 FROM capability
@@ -10,8 +10,8 @@ def get_query(q):
                                                 FROM capability ch INNER JOIN cap rt ON rt.id = ch.parent_id)
                                                 select * from cap
                                                 order by xpath
-                                            ''',
-        'get_childrens_of_bt':              '''
+                                            """,
+        "get_childrens_of_bt": """
                                                 WITH RECURSIVE cap(id, bucode, parent_id, butree, depth, path, xpath) AS (
                                                 SELECT id,  bucode, parent_id, butree, 1::INT AS depth, bt.bucode::TEXT AS path, bt.id::text as xpath
                                                 FROM bt
@@ -21,8 +21,8 @@ def get_query(q):
                                                 FROM bt ch INNER JOIN cap rt ON rt.id = ch.parent_id)
                                                 select * from cap
                                                 order by xpath
-                                            ''',
-        'tsitereportdetails':               '''
+                                            """,
+        "tsitereportdetails": """
                                                 WITH RECURSIVE nodes_cte(id, parent_id, jobdesc, people_id, qset_id, plandatetime, cdtz, depth, path, top_parent, pseqno, bu_id)
                                                 as ( 
                                                 SELECT id, jobneed.parent_id, jobdesc, people_id, qset_id, plandatetime, jobneed.cdtz, 1::INT AS depth, qset_id::TEXT AS path,
@@ -38,47 +38,53 @@ def get_query(q):
                                                 LEFT JOIN jobneed_details as jnd ON jnd.jobneed_id = jobneed.id 
                                                 LEFT JOIN question q ON jnd.question_id = q.id where jnd.answertype='Question Type' AND jobneed.parent_id <> -1 
                                                 ORDER BY pseqno asc, jobdesc asc, pseqno, cseqno asc
-                                            ''',
-        'sitereportlist':                   '''
-                                                SELECT * FROM(
-                                                SELECT DISTINCT jobneed.id, jobneed.plandatetime, jobneed.jobdesc, people.peoplename, 
+                                            """,
+        "sitereportlist": """
+                                                SELECT id, plandatetime, jobdesc, peoplename, buname,
+                                                       qset_id, jobstatusname, gpslocation, pdist, att,
+                                                       bu_id, remarks
+                                                FROM (
+                                                SELECT DISTINCT jobneed.id, jobneed.plandatetime, jobneed.jobdesc, people.peoplename,
                                                 CASE WHEN (jobneed.othersite!='' or upper(jobneed.othersite)!='NONE') THEN 'other location [ ' ||jobneed.othersite||' ]' ELSE bt.buname END AS buname,
                                                 jobneed.qset_id, jobneed.jobstatus AS jobstatusname, ST_AsText(jobneed.gpslocation) as gpslocation, bt.pdist, count(attachment.owner) AS att,
-                                                jobneed.bu_id, jobneed.remarks 
+                                                jobneed.bu_id, jobneed.remarks
                                                 FROM jobneed 
                                                 INNER JOIN people ON jobneed.people_id = people.id 
                                                 INNER JOIN bt ON jobneed.bu_id = bt.id 
                                                 LEFT JOIN attachment ON jobneed.uuid::text = attachment.owner
-                                                WHERE jobneed.parent_id=1 AND 1 = 1 AND bt.id IN %s 
+                                                WHERE jobneed.parent_id=1 AND 1 = 1 AND bt.id = ANY(%s)
                                                 AND jobneed.identifier='SITEREPORT'
                                                 AND jobneed.plandatetime >= %s AND jobneed.plandatetime <= %s 
                                                 GROUP BY jobneed.id, buname,  bt.pdist, people.peoplename, jobstatusname, jobneed.plandatetime)
-                                                jobneed 
+                                                jobneed
                                                 WHERE 1 = 1 ORDER BY plandatetime desc OFFSET 0 LIMIT 250
-                                            ''',
-
-        'incidentreportlist':                '''
-                                                SELECT * FROM(
-                                                SELECT DISTINCT jobneed.id, jobneed.plandatetime, jobneed.jobdesc,  jobneed.bu_id, 
+                                            """,
+        "incidentreportlist": """
+                                                SELECT id, plandatetime, jobdesc, bu_id, buname,
+                                                       peoplename, jobstatusname, att, gpslocation
+                                                FROM (
+                                                SELECT DISTINCT jobneed.id, jobneed.plandatetime, jobneed.jobdesc,  jobneed.bu_id,
                                                 case when (jobneed.othersite!='' or upper(jobneed.othersite)!='NONE') then 'other location [ ' ||jobneed.othersite||' ]' else bt.buname end  As buname,
                                                 people.peoplename, jobneed.jobstatus as jobstatusname, count(attachment.owner) as att, ST_AsText(jobneed.gpslocation) as gpslocation
-                                                FROM jobneed 
+                                                FROM jobneed
                                                 INNER JOIN people ON jobneed.people_id=people.id 
                                                 INNER JOIN bt ON jobneed.bu_id=bt.id 
                                                 LEFT JOIN attachment ON jobneed.uuid::text = attachment.owner 
                                                 WHERE jobneed.parent_id=1 AND jobneed.identifier = 'INCIDENTREPORT' 
-                                                AND bt.id IN %s 
+                                                AND bt.id = ANY(%s)
                                                 AND jobneed.plandatetime >= %s AND jobneed.plandatetime <= %s
                                                 AND attachment.attachmenttype = 'ATTACHMENT'
                                                 GROUP BY jobneed.id, buname, people.peoplename, jobstatusname, jobneed.plandatetime)
                                                 jobneed
                                                 where 1=1 ORDER BY plandatetime desc OFFSET 0 LIMIT 250
-                                            ''',
-        'workpermitlist':                   '''
-                                            SELECT * FROM( 
+                                            """,
+        "workpermitlist": """
+                                            SELECT id, cdtz, seqno, wptype, wpstatus, workstatus,
+                                                   bu_id, buname, peoplename, "user", att
+                                            FROM (
                                             SELECT DISTINCT workpermit.id, workpermit.cdtz,workpermit.seqno, qset.qsetname as wptype, workpermit.wpstatus, workpermit.workstatus,
                                             workpermit.bu_id,  bt.buname  As buname,
-                                            pb.peoplename, p.peoplename as user, count(attachment.uuid) as att
+                                            pb.peoplename, p.peoplename as "user", count(attachment.uuid) as att
 
                                             FROM workpermit INNER JOIN people ON workpermit.muser_id=people.id
                                             INNER JOIN people p ON workpermit.cuser_id=p.id
@@ -89,15 +95,15 @@ def get_query(q):
 
                                             WHERE workpermit.parent_id=1 
                                             AND 1=1 AND attachment.attachmenttype = 'ATTACHMENT'
-                                            AND workpermit.bu_id IN (%s) 
+                                            AND workpermit.bu_id = ANY(%s)
                                             AND workpermit.parent_id='1' 
                                             AND workpermit.id != '1' 
                                             AND workpermit.cdtz >= now() - interval '100 day' 
                                             AND workpermit.cdtz <= now()
-                                            GROUP BY workpermit.id, buname, people.peoplename, qset.qsetname, workpermit.wpstatus, workpermit.workstatus,pb.peoplename, p.peoplename)workpermit 
+                                            GROUP BY workpermit.id, buname, people.peoplename, qset.qsetname, workpermit.wpstatus, workpermit.workstatus,pb.peoplename, p.peoplename)workpermit
                                             WHERE 1=1 ORDER BY cdtz desc
-                                            ''',
-    'get_ticketlist_for_escalation':        '''
+                                            """,
+        "get_ticketlist_for_escalation": """
                                             SELECT DISTINCT *,ticket.cdtz + INTERVAL '1 minute' * esclation.calcminute as exp_time FROM 
                                             
                                             (SELECT ticket.id, ticket.ticketno, ticketdesc, ticket.comments, ticket.cdtz, ticket.mdtz, ticket.ticketcategory_id as tescalationtemplate, ticket.status, ticket.bu_id as tbu, 
@@ -121,8 +127,8 @@ def get_query(q):
                                             LEFT JOIN pgroup pg ON escalationmatrix.assignedgroup_id=pg.id ) AS esclation
                                             
                                             WHERE (ticket.level+1) = esclation.eslevel  AND ticket.tescalationtemplate = esclation.escalationtemplate_id AND ticket.cdtz + INTERVAL  '1 minute' * esclation.calcminute < now()
-                                            ''',
-    'ticketmail':                           '''
+                                            """,
+        "ticketmail": """
                                             SELECT ticket.id, ticket.ticketno, ticket.ticketlog, ticket.comments, ticket.ticketdesc, ticket.cdtz, 
                                              ticket.status,
                                              em.level, em.frequency, em.frequencyvalue, em.body, em.notify,  em.assignedperson_id as escperson,em.assignedgroup_id as escgrp, 
@@ -147,8 +153,8 @@ def get_query(q):
                                              INNER JOIN typeassist tcattype ON ticket.ticketcategory_id = tcattype.id 
                                              LEFT JOIN escalationmatrix em ON ticket.ticketcategory_id = em.escalationtemplate_id  AND em.level=(ticket.level ) 
                                              WHERE ticket.id = %s;
-                                            ''',
-    'tasksummary':                          '''
+                                            """,
+        "tasksummary": """
                                             WITH timezone_setting AS (
                                                 SELECT %s::text AS timezone
                                             )
@@ -178,8 +184,8 @@ def get_query(q):
                                                 GROUP BY bu.id, bu.buname, (jobneed.plandatetime AT TIME ZONE tz.timezone)::DATE
                                                 ORDER BY bu.buname, (jobneed.plandatetime AT TIME ZONE tz.timezone)::DATE desc
                                             ) x;
-                                            ''',
-    'asset_status_period':                  '''
+                                            """,
+        "asset_status_period": """
                                             SELECT asset_id, (SUM(standby_duration) || ' seconds')::interval  AS total_duration
                                             FROM (
                                                 SELECT asset_id,
@@ -190,8 +196,8 @@ def get_query(q):
                                                 WHERE (oldstatus = %s OR newstatus = %s) and asset_id = %s
                                             ) sub
                                             GROUP BY asset_id;
-                                            ''',
-    'all_asset_status_duration':            '''
+                                            """,
+        "all_asset_status_duration": """
                                             WITH status_periods AS (
                                             SELECT
                                                 asset_id,
@@ -224,8 +230,8 @@ def get_query(q):
                                             END AS duration_interval
                                             FROM status_durations
                                             ORDER BY asset_id, newstatus
-                                            ''',
-    'all_asset_status_duration_count':      '''
+                                            """,
+        "all_asset_status_duration_count": """
                                             SELECT COUNT(*) FROM (
                                                  WITH status_periods AS (
                                             SELECT
@@ -260,7 +266,6 @@ def get_query(q):
                                             FROM status_durations
                                             ORDER BY asset_id, newstatus
                                             ) AS SUBQUERY
-                                            ''',
-
+                                            """,
     }
     return query.get(q)
