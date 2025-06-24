@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YOUTILITY3 Load Test Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { background: #f4f4f4; padding: 20px; border-radius: 5px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        .error { color: #dc3545; }
+        .metric { display: inline-block; margin: 10px; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 YOUTILITY3 Load Test Report</h1>
+        <p><strong>Test Date:</strong> $(date)</p>
+        <p><strong>Target URL:</strong> BASE_URL_PLACEHOLDER</p>
+        <p><strong>Test Duration:</strong> ~60 minutes</p>
+    </div>
+    
+    <div class="section">
+        <h2>📊 Test Summary</h2>
+        <div class="metric">
+            <strong>Artillery Load Tests:</strong>
+            <span id="artillery-status">ARTILLERY_STATUS_PLACEHOLDER</span>
+        </div>
+        <div class="metric">
+            <strong>Database Performance:</strong>
+            <span id="db-status">DB_STATUS_PLACEHOLDER</span>
+        </div>
+        <div class="metric">
+            <strong>Health Check Tests:</strong>
+            <span id="health-status">HEALTH_STATUS_PLACEHOLDER</span>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🎯 Key Metrics</h2>
+        <table>
+            <tr><th>Metric</th><th>Target</th><th>Actual</th><th>Status</th></tr>
+            <tr><td>Concurrent Users</td><td>100</td><td>CONCURRENT_USERS_PLACEHOLDER</td><td>STATUS_PLACEHOLDER</td></tr>
+            <tr><td>Average Response Time</td><td>&lt;500ms</td><td>AVG_RESPONSE_PLACEHOLDER</td><td>STATUS_PLACEHOLDER</td></tr>
+            <tr><td>95th Percentile</td><td>&lt;1000ms</td><td>P95_RESPONSE_PLACEHOLDER</td><td>STATUS_PLACEHOLDER</td></tr>
+            <tr><td>Error Rate</td><td>&lt;1%</td><td>ERROR_RATE_PLACEHOLDER</td><td>STATUS_PLACEHOLDER</td></tr>
+            <tr><td>Health Check Response</td><td>&lt;100ms</td><td>HEALTH_RESPONSE_PLACEHOLDER</td><td>STATUS_PLACEHOLDER</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>📁 Detailed Reports</h2>
+        <ul>
+            <li><a href="artillery_report.html">Artillery.js Load Test Report</a></li>
+            <li><a href="system_metrics.csv">System Resource Metrics</a></li>
+            <li><a href="load_test.log">Complete Test Log</a></li>
+        </ul>
+    </div>
+</body>
+</html>

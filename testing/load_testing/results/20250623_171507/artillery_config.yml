@@ -1,0 +1,178 @@
+# Artillery.js Load Testing Configuration for YOUTILITY3
+# Usage: artillery run artillery_config.yml
+
+config:
+  target: 'http://localhost:8000'
+  phases:
+    # Warm-up phase
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm-up"
+    # Baseline testing - 10 users
+    - duration: 300
+      arrivalRate: 10
+      name: "Baseline Load"
+    # Normal load - 50 users  
+    - duration: 300
+      arrivalRate: 50
+      name: "Normal Load"
+    # Peak load - 100 users
+    - duration: 300
+      arrivalRate: 100
+      name: "Peak Load"
+    # Stress test - 200 users
+    - duration: 180
+      arrivalRate: 200
+      name: "Stress Test"
+    # Cool down
+    - duration: 60
+      arrivalRate: 5
+      name: "Cool Down"
+  
+  # Performance thresholds
+  ensure:
+    p95: 500  # 95th percentile response time should be under 500ms
+    p99: 1000 # 99th percentile response time should be under 1000ms
+    maxErrorRate: 1  # Error rate should be under 1%
+
+  # HTTP configuration
+  http:
+    timeout: 30
+    pool: 50  # Connection pool size
+
+  # Custom variables
+  variables:
+    usernames:
+      - "testuser1"
+      - "testuser2"
+      - "testuser3"
+      - "testuser4"
+      - "testuser5"
+    
+before:
+  flow:
+    - log: "Starting YOUTILITY3 Load Testing"
+
+scenarios:
+  # Scenario 1: Health Check Testing (20% of traffic)
+  - name: "Health Check Monitoring"
+    weight: 20
+    flow:
+      - get:
+          url: "/health/"
+          expect:
+            - statusCode: 200
+            - hasProperty: "status"
+      - think: 1
+      - get:
+          url: "/ready/"
+          expect:
+            - statusCode: 200
+      - think: 1  
+      - get:
+          url: "/alive/"
+          expect:
+            - statusCode: 200
+
+  # Scenario 2: User Authentication Flow (30% of traffic)
+  - name: "User Login Flow"
+    weight: 30
+    flow:
+      # Get login page
+      - get:
+          url: "/login/"
+          capture:
+            - regexp: 'name="csrfmiddlewaretoken" value="([^"]*)"'
+              as: "csrftoken"
+      
+      # Attempt login
+      - post:
+          url: "/login/"
+          form:
+            username: "{{ $randomPick(usernames) }}"
+            password: "testpassword123"
+            csrfmiddlewaretoken: "{{ csrftoken }}"
+          expect:
+            - statusCode: [200, 302]
+      
+      # Access dashboard if login successful
+      - get:
+          url: "/dashboard/"
+          ifTrue: "{{ $statusCode === 302 }}"
+      
+      # Think time between actions
+      - think: 3
+
+  # Scenario 3: Dashboard and Navigation (25% of traffic)  
+  - name: "Dashboard Navigation"
+    weight: 25
+    flow:
+      # Navigate to dashboard
+      - get:
+          url: "/dashboard/"
+          expect:
+            - statusCode: [200, 302]
+      
+      # Navigate to different sections
+      - get:
+          url: "/reports/"
+          expect:
+            - statusCode: [200, 302]
+      - think: 2
+      
+      - get:
+          url: "/peoples/"
+          expect:
+            - statusCode: [200, 302]
+      - think: 2
+      
+      - get:
+          url: "/work_order_management/"
+          expect:
+            - statusCode: [200, 302]
+
+  # Scenario 4: API and AJAX Requests (15% of traffic)
+  - name: "API Testing"
+    weight: 15
+    flow:
+      # Test Select2 dropdowns (heavy PostgreSQL usage)
+      - get:
+          url: "/select2/auto.json?q=test"
+          headers:
+            Accept: "application/json"
+            X-Requested-With: "XMLHttpRequest"
+      
+      # Test health endpoint with details
+      - get:
+          url: "/health/detailed/"
+          headers:
+            Accept: "application/json"
+      
+      # Think time
+      - think: 1
+
+  # Scenario 5: Form Submissions (10% of traffic)
+  - name: "Form Submission Testing"
+    weight: 10
+    flow:
+      # Get a form page
+      - get:
+          url: "/peoples/"
+          capture:
+            - regexp: 'name="csrfmiddlewaretoken" value="([^"]*)"'
+              as: "csrftoken"
+      
+      # Submit search form
+      - post:
+          url: "/peoples/"
+          form:
+            search: "test query"
+            csrfmiddlewaretoken: "{{ csrftoken }}"
+          expect:
+            - statusCode: [200, 302]
+      
+      - think: 5
+
+after:
+  flow:
+    - log: "Load testing completed"

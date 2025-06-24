@@ -1,0 +1,8 @@
+{
+  "avg_cpu": 14.866666666666667,
+  "peak_cpu": 23.3,
+  "avg_memory": 34.903333333333336,
+  "peak_memory": 35.43,
+  "avg_db_connections": 6.0,
+  "peak_db_connections": 6.0
+}
