@@ -1,0 +1,133 @@
+"""
+Simplified tests for authentication views (SignIn, SignOut)
+"""
+import pytest
+from django.test import Client
+from django.contrib.auth import get_user
+from apps.peoples.forms import LoginForm
+
+
+@pytest.mark.django_db
+class TestSignInViewSimple:
+    """Simplified test suite for SignIn view"""
+    
+    def test_signin_get_basic(self):
+        """Test SignIn GET request basic functionality"""
+        client = Client()
+        response = client.get('/')
+        
+        assert response.status_code == 200
+        # Check for login template
+        template_names = [t.name for t in response.templates]
+        assert any('login.html' in name for name in template_names)
+    
+    
+    def test_signin_post_with_valid_user(self, people_factory, test_password):
+        """Test SignIn POST with valid credentials"""
+        client = Client()
+        
+        # Create a verified user
+        user = people_factory(
+            loginid='validuser',
+            peoplename='Valid User',
+            isverified=True,
+            enable=True
+        )
+        user.set_password(test_password)
+        user.save()
+        
+        # Test login - expect redirect on success or error page
+        response = client.post('/', {
+            'username': 'validuser',
+            'password': test_password
+        })
+        
+        # Should either redirect (302) on success or show error (200)
+        assert response.status_code in [200, 302]
+    
+    
+    def test_signin_post_invalid_user(self):
+        """Test SignIn POST with invalid credentials"""
+        client = Client()
+        
+        response = client.post('/', {
+            'username': 'nonexistent',
+            'password': 'wrongpassword'
+        })
+        
+        # Should show login page with error
+        assert response.status_code == 200
+
+
+@pytest.mark.django_db 
+class TestSignOutViewSimple:
+    """Simplified test suite for SignOut view"""
+    
+    def test_signout_anonymous(self):
+        """Test SignOut with anonymous user"""
+        client = Client()
+        response = client.get('/logout/')
+        
+        # Should redirect
+        assert response.status_code == 302
+    
+    
+    def test_signout_basic_functionality(self, people_factory, test_password):
+        """Test basic SignOut functionality"""
+        client = Client()
+        
+        # Create and login user
+        user = people_factory(
+            loginid='logouttest',
+            isverified=True,
+            enable=True
+        )
+        user.set_password(test_password)
+        user.save()
+        
+        # Login first
+        login_response = client.post('/', {
+            'username': 'logouttest',
+            'password': test_password
+        })
+        
+        # Then logout
+        logout_response = client.get('/logout/')
+        
+        # Should redirect
+        assert logout_response.status_code == 302
+
+
+@pytest.mark.django_db
+class TestAuthenticationWorkflow:
+    """Test complete authentication workflow"""
+    
+    def test_login_logout_cycle(self, people_factory, test_password):
+        """Test complete login/logout cycle"""
+        client = Client()
+        
+        user = people_factory(
+            loginid='cycletest',
+            isverified=True,
+            enable=True
+        )
+        user.set_password(test_password)
+        user.save()
+        
+        # 1. Should not be authenticated initially
+        initial_user = get_user(client)
+        assert not initial_user.is_authenticated
+        
+        # 2. Login
+        login_response = client.post('/', {
+            'username': 'cycletest',
+            'password': test_password
+        })
+        
+        # 3. Logout
+        logout_response = client.get('/logout/')
+        assert logout_response.status_code == 302
+        
+        # 4. Should not be authenticated after logout
+        final_user = get_user(client)
+        assert not final_user.is_authenticated

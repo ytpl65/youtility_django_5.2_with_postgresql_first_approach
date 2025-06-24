@@ -43,6 +43,7 @@ staticfiles/
 static/
 STATIC_ROOT/
 
+
 # Django media files (user uploads)
 media/
 MEDIA_ROOT/

@@ -596,6 +596,7 @@ class BulkImportData(LoginRequiredMixin,ParameterMixin, View):
 
     def post(self, request, *args, **kwargs):
         R = request.POST
+        print(R)
         form = self.form(R, request.FILES)
         if R['table'] == 'BULKIMPORTIMAGE':
             if 'action' in R and R['action'] == 'confirmImport':
