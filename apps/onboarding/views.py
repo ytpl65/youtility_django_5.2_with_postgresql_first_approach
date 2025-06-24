@@ -1,6 +1,7 @@
 import logging
 from typing import Type
 import os
+import html
 from django.http import response as rp
 from django.shortcuts import  render
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -128,7 +129,8 @@ class SuperTypeAssist(LoginRequiredMixin, View):
         resp, create = None, True
         R = request.POST
         try:
-            data = QueryDict(request.POST['formData'])
+            form_data = html.unescape(request.POST['formData'])
+            data = QueryDict(form_data)
             pk = request.POST.get('pk', None)
             if pk:
                 msg = "supertypeassist_view"
@@ -204,7 +206,8 @@ class TypeAssistView(LoginRequiredMixin, View):
         resp, create = None, True
         R = request.POST
         try:
-            data = QueryDict(request.POST['formData'])
+            form_data = html.unescape(request.POST['formData'])
+            data = QueryDict(form_data)
             pk = request.POST.get('pk', None)
             if pk:
                 msg = "typeassist_view"
@@ -318,7 +321,8 @@ class ShiftView(LoginRequiredMixin, View):
         try:    
             if request.POST.get('actiond') == 'edit_shift_data':
                 return obutils.handle_shift_data_edit(request,self)
-            data = QueryDict(request.POST['formData'])
+            form_data = html.unescape(request.POST['formData'])
+            data = QueryDict(form_data)
             pk = request.POST.get('pk', None)
             if pk:
                 msg = "shift_view"
@@ -446,7 +450,8 @@ class GeoFence(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         resp = None
         try:
-            data = QueryDict(request.POST.get('formData'))
+            form_data = html.unescape(request.POST.get('formData'))
+            data = QueryDict(form_data)
             geofence = request.POST.get('geofence')
             if data['pk']:
                 msg = "geofence_view"
@@ -750,19 +755,22 @@ class Client(LoginRequiredMixin, View):
             return rp.JsonResponse(resp, status=200)
 
         if R.get('action') == 'saveDeviceLimits' and R.get('pk') !=None:
-            data = QueryDict(request.POST['formData'])
+            form_data = html.unescape(request.POST['formData'])
+            data = QueryDict(form_data)
             resp = P['model'].objects.handle_device_limits_post(data)
             return rp.JsonResponse(resp, status=200)
         
         if R.get('action') == 'saveUserLimits' and R.get('pk') !=None:
-            data = QueryDict(request.POST['formData'])
+            form_data = html.unescape(request.POST['formData'])
+            data = QueryDict(form_data)
             resp = P['model'].objects.handle_user_limits_post(data)
             return rp.JsonResponse(resp, status=200)
         
         if R.get('adminspostdata'):
             resp = P['model'].objects.handle_adminspostdata(request)
             return rp.JsonResponse(resp, status=200)
-        data = QueryDict(request.POST['formData'])
+        form_data = html.unescape(request.POST['formData'])
+        data = QueryDict(form_data)
 
         try:
             if pk := request.POST.get('pk', None):
@@ -876,9 +884,11 @@ class BtView(LoginRequiredMixin, View):
         return render(request, self.params['template_form'], context=cxt)
 
     def post(self, request, *args, **kwargs):
-        resp, create = None, True
+        resp, create, obj = None, True, None
         try:
-            data = QueryDict(request.POST['formData'])
+            form_data = html.unescape(request.POST['formData'])
+            data = QueryDict(form_data)
+            print(data)
             pk = request.POST.get('pk', None)
             if pk:
                 msg = "bu_view"
@@ -1175,7 +1185,8 @@ class ContractView(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
         resp, create = None, True
         try:
-            data = QueryDict(request.POST['formData'])
+            form_data = html.unescape(request.POST['formData'])
+            data = QueryDict(form_data)
             pk = request.POST.get('pk', None)
             if pk:
                 msg = "bu_view"
