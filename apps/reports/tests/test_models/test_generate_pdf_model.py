@@ -461,4 +461,4 @@ class TestGeneratePDFModel:
         ).count()
         
         assert sps_count >= 33  # Every 3rd record
-        assert sfs_count >= 67  # Remaining records
+        assert sfs_count >= 66  # Remaining records

@@ -106,6 +106,9 @@ class ScheduleReport(BaseModel):
                 name="cron_report_type_workindays_report_params_uk"
             )
         ]
+    
+    def __str__(self):
+        return f'{self.report_name} ({self.report_type})'
 
 class GeneratePDF(BaseModel):
     class AdditionalFilter(models.TextChoices):

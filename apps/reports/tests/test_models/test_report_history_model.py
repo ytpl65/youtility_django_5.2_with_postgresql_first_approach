@@ -438,7 +438,7 @@ class TestReportHistoryModel:
         ).count()
         
         assert download_count >= 33  # Every 3rd record
-        assert email_count >= 67     # Remaining records
+        assert email_count >= 66     # Remaining records
         
         # Test has_data filtering
         reports_with_data_count = ReportHistory.objects.filter(

@@ -55,3 +55,12 @@ temp_qr_codes/tmpya1uow1u.png
 temp_qr_codes/tmpz3x24kqf.png
 
 .codegpt
+
+# Coverage related files
+.coverage
+.coveragerc
+htmlcov/
+
+# Temporary files
+temp.html
+tmp*.html

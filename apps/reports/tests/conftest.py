@@ -185,6 +185,7 @@ def authenticated_reports_request(rf, test_user_reports, test_client_reports, te
     request.session['assignedsites'] = [test_bu_reports.id]
     request.session['user_id'] = test_user_reports.id
     request.session['people_id'] = test_user_reports.id
+    request.session['_auth_user_id'] = test_user_reports.id
     request.session['is_superadmin'] = False
     request.session['client_webcaps'] = []
     request.session['client_mobcaps'] = []
@@ -194,6 +195,7 @@ def authenticated_reports_request(rf, test_user_reports, test_client_reports, te
     request.session['sitecode'] = test_bu_reports.bucode
     request.session['sitename'] = test_bu_reports.buname
     request.session['clientcode'] = test_client_reports.bucode
+    request.session['clientname'] = test_client_reports.buname
     request.session['ctzoffset'] = 330  # IST timezone offset
     request.user = test_user_reports
     
@@ -354,3 +356,9 @@ def report_time_ranges():
             'end': base_time
         }
     }
+
+
+@pytest.fixture
+def mock_request_reports(authenticated_reports_request):
+    """Mock request for forms and views testing"""
+    return authenticated_reports_request

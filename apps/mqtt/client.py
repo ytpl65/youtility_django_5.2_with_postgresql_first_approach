@@ -20,7 +20,7 @@ MQTT_CONFIG = settings.MQTT_CONFIG
 
 # MQTT broker settings
 BROKER_ADDRESS = MQTT_CONFIG['BROKER_ADDRESS']
-BROKER_PORT = MQTT_CONFIG['BROKER_PORT']
+BROKER_PORT = MQTT_CONFIG['broker_port']
 
 MUTATION_TOPIC        = "graphql/mutation"
 MUTATION_STATUS_TOPIC = "graphql/mutation/status"

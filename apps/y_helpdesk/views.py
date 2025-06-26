@@ -13,7 +13,7 @@ from apps.peoples import utils as putils
 from apps.peoples import models as pm
 
 # Create your views here.
-class EscalationMatrix(LoginRequiredMixin, View):
+class EscalationMatrixView(LoginRequiredMixin, View):
     P = {
         'model':EscalationMatrix,
         "fields":['frequencyvalue', 'frequency', 'notify', 'id'],
@@ -153,4 +153,4 @@ class UniformView(LoginRequiredMixin, View):
         'template_list':'y_helpdesk/uniform_list.html',
     }
     def get(self, request, *args, **kwargs):  
-        return render(request, 'y_helpdesk/uniform_form.html')
+        return render(request, self.params['template_list'])
